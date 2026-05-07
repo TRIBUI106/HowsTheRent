@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__plugin_oh-my-claudecode_t__state_write",
+      "PowerShell(New-Item *)",
+      "PowerShell(rtk git *)",
+      "Bash(./mvnw compile *)",
+      "Bash(echo \"EXIT_CODE=$?\")",
+      "Bash(bun install *)",
+      "Bash(bun add *)",
+      "Bash(bun run *)"
+    ]
+  }
+}

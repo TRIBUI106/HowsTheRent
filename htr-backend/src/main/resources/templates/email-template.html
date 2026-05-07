@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: Arial, sans-serif; background: #f4f4f4; margin: 0; padding: 20px; }
+        .container { background: #fff; border-radius: 8px; padding: 30px; max-width: 600px; margin: 0 auto; }
+        .header { background: #2563eb; color: #fff; padding: 20px; border-radius: 8px 8px 0 0; text-align: center; }
+        .content { padding: 20px; }
+        .amount { font-size: 28px; font-weight: bold; color: #2563eb; text-align: center; margin: 20px 0; }
+        .details { background: #f9fafb; border-radius: 6px; padding: 15px; margin: 15px 0; }
+        .details table { width: 100%; border-collapse: collapse; }
+        .details td { padding: 6px 0; }
+        .details td:last-child { text-align: right; }
+        .footer { text-align: center; color: #6b7280; font-size: 12px; padding: 15px; }
+        .btn { display: inline-block; background: #2563eb; color: #fff; padding: 12px 24px; border-radius: 6px; text-decoration: none; margin: 10px 0; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1 th:text="${subject}">Hệ Thống Quản Lý Nhà Trọ</h1>
+    </div>
+    <div class="content">
+        <p th:text="${greeting}">Xin chào,</p>
+        <div class="amount" th:text="${amount}">0 VND</div>
+        <div class="details">
+            <table>
+                <tr><td>Tháng:</td><td th:text="${month}">-</td></tr>
+                <tr><td>Phòng:</td><td th:text="${roomNumber}">-</td></tr>
+                <tr><td>Tài khoản:</td><td th:text="${accountNumber}">-</td></tr>
+                <tr><td>Ngân hàng:</td><td th:text="${bank}">-</td></tr>
+                <tr><td><strong>Tổng cộng:</strong></td><td><strong th:text="${amount}">0 VND</strong></td></tr>
+            </table>
+        </div>
+        <p th:text="${body}">Nội dung thông báo.</p>
+        <div style="text-align:center;">
+            <a class="btn" th:href="${actionUrl}" th:text="${actionText}">Xem chi tiết</a>
+        </div>
+    </div>
+    <div class="footer">
+        <p>Email này được gửi tự động từ Hệ Thống Quản Lý Nhà Trọ.</p>
+        <p>© 2025 - Hệ Thống Quản Lý Nhà Trọ</p>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,292 @@
+{
+  "version": "1.0.0",
+  "lastScanned": 1778150214521,
+  "projectRoot": "D:\\Code\\czHTR",
+  "techStack": {
+    "languages": [],
+    "frameworks": [],
+    "packageManager": null,
+    "runtime": null
+  },
+  "build": {
+    "buildCommand": "bun run build 2>&1 | tail -50",
+    "testCommand": null,
+    "lintCommand": null,
+    "devCommand": null,
+    "scripts": {}
+  },
+  "conventions": {
+    "namingStyle": null,
+    "importStyle": null,
+    "testPattern": null,
+    "fileOrganization": null
+  },
+  "structure": {
+    "isMonorepo": false,
+    "workspaces": [],
+    "mainDirectories": [
+      "docs"
+    ],
+    "gitBranches": null
+  },
+  "customNotes": [],
+  "directoryMap": {
+    "docs": {
+      "path": "docs",
+      "purpose": "Documentation",
+      "fileCount": 0,
+      "lastAccessed": 1778150214506,
+      "keyFiles": []
+    },
+    "htr-backend": {
+      "path": "htr-backend",
+      "purpose": null,
+      "fileCount": 6,
+      "lastAccessed": 1778150214506,
+      "keyFiles": [
+        "HELP.md",
+        "mvnw",
+        "mvnw.cmd",
+        "pom.xml"
+      ]
+    },
+    "htr-backend\\src": {
+      "path": "htr-backend\\src",
+      "purpose": "Source code",
+      "fileCount": 0,
+      "lastAccessed": 1778150214507,
+      "keyFiles": []
+    }
+  },
+  "hotPaths": [
+    {
+      "path": "htr-backend\\pom.xml",
+      "accessCount": 6,
+      "lastAccessed": 1778150645173,
+      "type": "file"
+    },
+    {
+      "path": "",
+      "accessCount": 4,
+      "lastAccessed": 1778150226837,
+      "type": "directory"
+    },
+    {
+      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\service\\PayOSService.java",
+      "accessCount": 3,
+      "lastAccessed": 1778150679286,
+      "type": "file"
+    },
+    {
+      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\service\\RoomService.java",
+      "accessCount": 2,
+      "lastAccessed": 1778150410607,
+      "type": "file"
+    },
+    {
+      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\service\\ContractService.java",
+      "accessCount": 2,
+      "lastAccessed": 1778150416333,
+      "type": "file"
+    },
+    {
+      "path": "htr-backend\\src\\main\\resources\\application.properties",
+      "accessCount": 2,
+      "lastAccessed": 1778150581222,
+      "type": "file"
+    },
+    {
+      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\config\\AsyncConfig.java",
+      "accessCount": 2,
+      "lastAccessed": 1778150589437,
+      "type": "file"
+    },
+    {
+      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\config\\RestClientConfig.java",
+      "accessCount": 2,
+      "lastAccessed": 1778150717446,
+      "type": "file"
+    },
+    {
+      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\config\\WebConfig.java",
+      "accessCount": 2,
+      "lastAccessed": 1778150717928,
+      "type": "file"
+    },
+    {
+      "path": "htr-backend\\src\\main\\resources\\templates\\email-template.html",
+      "accessCount": 2,
+      "lastAccessed": 1778150775464,
+      "type": "file"
+    },
+    {
+      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\controller\\AuthController.java",
+      "accessCount": 1,
+      "lastAccessed": 1778150238947,
+      "type": "file"
+    },
+    {
+      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\service\\PropertyService.java",
+      "accessCount": 1,
+      "lastAccessed": 1778150239545,
+      "type": "file"
+    },
+    {
+      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\security\\JwtTokenProvider.java",
+      "accessCount": 1,
+      "lastAccessed": 1778150240550,
+      "type": "file"
+    },
+    {
+      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\config\\SecurityConfig.java",
+      "accessCount": 1,
+      "lastAccessed": 1778150241071,
+      "type": "file"
+    },
+    {
+      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\dto\\request\\CreatePropertyRequest.java",
+      "accessCount": 1,
+      "lastAccessed": 1778150249829,
+      "type": "file"
+    },
+    {
+      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\dto\\request\\CreateRoomRequest.java",
+      "accessCount": 1,
+      "lastAccessed": 1778150250832,
+      "type": "file"
+    },
+    {
+      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\dto\\request\\CreateContractRequest.java",
+      "accessCount": 1,
+      "lastAccessed": 1778150251891,
+      "type": "file"
+    },
+    {
+      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\domain\\entity\\Invoice.java",
+      "accessCount": 1,
+      "lastAccessed": 1778150251962,
+      "type": "file"
+    },
+    {
+      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\domain\\repository\\InvoiceRepository.java",
+      "accessCount": 1,
+      "lastAccessed": 1778150252208,
+      "type": "file"
+    },
+    {
+      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\controller\\PropertyController.java",
+      "accessCount": 1,
+      "lastAccessed": 1778150277829,
+      "type": "file"
+    },
+    {
+      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\controller\\RoomController.java",
+      "accessCount": 1,
+      "lastAccessed": 1778150290318,
+      "type": "file"
+    },
+    {
+      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\controller\\ContractController.java",
+      "accessCount": 1,
+      "lastAccessed": 1778150297430,
+      "type": "file"
+    },
+    {
+      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\controller\\MeterReadingController.java",
+      "accessCount": 1,
+      "lastAccessed": 1778150304061,
+      "type": "file"
+    },
+    {
+      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\controller\\InvoiceController.java",
+      "accessCount": 1,
+      "lastAccessed": 1778150311585,
+      "type": "file"
+    },
+    {
+      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\controller\\PaymentController.java",
+      "accessCount": 1,
+      "lastAccessed": 1778150314270,
+      "type": "file"
+    },
+    {
+      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\controller\\MaintenanceController.java",
+      "accessCount": 1,
+      "lastAccessed": 1778150326336,
+      "type": "file"
+    },
+    {
+      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\controller\\NotificationController.java",
+      "accessCount": 1,
+      "lastAccessed": 1778150326776,
+      "type": "file"
+    },
+    {
+      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\controller\\DashboardController.java",
+      "accessCount": 1,
+      "lastAccessed": 1778150336348,
+      "type": "file"
+    },
+    {
+      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\controller\\UserController.java",
+      "accessCount": 1,
+      "lastAccessed": 1778150346960,
+      "type": "file"
+    },
+    {
+      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\config\\MinioConfig.java",
+      "accessCount": 1,
+      "lastAccessed": 1778150356545,
+      "type": "file"
+    },
+    {
+      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\config\\QuartzConfig.java",
+      "accessCount": 1,
+      "lastAccessed": 1778150361260,
+      "type": "file"
+    },
+    {
+      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\service\\StorageService.java",
+      "accessCount": 1,
+      "lastAccessed": 1778150367342,
+      "type": "file"
+    },
+    {
+      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\service\\EmailService.java",
+      "accessCount": 1,
+      "lastAccessed": 1778150373684,
+      "type": "file"
+    },
+    {
+      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\job\\BillingJob.java",
+      "accessCount": 1,
+      "lastAccessed": 1778150392097,
+      "type": "file"
+    },
+    {
+      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\job\\OverdueReminderJob.java",
+      "accessCount": 1,
+      "lastAccessed": 1778150394275,
+      "type": "file"
+    },
+    {
+      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\domain\\repository\\RoomRepository.java",
+      "accessCount": 1,
+      "lastAccessed": 1778150400379,
+      "type": "file"
+    },
+    {
+      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\domain\\repository\\MaintenanceRequestRepository.java",
+      "accessCount": 1,
+      "lastAccessed": 1778150400888,
+      "type": "file"
+    },
+    {
+      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\service\\InvoiceService.java",
+      "accessCount": 1,
+      "lastAccessed": 1778150416794,
+      "type": "file"
+    }
+  ],
+  "userDirectives": []
+}

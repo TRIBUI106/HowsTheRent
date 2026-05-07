@@ -1,0 +1,7 @@
+{
+  "tool_name": "Read",
+  "tool_input_preview": "{\"file_path\":\"D:\\\\Code\\\\czHTR\\\\src\\\\main\\\\java\\\\chez1s\\\\htrbackend\\\\security\\\\JwtTokenProvider.java\"}",
+  "error": "File does not exist. Note: your current working directory is D:\\Code\\czHTR\\htr-backend. Did you mean D:\\Code\\czHTR\\htr-backend\\src\\main\\java\\chez1s\\htrbackend\\security\\JwtTokenProvider.java?",
+  "timestamp": "2026-05-07T10:37:14.648Z",
+  "retry_count": 5
+}
