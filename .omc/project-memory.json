@@ -60,6 +60,12 @@
   },
   "hotPaths": [
     {
+      "path": "htr-backend\\Dockerfile",
+      "accessCount": 10,
+      "lastAccessed": 1778152866423,
+      "type": "file"
+    },
+    {
       "path": "htr-backend\\pom.xml",
       "accessCount": 6,
       "lastAccessed": 1778150645173,
