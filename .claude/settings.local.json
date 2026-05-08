@@ -25,7 +25,8 @@
       "Bash(curl *)",
       "Bash(Sort-Object)",
       "Bash(./mvnw test *)",
-      "Bash(python -m json.tool)"
+      "Bash(python -m json.tool)",
+      "Bash(py skills/ui-ux-pro-max/scripts/search.py \"property management admin dashboard SaaS\" --design-system -p \"PropMS\" -f markdown)"
     ]
   }
 }
