@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom'
 import { useAuthStore } from '@/stores/authStore'
-import { LayoutDashboard, Building2, Home, FileText, Receipt, Wrench, Bell, LogOut, Settings, Users } from 'lucide-react'
+import { LayoutDashboard, Building2, Home, FileText, Receipt, Wrench, Bell, LogOut, Settings, Users, Gauge } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { ReactNode } from 'react'
 
@@ -14,6 +14,7 @@ const navItems = [
   { to: '/admin/properties', icon: Building2, label: 'Tài sản', roles: ['ADMIN'] },
   { to: '/admin/rooms', icon: Home, label: 'Phòng', roles: ['ADMIN'] },
   { to: '/admin/contracts', icon: FileText, label: 'Hợp đồng', roles: ['ADMIN'] },
+  { to: '/admin/meter-readings', icon: Gauge, label: 'Chỉ số điện nước', roles: ['ADMIN'] },
   { to: '/admin/invoices', icon: Receipt, label: 'Hóa đơn', roles: ['ADMIN'] },
   { to: '/admin/maintenance', icon: Wrench, label: 'Bảo trì', roles: ['ADMIN'] },
   { to: '/admin/fee-config', icon: Settings, label: 'Cài đặt phí', roles: ['ADMIN'] },

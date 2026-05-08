@@ -15,6 +15,11 @@ import AdminMaintenancePage from '@/pages/admin/MaintenancePage'
 import AdminNotificationsPage from '@/pages/admin/NotificationsPage'
 import FeeConfigPage from '@/pages/admin/FeeConfigPage'
 import UsersPage from '@/pages/admin/UsersPage'
+import MeterReadingsPage from '@/pages/admin/MeterReadingsPage'
+
+// Payment
+import PaymentSuccessPage from '@/pages/payment/SuccessPage'
+import PaymentCancelPage from '@/pages/payment/CancelPage'
 
 // Tenant
 import TenantDashboard from '@/pages/tenant/DashboardPage'
@@ -39,6 +44,8 @@ export default function App() {
     return (
       <Routes>
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/payment/success" element={<PaymentSuccessPage />} />
+        <Route path="/payment/cancel" element={<PaymentCancelPage />} />
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     )
@@ -58,6 +65,11 @@ export default function App() {
       <Route path="/admin/contracts" element={<RequireRole roles={['ADMIN']}><ContractsPage /></RequireRole>} />
       <Route path="/admin/fee-config" element={<RequireRole roles={['ADMIN']}><FeeConfigPage /></RequireRole>} />
       <Route path="/admin/users" element={<RequireRole roles={['ADMIN']}><UsersPage /></RequireRole>} />
+      <Route path="/admin/meter-readings" element={<RequireRole roles={['ADMIN']}><MeterReadingsPage /></RequireRole>} />
+
+      {/* Payment return pages — accessible regardless of role */}
+      <Route path="/payment/success" element={<PaymentSuccessPage />} />
+      <Route path="/payment/cancel" element={<PaymentCancelPage />} />
 
       {/* Tenant routes */}
       <Route path="/tenant" element={<RequireRole roles={['TENANT']}><TenantDashboard /></RequireRole>} />
