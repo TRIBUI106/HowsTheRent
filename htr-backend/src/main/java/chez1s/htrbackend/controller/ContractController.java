@@ -25,6 +25,12 @@ public class ContractController {
     private final StorageService storageService;
     private final JwtTokenProvider jwtTokenProvider;
 
+    @GetMapping("/contracts")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<Contract>> listAll() {
+        return ResponseEntity.ok(contractService.listAll());
+    }
+
     @GetMapping("/rooms/{roomId}/contracts")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<Contract>> listByRoom(@PathVariable UUID roomId) {

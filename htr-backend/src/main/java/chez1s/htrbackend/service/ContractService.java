@@ -26,6 +26,10 @@ public class ContractService {
     private final UserRepository userRepository;
     private final RoomService roomService;
 
+    public List<Contract> listAll() {
+        return contractRepository.findAll();
+    }
+
     public List<Contract> listByRoom(UUID roomId) {
         return contractRepository.findByRoomId(roomId);
     }

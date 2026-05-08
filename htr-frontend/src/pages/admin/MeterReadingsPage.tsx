@@ -31,8 +31,8 @@ export default function MeterReadingsPage() {
   const [genResult, setGenResult] = useState<string | null>(null)
 
   const { data: rooms, isLoading } = useQuery<Room[]>({
-    queryKey: ['rooms-all'],
-    queryFn: () => api.get('/rooms').then(r => r.data),
+    queryKey: ['rooms-rented'],
+    queryFn: () => api.get('/rooms/rented').then(r => r.data),
   })
 
   const readingMutation = useMutation({
@@ -81,7 +81,7 @@ export default function MeterReadingsPage() {
     }
   }
 
-  const rentedRooms = rooms?.filter(r => r.status === 'RENTED') ?? []
+  const rentedRooms = rooms ?? []
 
   return (
     <Layout>

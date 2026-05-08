@@ -24,7 +24,8 @@
       "Bash(docker exec *)",
       "Bash(curl *)",
       "Bash(Sort-Object)",
-      "Bash(./mvnw test *)"
+      "Bash(./mvnw test *)",
+      "Bash(python -m json.tool)"
     ]
   }
 }

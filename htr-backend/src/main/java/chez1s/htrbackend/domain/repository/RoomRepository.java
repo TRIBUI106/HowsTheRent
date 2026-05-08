@@ -9,5 +9,6 @@ import java.util.UUID;
 
 public interface RoomRepository extends JpaRepository<Room, UUID> {
     List<Room> findByPropertyId(UUID propertyId);
+    List<Room> findByStatus(RoomStatus status);
     long countByPropertyIdAndStatus(UUID propertyId, RoomStatus status);
 }

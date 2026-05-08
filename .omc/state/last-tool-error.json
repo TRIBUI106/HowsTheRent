@@ -1,7 +1,0 @@
-{
-  "tool_name": "Bash",
-  "tool_input_preview": "{\"command\":\"ls -la \\\"D:\\\\Code\\\\czHTR\\\\htr-frontend\\\\src\\\\pages\\\\admin\\\\\\\" 2>$null | grep '\\\\.tsx'\"}",
-  "error": "Exit code 2\n/usr/bin/bash: eval: line 1: unexpected EOF while looking for matching `\"'",
-  "timestamp": "2026-05-07T15:06:30.249Z",
-  "retry_count": 2
-}

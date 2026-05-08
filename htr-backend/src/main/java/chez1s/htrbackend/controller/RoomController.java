@@ -29,6 +29,9 @@ public class RoomController {
         return ResponseEntity.ok(roomService.listByProperty(propertyId));
     }
 
+    // Flat list needed by meter readings page — not under a property
+    // Exposed as GET /api/rooms via a separate mapping
+
     @GetMapping("/{id}")
     public ResponseEntity<Room> getById(@PathVariable UUID propertyId, @PathVariable UUID id) {
         return ResponseEntity.ok(roomService.getById(id));
