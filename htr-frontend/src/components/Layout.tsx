@@ -1,11 +1,14 @@
 import { Link, useLocation } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
 import { useAuthStore } from '@/stores/authStore'
 import {
   LayoutDashboard, Building2, Home, FileText, Receipt,
-  Wrench, Bell, LogOut, Settings, Users, Gauge
+  Wrench, Bell, LogOut, Settings, Users, Gauge, Menu, X
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useState } from 'react'
 import type { ReactNode } from 'react'
+import type { Notification } from '@/types'
 
 interface LayoutProps {
   children: ReactNode
@@ -43,14 +46,33 @@ export default function Layout({ children, title }: LayoutProps) {
   const { user, clearAuth } = useAuthStore()
   const location = useLocation()
   const role = user?.role ?? ''
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   const filteredNav = navItems.filter(item => item.roles.includes(role))
   const pageTitle = title ?? resolveTitle(location.pathname)
 
+  const { data: notifications } = useQuery<Notification[]>({
+    queryKey: ['notifications'],
+    queryFn: () => import('@/lib/api').then(m => m.default.get('/notifications').then(r => r.data)),
+    staleTime: 30_000,
+  })
+  const unreadCount = notifications?.filter(n => !n.read).length ?? 0
+
   return (
     <div className="flex h-screen bg-gray-50">
+      {/* Mobile overlay */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 z-20 bg-black/50 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
-      <aside className="w-60 bg-slate-900 text-white flex flex-col shrink-0">
+      <aside className={cn(
+        'fixed lg:static inset-y-0 left-0 z-30 w-60 bg-slate-900 text-white flex flex-col shrink-0 transition-transform duration-200',
+        sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+      )}>
         {/* Brand */}
         <div className="px-5 py-5 border-b border-slate-700/60">
           <div className="flex items-center gap-2.5">
@@ -73,6 +95,7 @@ export default function Layout({ children, title }: LayoutProps) {
               <Link
                 key={item.to}
                 to={item.to}
+                onClick={() => setSidebarOpen(false)}
                 className={cn(
                   'flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all duration-150',
                   isActive
@@ -109,13 +132,29 @@ export default function Layout({ children, title }: LayoutProps) {
       </aside>
 
       {/* Main area */}
-      <div className="flex-1 flex flex-col overflow-hidden min-w-0">
+      <div className="flex-1 flex flex-col overflow-hidden min-w-0 lg:ml-0">
         {/* Top bar */}
-        <header className="bg-white border-b border-gray-200 px-6 py-3.5 flex items-center justify-between shrink-0">
-          <h1 className="text-base font-semibold text-gray-900">{pageTitle}</h1>
+        <header className="bg-white border-b border-gray-200 px-4 lg:px-6 py-3.5 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
-            <Link to={role === 'ADMIN' ? '/admin/notifications' : role === 'TENANT' ? '/tenant/notifications' : '/tech/notifications'}>
+            <button
+              onClick={() => setSidebarOpen(v => !v)}
+              className="lg:hidden p-1 rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+            >
+              {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
+            </button>
+            <h1 className="text-base font-semibold text-gray-900">{pageTitle}</h1>
+          </div>
+          <div className="flex items-center gap-3">
+            <Link
+              to={role === 'ADMIN' ? '/admin/notifications' : role === 'TENANT' ? '/tenant/notifications' : '/tech/notifications'}
+              className="relative"
+            >
               <Bell size={18} className="text-gray-500 hover:text-gray-700 transition-colors" />
+              {unreadCount > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center px-0.5">
+                  {unreadCount > 99 ? '99+' : unreadCount}
+                </span>
+              )}
             </Link>
           </div>
         </header>
