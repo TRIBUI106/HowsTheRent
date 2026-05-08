@@ -1,12 +1,12 @@
 import { Link, useLocation } from 'react-router-dom'
 import { useAuthStore } from '@/stores/authStore'
-import { LayoutDashboard, Building2, Home, FileText, Receipt, Wrench, Bell, LogOut } from 'lucide-react'
+import { LayoutDashboard, Building2, Home, FileText, Receipt, Wrench, Bell, LogOut, Settings, Users } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { ReactNode } from 'react'
 
 interface LayoutProps {
   children: ReactNode
-  title: string
+  title?: string
 }
 
 const navItems = [
@@ -16,6 +16,8 @@ const navItems = [
   { to: '/admin/contracts', icon: FileText, label: 'Hợp đồng', roles: ['ADMIN'] },
   { to: '/admin/invoices', icon: Receipt, label: 'Hóa đơn', roles: ['ADMIN'] },
   { to: '/admin/maintenance', icon: Wrench, label: 'Bảo trì', roles: ['ADMIN'] },
+  { to: '/admin/fee-config', icon: Settings, label: 'Cài đặt phí', roles: ['ADMIN'] },
+  { to: '/admin/users', icon: Users, label: 'Người dùng', roles: ['ADMIN'] },
   { to: '/admin/notifications', icon: Bell, label: 'Thông báo', roles: ['ADMIN'] },
   { to: '/tenant', icon: LayoutDashboard, label: 'Dashboard', roles: ['TENANT'] },
   { to: '/tenant/invoices', icon: Receipt, label: 'Hóa đơn', roles: ['TENANT'] },
@@ -72,7 +74,7 @@ export default function Layout({ children, title }: LayoutProps) {
       {/* Main */}
       <div className="flex-1 flex flex-col overflow-hidden">
         <header className="bg-white border-b px-6 py-4 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
+          <h2 className="text-lg font-semibold text-gray-900">{title ?? 'PropMS'}</h2>
           <div className="flex items-center gap-2">
             <Bell size={18} className="text-gray-500 cursor-pointer hover:text-gray-700" />
           </div>

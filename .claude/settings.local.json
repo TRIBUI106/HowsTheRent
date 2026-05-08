@@ -17,7 +17,14 @@
       "Bash(./mvnw wrapper:wrapper)",
       "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:5173)",
       "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8080/api/auth/login)",
-      "Bash(curl -s -X POST http://localhost:8080/api/auth/login -H \"Content-Type: application/json\" -d '{\"email\":\"admin@test.com\",\"password\":\"test\"}')"
+      "Bash(curl -s -X POST http://localhost:8080/api/auth/login -H \"Content-Type: application/json\" -d '{\"email\":\"admin@test.com\",\"password\":\"test\"}')",
+      "Bash(./mvnw dependency:build-classpath -q -DincludeScope=runtime -Dmdep.outputFile=/dev/stdout)",
+      "Bash(java -cp \"$\\(./mvnw dependency:build-classpath -q -DincludeScope=runtime -Dmdep.outputFile=/dev/stdout\\):target/classes\" -e 'System.out.println\\(new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder\\(\\).encode\\(\"Admin123!\"\\)\\);')",
+      "Bash(python3 -c \"import bcrypt; print\\(bcrypt.hashpw\\(b'Admin123!', bcrypt.gensalt\\(\\)\\).decode\\(\\)\\)\")",
+      "Bash(docker exec *)",
+      "Bash(curl *)",
+      "Bash(Sort-Object)",
+      "Bash(./mvnw test *)"
     ]
   }
 }

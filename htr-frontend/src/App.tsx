@@ -9,9 +9,12 @@ import LoginPage from '@/pages/auth/LoginPage'
 import AdminDashboard from '@/pages/admin/DashboardPage'
 import PropertiesPage from '@/pages/admin/PropertiesPage'
 import RoomsPage from '@/pages/admin/RoomsPage'
+import ContractsPage from '@/pages/admin/ContractsPage'
 import AdminInvoicesPage from '@/pages/admin/InvoicesPage'
 import AdminMaintenancePage from '@/pages/admin/MaintenancePage'
 import AdminNotificationsPage from '@/pages/admin/NotificationsPage'
+import FeeConfigPage from '@/pages/admin/FeeConfigPage'
+import UsersPage from '@/pages/admin/UsersPage'
 
 // Tenant
 import TenantDashboard from '@/pages/tenant/DashboardPage'
@@ -52,6 +55,9 @@ export default function App() {
       <Route path="/admin/invoices" element={<RequireRole roles={['ADMIN']}><AdminInvoicesPage /></RequireRole>} />
       <Route path="/admin/maintenance" element={<RequireRole roles={['ADMIN']}><AdminMaintenancePage /></RequireRole>} />
       <Route path="/admin/notifications" element={<RequireRole roles={['ADMIN']}><AdminNotificationsPage /></RequireRole>} />
+      <Route path="/admin/contracts" element={<RequireRole roles={['ADMIN']}><ContractsPage /></RequireRole>} />
+      <Route path="/admin/fee-config" element={<RequireRole roles={['ADMIN']}><FeeConfigPage /></RequireRole>} />
+      <Route path="/admin/users" element={<RequireRole roles={['ADMIN']}><UsersPage /></RequireRole>} />
 
       {/* Tenant routes */}
       <Route path="/tenant" element={<RequireRole roles={['TENANT']}><TenantDashboard /></RequireRole>} />
