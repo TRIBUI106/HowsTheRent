@@ -1,6 +1,7 @@
 package chez1s.htrbackend.controller;
 
 import chez1s.htrbackend.domain.entity.Invoice;
+import chez1s.htrbackend.dto.response.InvoiceResponse;
 import chez1s.htrbackend.security.JwtTokenProvider;
 import chez1s.htrbackend.service.InvoiceService;
 import chez1s.htrbackend.service.PayOSService;
@@ -25,20 +26,20 @@ public class InvoiceController {
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<Invoice>> listAll() {
-        return ResponseEntity.ok(invoiceService.listAll());
+    public ResponseEntity<List<InvoiceResponse>> listAll() {
+        return ResponseEntity.ok(invoiceService.listAll().stream().map(InvoiceResponse::from).toList());
     }
 
     @GetMapping("/mine")
     @PreAuthorize("hasRole('TENANT')")
-    public ResponseEntity<List<Invoice>> listMine(@RequestHeader("Authorization") String authHeader) {
+    public ResponseEntity<List<InvoiceResponse>> listMine(@RequestHeader("Authorization") String authHeader) {
         UUID tenantId = jwtTokenProvider.getUserId(authHeader.replace("Bearer ", ""));
-        return ResponseEntity.ok(invoiceService.listByTenant(tenantId));
+        return ResponseEntity.ok(invoiceService.listByTenant(tenantId).stream().map(InvoiceResponse::from).toList());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Invoice> getById(@PathVariable UUID id) {
-        return ResponseEntity.ok(invoiceService.getById(id));
+    public ResponseEntity<InvoiceResponse> getById(@PathVariable UUID id) {
+        return ResponseEntity.ok(InvoiceResponse.from(invoiceService.getById(id)));
     }
 
     @PostMapping("/generate")
@@ -51,8 +52,8 @@ public class InvoiceController {
 
     @PostMapping("/{id}/pay-cash")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Invoice> markPaidCash(@PathVariable UUID id) {
-        return ResponseEntity.ok(invoiceService.markPaidCash(id));
+    public ResponseEntity<InvoiceResponse> markPaidCash(@PathVariable UUID id) {
+        return ResponseEntity.ok(InvoiceResponse.from(invoiceService.markPaidCash(id)));
     }
 
     @PostMapping("/{id}/pay-online")

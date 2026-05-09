@@ -2,7 +2,7 @@ import { Link, useLocation } from 'react-router-dom'
 import { useAuthStore } from '@/stores/authStore'
 import {
   LayoutDashboard, Building2, Home, FileText, Receipt,
-  Wrench, Bell, LogOut, Settings, Users, Gauge
+  Wrench, Bell, LogOut, Settings, Users, Gauge, Car
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { ReactNode } from 'react'
@@ -21,6 +21,7 @@ const navItems = [
   { to: '/admin/invoices',       exact: false, icon: Receipt,         label: 'Hóa đơn',           roles: ['ADMIN'] },
   { to: '/admin/maintenance',    exact: false, icon: Wrench,          label: 'Bảo trì',           roles: ['ADMIN'] },
   { to: '/admin/fee-config',     exact: false, icon: Settings,        label: 'Cài đặt phí',       roles: ['ADMIN'] },
+  { to: '/admin/vehicle-config', exact: false, icon: Car,             label: 'Cấu hình xe',        roles: ['ADMIN'] },
   { to: '/admin/users',          exact: false, icon: Users,           label: 'Người dùng',        roles: ['ADMIN'] },
   { to: '/admin/notifications',  exact: false, icon: Bell,            label: 'Thông báo',         roles: ['ADMIN'] },
   { to: '/tenant',               exact: true,  icon: LayoutDashboard, label: 'Tổng quan',         roles: ['TENANT'] },

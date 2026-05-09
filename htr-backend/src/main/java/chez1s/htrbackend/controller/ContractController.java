@@ -2,6 +2,7 @@ package chez1s.htrbackend.controller;
 
 import chez1s.htrbackend.domain.entity.Contract;
 import chez1s.htrbackend.dto.request.CreateContractRequest;
+import chez1s.htrbackend.dto.response.ContractResponse;
 import chez1s.htrbackend.security.JwtTokenProvider;
 import chez1s.htrbackend.service.ContractService;
 import chez1s.htrbackend.service.StorageService;
@@ -27,48 +28,48 @@ public class ContractController {
 
     @GetMapping("/contracts")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<Contract>> listAll() {
-        return ResponseEntity.ok(contractService.listAll());
+    public ResponseEntity<List<ContractResponse>> listAll() {
+        return ResponseEntity.ok(contractService.listAll().stream().map(ContractResponse::from).toList());
     }
 
     @GetMapping("/rooms/{roomId}/contracts")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<Contract>> listByRoom(@PathVariable UUID roomId) {
-        return ResponseEntity.ok(contractService.listByRoom(roomId));
+    public ResponseEntity<List<ContractResponse>> listByRoom(@PathVariable UUID roomId) {
+        return ResponseEntity.ok(contractService.listByRoom(roomId).stream().map(ContractResponse::from).toList());
     }
 
     @GetMapping("/contracts/mine")
     @PreAuthorize("hasRole('TENANT')")
-    public ResponseEntity<List<Contract>> listMine(@RequestHeader("Authorization") String authHeader) {
+    public ResponseEntity<List<ContractResponse>> listMine(@RequestHeader("Authorization") String authHeader) {
         UUID tenantId = jwtTokenProvider.getUserId(authHeader.replace("Bearer ", ""));
-        return ResponseEntity.ok(contractService.listByTenant(tenantId));
+        return ResponseEntity.ok(contractService.listByTenant(tenantId).stream().map(ContractResponse::from).toList());
     }
 
     @GetMapping("/contracts/{id}")
-    public ResponseEntity<Contract> getById(@PathVariable UUID id) {
-        return ResponseEntity.ok(contractService.getById(id));
+    public ResponseEntity<ContractResponse> getById(@PathVariable UUID id) {
+        return ResponseEntity.ok(ContractResponse.from(contractService.getById(id)));
     }
 
     @PostMapping("/rooms/{roomId}/contracts")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Contract> create(@PathVariable UUID roomId,
-                                           @Valid @RequestBody CreateContractRequest req) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(contractService.create(roomId, req));
+    public ResponseEntity<ContractResponse> create(@PathVariable UUID roomId,
+                                                   @Valid @RequestBody CreateContractRequest req) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(ContractResponse.from(contractService.create(roomId, req)));
     }
 
     @PostMapping("/contracts/{id}/terminate")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Contract> terminate(@PathVariable UUID id) {
-        return ResponseEntity.ok(contractService.terminate(id));
+    public ResponseEntity<ContractResponse> terminate(@PathVariable UUID id) {
+        return ResponseEntity.ok(ContractResponse.from(contractService.terminate(id)));
     }
 
     @PostMapping("/contracts/{id}/upload")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Contract> uploadFile(@PathVariable UUID id,
-                                               @RequestParam("file") MultipartFile file) {
+    public ResponseEntity<ContractResponse> uploadFile(@PathVariable UUID id,
+                                                       @RequestParam("file") MultipartFile file) {
         String url = storageService.upload("contracts/" + id, file);
         Contract contract = contractService.getById(id);
         contract.setFileUrl(url);
-        return ResponseEntity.ok(contractService.save(contract));
+        return ResponseEntity.ok(ContractResponse.from(contractService.save(contract)));
     }
 }

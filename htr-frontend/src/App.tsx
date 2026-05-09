@@ -16,6 +16,8 @@ import AdminNotificationsPage from '@/pages/admin/NotificationsPage'
 import FeeConfigPage from '@/pages/admin/FeeConfigPage'
 import UsersPage from '@/pages/admin/UsersPage'
 import MeterReadingsPage from '@/pages/admin/MeterReadingsPage'
+import VehicleConfigPage from '@/pages/admin/VehicleConfigPage'
+import NotFoundPage from '@/pages/NotFoundPage'
 
 // Payment
 import PaymentSuccessPage from '@/pages/payment/SuccessPage'
@@ -38,7 +40,7 @@ function RequireRole({ roles, children }: { roles: string[]; children: ReactNode
 }
 
 export default function App() {
-  const { accessToken, user } = useAuthStore()
+  const { accessToken } = useAuthStore()
 
   if (!accessToken) {
     return (
@@ -50,8 +52,6 @@ export default function App() {
       </Routes>
     )
   }
-
-  const role = user?.role
 
   return (
     <Routes>
@@ -66,6 +66,7 @@ export default function App() {
       <Route path="/admin/fee-config" element={<RequireRole roles={['ADMIN']}><FeeConfigPage /></RequireRole>} />
       <Route path="/admin/users" element={<RequireRole roles={['ADMIN']}><UsersPage /></RequireRole>} />
       <Route path="/admin/meter-readings" element={<RequireRole roles={['ADMIN']}><MeterReadingsPage /></RequireRole>} />
+      <Route path="/admin/vehicle-config" element={<RequireRole roles={['ADMIN']}><VehicleConfigPage /></RequireRole>} />
 
       {/* Payment return pages — accessible regardless of role */}
       <Route path="/payment/success" element={<PaymentSuccessPage />} />
@@ -83,7 +84,7 @@ export default function App() {
       <Route path="/tech/notifications" element={<RequireRole roles={['TECHNICIAN']}><TechNotificationsPage /></RequireRole>} />
 
       {/* Default redirect by role */}
-      <Route path="*" element={<Navigate to={role === 'ADMIN' ? '/admin' : role === 'TENANT' ? '/tenant' : '/tech'} replace />} />
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   )
 }

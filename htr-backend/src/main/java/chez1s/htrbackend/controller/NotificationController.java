@@ -1,6 +1,6 @@
 package chez1s.htrbackend.controller;
 
-import chez1s.htrbackend.domain.entity.Notification;
+import chez1s.htrbackend.dto.response.NotificationResponse;
 import chez1s.htrbackend.security.JwtTokenProvider;
 import chez1s.htrbackend.service.NotificationService;
 import lombok.RequiredArgsConstructor;
@@ -20,9 +20,9 @@ public class NotificationController {
     private final JwtTokenProvider jwtTokenProvider;
 
     @GetMapping
-    public ResponseEntity<List<Notification>> list(@RequestHeader("Authorization") String authHeader) {
+    public ResponseEntity<List<NotificationResponse>> list(@RequestHeader("Authorization") String authHeader) {
         UUID userId = jwtTokenProvider.getUserId(authHeader.replace("Bearer ", ""));
-        return ResponseEntity.ok(notificationService.listByUser(userId));
+        return ResponseEntity.ok(notificationService.listByUser(userId).stream().map(NotificationResponse::from).toList());
     }
 
     @PostMapping("/{id}/read")
