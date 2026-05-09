@@ -2,6 +2,7 @@ package chez1s.htrbackend.controller;
 
 import chez1s.htrbackend.domain.entity.Contract;
 import chez1s.htrbackend.dto.request.CreateContractRequest;
+import chez1s.htrbackend.dto.request.RenewContractRequest;
 import chez1s.htrbackend.dto.response.ContractResponse;
 import chez1s.htrbackend.dto.response.PageResponse;
 import chez1s.htrbackend.security.JwtTokenProvider;
@@ -75,5 +76,11 @@ public class ContractController {
         Contract contract = contractService.getById(id);
         contract.setFileUrl(url);
         return ResponseEntity.ok(ContractResponse.from(contractService.save(contract)));
+    }
+
+    @PostMapping("/contracts/{id}/renew")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ContractResponse> renew(@PathVariable UUID id, @Valid @RequestBody RenewContractRequest req) {
+        return ResponseEntity.ok(ContractResponse.from(contractService.renew(id, req)));
     }
 }
