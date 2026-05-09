@@ -26,7 +26,15 @@
       "Bash(Sort-Object)",
       "Bash(./mvnw test *)",
       "Bash(python -m json.tool)",
-      "Bash(py skills/ui-ux-pro-max/scripts/search.py \"property management admin dashboard SaaS\" --design-system -p \"PropMS\" -f markdown)"
+      "Bash(py skills/ui-ux-pro-max/scripts/search.py \"property management admin dashboard SaaS\" --design-system -p \"PropMS\" -f markdown)",
+      "Bash(npx tsc *)",
+      "Bash(grep -v \"^[~?] \\\\\\\\.omc\\\\|^[~?] \\\\\\\\.claude\")",
+      "WebSearch",
+      "mcp__plugin_oh-my-claudecode_t__state_clear",
+      "Bash(cd /d D:\\\\Code\\\\cz-HTR\\\\htr-frontend)",
+      "Bash(npm install *)",
+      "Bash(npm run *)",
+      "Bash(mvn compile *)"
     ]
   }
 }

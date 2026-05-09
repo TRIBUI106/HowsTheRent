@@ -42,7 +42,7 @@
     "runtime": null
   },
   "build": {
-    "buildCommand": "cd \"D:/Code/cz-HTR/htr-frontend\" && npx tsc --noEmit 2>&1 | head -60",
+    "buildCommand": "cd \"D:/Code/cz-HTR/htr-frontend\" && npx tsc --noEmit 2>&1 | grep -E \"error TS\" | head -10",
     "testCommand": null,
     "lintCommand": "npm run lint",
     "devCommand": "npm run dev",
@@ -142,6 +142,13 @@
       ]
     }
   },
-  "hotPaths": [],
+  "hotPaths": [
+    {
+      "path": "src\\components\\ui\\pagination.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1778310991529,
+      "type": "file"
+    }
+  ],
   "userDirectives": []
 }
