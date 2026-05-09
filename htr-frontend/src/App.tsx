@@ -19,6 +19,7 @@ import FeeConfigPage from '@/pages/admin/FeeConfigPage'
 import UsersPage from '@/pages/admin/UsersPage'
 import MeterReadingsPage from '@/pages/admin/MeterReadingsPage'
 import VehicleConfigPage from '@/pages/admin/VehicleConfigPage'
+import AuditLogPage from '@/pages/admin/AuditLogPage'
 import NotFoundPage from '@/pages/NotFoundPage'
 
 // Payment
@@ -73,6 +74,8 @@ export default function App() {
       <Route path="/admin/users" element={<RequireRole roles={['ADMIN']}><UsersPage /></RequireRole>} />
       <Route path="/admin/meter-readings" element={<RequireRole roles={['ADMIN']}><MeterReadingsPage /></RequireRole>} />
       <Route path="/admin/vehicle-config" element={<RequireRole roles={['ADMIN']}><VehicleConfigPage /></RequireRole>} />
+      <Route path="/admin/audit-log" element={<RequireRole roles={['ADMIN']}><AuditLogPage /></RequireRole>} />
+      <Route path="/admin/audit-log" element={<RequireRole roles={['ADMIN']}><AuditLogPage /></RequireRole>} />
 
       {/* Payment return pages — accessible regardless of role */}
       <Route path="/payment/success" element={<PaymentSuccessPage />} />

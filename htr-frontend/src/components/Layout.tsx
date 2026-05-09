@@ -24,6 +24,8 @@ const navItems = [
   { to: '/admin/vehicle-config', exact: false, icon: Car,             label: 'Cấu hình xe',        roles: ['ADMIN'] },
   { to: '/admin/users',          exact: false, icon: Users,           label: 'Người dùng',        roles: ['ADMIN'] },
   { to: '/admin/notifications',  exact: false, icon: Bell,            label: 'Thông báo',         roles: ['ADMIN'] },
+  { to: '/admin/audit-log',     exact: false, icon: FileText,        label: 'Nhật ký',            roles: ['ADMIN'] },
+  { to: '/admin/audit-log',     exact: false, icon: FileText,        label: 'Nhật ký',            roles: ['ADMIN'] },
   { to: '/tenant',               exact: true,  icon: LayoutDashboard, label: 'Tổng quan',         roles: ['TENANT'] },
   { to: '/tenant/invoices',      exact: false, icon: Receipt,         label: 'Hóa đơn',           roles: ['TENANT'] },
   { to: '/tenant/maintenance',   exact: false, icon: Wrench,          label: 'Bảo trì',           roles: ['TENANT'] },

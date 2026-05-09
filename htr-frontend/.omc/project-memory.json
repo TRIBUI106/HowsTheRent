@@ -42,7 +42,7 @@
     "runtime": null
   },
   "build": {
-    "buildCommand": "cd \"D:/Code/cz-HTR/htr-frontend\" && npx tsc --noEmit 2>&1 | grep -E \"error TS\" | head -10",
+    "buildCommand": "cd D:/Code/cz-HTR/htr-frontend && npm run build 2>&1 | tail -10",
     "testCommand": null,
     "lintCommand": "npm run lint",
     "devCommand": "npm run dev",
@@ -143,6 +143,24 @@
     }
   },
   "hotPaths": [
+    {
+      "path": "src\\types\\index.ts",
+      "accessCount": 4,
+      "lastAccessed": 1778314696357,
+      "type": "file"
+    },
+    {
+      "path": "src\\pages\\tenant\\MaintenancePage.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1778314735884,
+      "type": "file"
+    },
+    {
+      "path": "src\\pages\\admin\\AuditLogPage.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1778314799296,
+      "type": "file"
+    },
     {
       "path": "src\\components\\ui\\pagination.tsx",
       "accessCount": 1,

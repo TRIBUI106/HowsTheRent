@@ -153,3 +153,17 @@ export interface Dashboard {
   openMaintenance: number
   inProgressMaintenance: number
 }
+
+export interface AuditLog {
+  id: string
+  action: string
+  entityType?: string
+  entityId?: string
+  userId?: string
+  userEmail?: string
+  description?: string
+  requestMethod?: string
+  requestPath?: string
+  ipAddress?: string
+  createdAt: string
+}

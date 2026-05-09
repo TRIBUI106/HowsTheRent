@@ -34,7 +34,10 @@
       "Bash(cd /d D:\\\\Code\\\\cz-HTR\\\\htr-frontend)",
       "Bash(npm install *)",
       "Bash(npm run *)",
-      "Bash(mvn compile *)"
+      "Bash(mvn compile *)",
+      "mcp__plugin_oh-my-claudecode_t__notepad_write_working",
+      "mcp__plugin_oh-my-claudecode_t__wiki_read",
+      "mcp__plugin_oh-my-claudecode_t__wiki_ingest"
     ]
   }
 }
