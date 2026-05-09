@@ -13,8 +13,8 @@ export default function PaymentHistoryPage() {
 
   const invoices = Array.isArray(data) ? data : (data?.content ?? [])
   const paid = invoices
-    .filter(i => i.status === 'PAID')
-    .sort((a, b) => new Date(b.paidAt ?? b.invoiceMonth).getTime() - new Date(a.paidAt ?? a.invoiceMonth).getTime())
+    .filter((i: any) => i.status === 'PAID')
+    .sort((a: any, b: any) => new Date(b.paidAt ?? b.invoiceMonth).getTime() - new Date(a.paidAt ?? a.invoiceMonth).getTime())
 
   return (
     <Layout title="Lịch sử thanh toán">
@@ -27,7 +27,7 @@ export default function PaymentHistoryPage() {
           <div className="text-center py-12 text-gray-400">Chưa có lịch sử thanh toán</div>
         ) : (
           <div className="space-y-3">
-            {paid.map(inv => (
+            {paid.map((inv: any) => (
               <Card key={inv.id}>
                 <CardContent className="p-4 flex items-center justify-between">
                   <div>

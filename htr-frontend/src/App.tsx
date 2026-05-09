@@ -6,8 +6,6 @@ import { useAuthStore } from '@/stores/authStore'
 import LoginPage from '@/pages/auth/LoginPage'
 import ForgotPasswordPage from '@/pages/auth/ForgotPasswordPage'
 import ResetPasswordPage from '@/pages/auth/ResetPasswordPage'
-import ForgotPasswordPage from '@/pages/auth/ForgotPasswordPage'
-import ResetPasswordPage from '@/pages/auth/ResetPasswordPage'
 
 // Admin
 import AdminDashboard from '@/pages/admin/DashboardPage'
@@ -32,8 +30,6 @@ import TenantDashboard from '@/pages/tenant/DashboardPage'
 import TenantInvoicesPage from '@/pages/tenant/InvoicesPage'
 import TenantMaintenancePage from '@/pages/tenant/MaintenancePage'
 import TenantNotificationsPage from '@/pages/tenant/NotificationsPage'
-import TenantContractDetailPage from '@/pages/tenant/ContractDetailPage'
-import TenantPaymentHistoryPage from '@/pages/tenant/PaymentHistoryPage'
 import TenantContractDetailPage from '@/pages/tenant/ContractDetailPage'
 import TenantPaymentHistoryPage from '@/pages/tenant/PaymentHistoryPage'
 
@@ -87,8 +83,6 @@ export default function App() {
       <Route path="/tenant/invoices" element={<RequireRole roles={['TENANT']}><TenantInvoicesPage /></RequireRole>} />
       <Route path="/tenant/maintenance" element={<RequireRole roles={['TENANT']}><TenantMaintenancePage /></RequireRole>} />
       <Route path="/tenant/notifications" element={<RequireRole roles={['TENANT']}><TenantNotificationsPage /></RequireRole>} />
-      <Route path="/tenant/contract" element={<RequireRole roles={['TENANT']}><TenantContractDetailPage /></RequireRole>} />
-      <Route path="/tenant/payment-history" element={<RequireRole roles={['TENANT']}><TenantPaymentHistoryPage /></RequireRole>} />
       <Route path="/tenant/contract" element={<RequireRole roles={['TENANT']}><TenantContractDetailPage /></RequireRole>} />
       <Route path="/tenant/payment-history" element={<RequireRole roles={['TENANT']}><TenantPaymentHistoryPage /></RequireRole>} />
 
