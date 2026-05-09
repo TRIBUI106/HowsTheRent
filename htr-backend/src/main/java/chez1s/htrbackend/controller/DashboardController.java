@@ -15,7 +15,11 @@ import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.format.TextStyle;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 
@@ -67,5 +71,27 @@ public class DashboardController {
         dashboard.put("openMaintenance", openMaintenance);
         dashboard.put("inProgressMaintenance", inProgressMaintenance);
         return ResponseEntity.ok(dashboard);
+    }
+
+    @GetMapping("/revenue")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<Map<String, Object>>> getMonthlyRevenue(
+            @RequestHeader("Authorization") String authHeader,
+            @RequestParam(defaultValue = "12") int months) {
+        UUID ownerId = jwtTokenProvider.getUserId(authHeader.replace("Bearer ", ""));
+        var properties = propertyService.listByOwner(ownerId);
+        List<Map<String, Object>> result = new ArrayList<>();
+        LocalDate today = LocalDate.now();
+        for (int i = months - 1; i >= 0; i--) {
+            LocalDate month = today.minusMonths(i);
+            BigDecimal amount = invoiceRepository.sumPaidAmountByMonthAndPropertyIds(
+                month, properties.stream().map(p -> p.getId()).toList());
+            Map<String, Object> entry = new LinkedHashMap<>();
+            entry.put("month", month.toString());
+            entry.put("label", month.getMonth().getDisplayName(TextStyle.SHORT, Locale.forLanguageTag("vi")));
+            entry.put("amount", amount);
+            result.add(entry);
+        }
+        return ResponseEntity.ok(result);
     }
 }

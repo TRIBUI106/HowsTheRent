@@ -11,6 +11,7 @@ import chez1s.htrbackend.dto.response.MaintenanceRequestResponse;
 import chez1s.htrbackend.dto.response.PageResponse;
 import chez1s.htrbackend.exception.BusinessException;
 import chez1s.htrbackend.exception.ResourceNotFoundException;
+import chez1s.htrbackend.service.StorageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -99,5 +100,12 @@ public class MaintenanceService {
                 "Maintenance Resolved", mr.getTitle(),
                 "MAINTENANCE", mr.getId());
         return mr;
+    }
+
+    @Transactional
+    public MaintenanceRequest addImage(UUID requestId, String imageUrl) {
+        MaintenanceRequest req = getById(requestId);
+        req.getImages().add(imageUrl);
+        return maintenanceRepository.save(req);
     }
 }

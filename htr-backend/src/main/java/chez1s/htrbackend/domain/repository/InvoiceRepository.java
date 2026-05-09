@@ -23,5 +23,8 @@ public interface InvoiceRepository extends JpaRepository<Invoice, UUID> {
     @Query("SELECT COALESCE(SUM(i.totalAmount), 0) FROM Invoice i WHERE i.status = 'PAID' AND i.invoiceMonth = :month")
     BigDecimal sumPaidAmountByMonth(LocalDate month);
 
+    @Query("SELECT COALESCE(SUM(i.totalAmount), 0) FROM Invoice i JOIN i.contract c JOIN c.room r WHERE i.status = 'PAID' AND i.invoiceMonth = :month AND r.property.id IN :propertyIds")
+    BigDecimal sumPaidAmountByMonthAndPropertyIds(LocalDate month, List<UUID> propertyIds);
+
     long countByStatus(InvoiceStatus status);
 }
