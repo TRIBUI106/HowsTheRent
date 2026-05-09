@@ -2,7 +2,7 @@ import { Link, useLocation } from 'react-router-dom'
 import { useAuthStore } from '@/stores/authStore'
 import {
   LayoutDashboard, Building2, Home, FileText, Receipt,
-  Wrench, Bell, LogOut, Settings, Users, Gauge, Car
+  Wrench, Bell, LogOut, Settings, Users, Gauge, Car, CreditCard
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { ReactNode } from 'react'
@@ -28,6 +28,10 @@ const navItems = [
   { to: '/tenant/invoices',      exact: false, icon: Receipt,         label: 'Hóa đơn',           roles: ['TENANT'] },
   { to: '/tenant/maintenance',   exact: false, icon: Wrench,          label: 'Bảo trì',           roles: ['TENANT'] },
   { to: '/tenant/notifications', exact: false, icon: Bell,            label: 'Thông báo',         roles: ['TENANT'] },
+  { to: '/tenant/contract',      exact: false, icon: FileText,       label: 'Hợp đồng',           roles: ['TENANT'] },
+  { to: '/tenant/payment-history', exact: false, icon: CreditCard,    label: 'Lịch sử thanh toán', roles: ['TENANT'] },
+  { to: '/tenant/contract',      exact: false, icon: FileText,       label: 'Hợp đồng',           roles: ['TENANT'] },
+  { to: '/tenant/payment-history', exact: false, icon: CreditCard,    label: 'Lịch sử thanh toán', roles: ['TENANT'] },
   { to: '/tech',                 exact: true,  icon: LayoutDashboard, label: 'Tổng quan',         roles: ['TECHNICIAN'] },
   { to: '/tech/maintenance',     exact: false, icon: Wrench,          label: 'Công việc',         roles: ['TECHNICIAN'] },
   { to: '/tech/notifications',   exact: false, icon: Bell,            label: 'Thông báo',         roles: ['TECHNICIAN'] },
