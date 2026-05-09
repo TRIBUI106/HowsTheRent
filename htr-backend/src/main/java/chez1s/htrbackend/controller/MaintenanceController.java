@@ -2,10 +2,14 @@ package chez1s.htrbackend.controller;
 
 import chez1s.htrbackend.dto.request.CreateMaintenanceRequest;
 import chez1s.htrbackend.dto.response.MaintenanceRequestResponse;
+import chez1s.htrbackend.dto.response.PageResponse;
 import chez1s.htrbackend.security.JwtTokenProvider;
 import chez1s.htrbackend.service.MaintenanceService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -24,15 +28,18 @@ public class MaintenanceController {
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<MaintenanceRequestResponse>> listAll() {
-        return ResponseEntity.ok(maintenanceService.listAll().stream().map(MaintenanceRequestResponse::from).toList());
+    public ResponseEntity<PageResponse<MaintenanceRequestResponse>> listAll(
+            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        return ResponseEntity.ok(maintenanceService.listAll(pageable));
     }
 
     @GetMapping("/mine")
     @PreAuthorize("hasRole('TENANT')")
-    public ResponseEntity<List<MaintenanceRequestResponse>> listMine(@RequestHeader("Authorization") String authHeader) {
+    public ResponseEntity<PageResponse<MaintenanceRequestResponse>> listMine(
+            @RequestHeader("Authorization") String authHeader,
+            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
         UUID tenantId = jwtTokenProvider.getUserId(authHeader.replace("Bearer ", ""));
-        return ResponseEntity.ok(maintenanceService.listByTenant(tenantId).stream().map(MaintenanceRequestResponse::from).toList());
+        return ResponseEntity.ok(maintenanceService.listByTenant(tenantId, pageable));
     }
 
     @GetMapping("/assigned")

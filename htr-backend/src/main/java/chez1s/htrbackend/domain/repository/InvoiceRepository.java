@@ -2,6 +2,8 @@ package chez1s.htrbackend.domain.repository;
 
 import chez1s.htrbackend.domain.entity.Invoice;
 import chez1s.htrbackend.domain.enums.InvoiceStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -13,6 +15,7 @@ import java.util.UUID;
 
 public interface InvoiceRepository extends JpaRepository<Invoice, UUID> {
     boolean existsByRoomIdAndInvoiceMonth(UUID roomId, LocalDate invoiceMonth);
+    Page<Invoice> findByContractTenantId(UUID tenantId, Pageable pageable);
     List<Invoice> findByContractTenantIdOrderByInvoiceMonthDesc(UUID tenantId);
     List<Invoice> findByStatusAndDueDateBefore(InvoiceStatus status, LocalDate date);
     Optional<Invoice> findByPaymentLinkId(String paymentLinkId);

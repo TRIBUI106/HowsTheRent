@@ -46,6 +46,12 @@ public class EmailService {
     }
 
     @Async
+    public void sendPasswordResetOtp(String fullName, String to, String otp) {
+        send(to, "[HTR] Mã xác nhận đặt lại mật khẩu", "password-reset-otp",
+                Map.of("fullName", fullName, "otp", otp));
+    }
+
+    @Async
     public void sendSimple(String to, String subject, String body) {
         try {
             MimeMessage message = mailSender.createMimeMessage();

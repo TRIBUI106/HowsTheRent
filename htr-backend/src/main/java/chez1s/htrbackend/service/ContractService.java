@@ -8,9 +8,12 @@ import chez1s.htrbackend.domain.enums.RoomStatus;
 import chez1s.htrbackend.domain.repository.ContractRepository;
 import chez1s.htrbackend.domain.repository.UserRepository;
 import chez1s.htrbackend.dto.request.CreateContractRequest;
+import chez1s.htrbackend.dto.response.ContractResponse;
+import chez1s.htrbackend.dto.response.PageResponse;
 import chez1s.htrbackend.exception.BusinessException;
 import chez1s.htrbackend.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,6 +31,10 @@ public class ContractService {
 
     public List<Contract> listAll() {
         return contractRepository.findAll();
+    }
+
+    public PageResponse<ContractResponse> listAll(Pageable pageable) {
+        return PageResponse.from(contractRepository.findAll(pageable).map(ContractResponse::from));
     }
 
     public List<Contract> listByRoom(UUID roomId) {

@@ -5,10 +5,13 @@ import chez1s.htrbackend.domain.enums.ContractStatus;
 import chez1s.htrbackend.domain.enums.InvoiceStatus;
 import chez1s.htrbackend.domain.enums.PaymentMethod;
 import chez1s.htrbackend.domain.repository.*;
+import chez1s.htrbackend.dto.response.InvoiceResponse;
+import chez1s.htrbackend.dto.response.PageResponse;
 import chez1s.htrbackend.exception.BusinessException;
 import chez1s.htrbackend.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,8 +40,16 @@ public class InvoiceService {
         return invoiceRepository.findAll();
     }
 
+    public PageResponse<InvoiceResponse> listAll(Pageable pageable) {
+        return PageResponse.from(invoiceRepository.findAll(pageable).map(InvoiceResponse::from));
+    }
+
     public List<Invoice> listByTenant(UUID tenantId) {
         return invoiceRepository.findByContractTenantIdOrderByInvoiceMonthDesc(tenantId);
+    }
+
+    public PageResponse<InvoiceResponse> listByTenant(UUID tenantId, Pageable pageable) {
+        return PageResponse.from(invoiceRepository.findByContractTenantId(tenantId, pageable).map(InvoiceResponse::from));
     }
 
     public Invoice getById(UUID id) {

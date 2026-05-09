@@ -3,8 +3,11 @@ package chez1s.htrbackend.service;
 import chez1s.htrbackend.domain.entity.Notification;
 import chez1s.htrbackend.domain.entity.User;
 import chez1s.htrbackend.domain.repository.NotificationRepository;
+import chez1s.htrbackend.dto.response.NotificationResponse;
+import chez1s.htrbackend.dto.response.PageResponse;
 import chez1s.htrbackend.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,6 +22,10 @@ public class NotificationService {
 
     public List<Notification> listByUser(UUID userId) {
         return notificationRepository.findByUserIdOrderByCreatedAtDesc(userId);
+    }
+
+    public PageResponse<NotificationResponse> listByUser(UUID userId, Pageable pageable) {
+        return PageResponse.from(notificationRepository.findByUserId(userId, pageable).map(NotificationResponse::from));
     }
 
     public void create(UUID userId, String title, String body, String type, UUID refId) {

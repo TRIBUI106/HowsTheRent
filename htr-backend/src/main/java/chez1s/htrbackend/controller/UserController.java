@@ -3,6 +3,7 @@ package chez1s.htrbackend.controller;
 import chez1s.htrbackend.domain.entity.User;
 import chez1s.htrbackend.domain.enums.UserRole;
 import chez1s.htrbackend.domain.repository.UserRepository;
+import chez1s.htrbackend.dto.response.PageResponse;
 import chez1s.htrbackend.dto.response.UserResponse;
 import chez1s.htrbackend.exception.BusinessException;
 import chez1s.htrbackend.exception.ResourceNotFoundException;
@@ -13,12 +14,16 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.List;
 import java.util.UUID;
 
@@ -33,8 +38,9 @@ public class UserController {
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<UserResponse>> listAll() {
-        return ResponseEntity.ok(userRepository.findAll().stream().map(UserResponse::from).toList());
+    public ResponseEntity<PageResponse<UserResponse>> listAll(
+            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        return ResponseEntity.ok(PageResponse.from(userRepository.findAll(pageable).map(UserResponse::from)));
     }
 
     @GetMapping("/me")
