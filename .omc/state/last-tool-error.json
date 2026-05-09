@@ -1,7 +1,7 @@
 {
   "tool_name": "Bash",
-  "tool_input_preview": "{\"command\":\"cd \\\"D:\\\\Code\\\\cz-HTR\\\" && git add htr-frontend/src/App.tsx htr-frontend/src/pages/admin/DashboardPage.tsx htr-frontend/src/pages/admin/InvoicesPage.tsx htr-frontend/src/pages/admin/Contra...",
-  "error": "Exit code 1\nOn branch master\nYour branch is ahead of 'origin/master' by 8 commits.\n  (use \"git push\" to publish your local commits)\n\nChanges not staged for commit:\n  (use \"git add/rm <file>...\" to update what will be committed)\n  (use \"git restore <file>...\" to discard changes in working directory)\n\tmodified:   .claude/settings.local.json\n\tmodified:   .omc/project-memory.json\n\tdeleted:    .omc/state/agent-replay-bf565fc2-fdec-471c-9e29-571aa3f1662b.jsonl\n\tmodified:   .omc/state/hud-stdin-cache.j...",
-  "timestamp": "2026-05-09T08:01:08.999Z",
-  "retry_count": 8
+  "tool_input_preview": "{\"command\":\"cd \\\"D:\\\\Code\\\\cz-HTR\\\" && git add -A && git commit -m \\\"$(cat <<'EOF'\\nfeat: monthly revenue chart endpoint + maintenance photo upload\\n\\n- Add GET /api/dashboard/revenue for monthly reve...",
+  "error": "Exit code 1\nOn branch master\nYour branch is ahead of 'origin/master' by 9 commits.\n  (use \"git push\" to publish your local commits)\n\nnothing to commit, working tree clean",
+  "timestamp": "2026-05-09T08:01:14.690Z",
+  "retry_count": 9
 }
