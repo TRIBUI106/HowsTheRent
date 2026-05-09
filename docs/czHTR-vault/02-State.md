@@ -33,10 +33,10 @@ Xem [[06-Roadmap]] để biết chi tiết.
 
 | # | Tính năng | Priority |
 |---|---|---|
-| 1 | Pagination + filter trên list APIs | 🔴 Cao |
-| 2 | PayOS payment flow từ tenant UI | 🔴 Cao |
-| 3 | Tenant portal đầy đủ (hợp đồng, lịch sử, PDF) | 🔴 Cao |
-| 4 | Quên mật khẩu / reset password | 🔴 Cao |
+| 1 | Pagination + filter trên list APIs | ✅ Đã xong |
+| 2 | PayOS payment flow từ tenant UI | ✅ Đã xong |
+| 3 | Tenant portal đầy đủ (hợp đồng, lịch sử, PDF) | ✅ Đã xong |
+| 4 | Quên mật khẩu / reset password | ✅ Đã xong |
 | 5 | Revenue / occupancy reports | 🟡 Trung |
 | 6 | Maintenance photo uploads | 🟡 Trung |
 | 7 | Xuất Excel / PDF | 🟡 Trung |
