@@ -2,14 +2,22 @@ package chez1s.htrbackend.controller;
 
 import chez1s.htrbackend.domain.entity.MaintenanceRequest;
 import chez1s.htrbackend.dto.request.CreateMaintenanceRequest;
+import chez1s.htrbackend.dto.response.MaintenanceRequestResponse;
+import chez1s.htrbackend.dto.response.PageResponse;
 import chez1s.htrbackend.security.JwtTokenProvider;
 import chez1s.htrbackend.service.MaintenanceService;
+import chez1s.htrbackend.service.StorageService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.UUID;
@@ -21,49 +29,77 @@ public class MaintenanceController {
 
     private final MaintenanceService maintenanceService;
     private final JwtTokenProvider jwtTokenProvider;
+    private final StorageService storageService;
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<MaintenanceRequest>> listAll() {
-        return ResponseEntity.ok(maintenanceService.listAll());
+    public ResponseEntity<PageResponse<MaintenanceRequestResponse>> listAll(
+            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        return ResponseEntity.ok(maintenanceService.listAll(pageable));
     }
 
     @GetMapping("/mine")
     @PreAuthorize("hasRole('TENANT')")
-    public ResponseEntity<List<MaintenanceRequest>> listMine(@RequestHeader("Authorization") String authHeader) {
+    public ResponseEntity<PageResponse<MaintenanceRequestResponse>> listMine(
+            @RequestHeader("Authorization") String authHeader,
+            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
         UUID tenantId = jwtTokenProvider.getUserId(authHeader.replace("Bearer ", ""));
-        return ResponseEntity.ok(maintenanceService.listByTenant(tenantId));
+        return ResponseEntity.ok(maintenanceService.listByTenant(tenantId, pageable));
     }
 
     @GetMapping("/assigned")
     @PreAuthorize("hasRole('TECHNICIAN')")
-    public ResponseEntity<List<MaintenanceRequest>> listAssigned(@RequestHeader("Authorization") String authHeader) {
+    public ResponseEntity<List<MaintenanceRequestResponse>> listAssigned(@RequestHeader("Authorization") String authHeader) {
         UUID techId = jwtTokenProvider.getUserId(authHeader.replace("Bearer ", ""));
-        return ResponseEntity.ok(maintenanceService.listByTechnician(techId));
+        return ResponseEntity.ok(maintenanceService.listByTechnician(techId).stream().map(MaintenanceRequestResponse::from).toList());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<MaintenanceRequest> getById(@PathVariable UUID id) {
-        return ResponseEntity.ok(maintenanceService.getById(id));
+    public ResponseEntity<MaintenanceRequestResponse> getById(@PathVariable UUID id) {
+        return ResponseEntity.ok(MaintenanceRequestResponse.from(maintenanceService.getById(id)));
     }
 
     @PostMapping
     @PreAuthorize("hasRole('TENANT')")
-    public ResponseEntity<MaintenanceRequest> create(@RequestHeader("Authorization") String authHeader,
-                                                     @Valid @RequestBody CreateMaintenanceRequest req) {
+    public ResponseEntity<MaintenanceRequestResponse> create(@RequestHeader("Authorization") String authHeader,
+                                                             @Valid @RequestBody CreateMaintenanceRequest req) {
         UUID tenantId = jwtTokenProvider.getUserId(authHeader.replace("Bearer ", ""));
-        return ResponseEntity.status(HttpStatus.CREATED).body(maintenanceService.create(tenantId, req));
+        return ResponseEntity.status(HttpStatus.CREATED).body(MaintenanceRequestResponse.from(maintenanceService.create(tenantId, req)));
     }
 
     @PostMapping("/{id}/assign")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<MaintenanceRequest> assign(@PathVariable UUID id, @RequestParam UUID technicianId) {
-        return ResponseEntity.ok(maintenanceService.assign(id, technicianId));
+    public ResponseEntity<MaintenanceRequestResponse> assign(@PathVariable UUID id, @RequestParam UUID technicianId) {
+        return ResponseEntity.ok(MaintenanceRequestResponse.from(maintenanceService.assign(id, technicianId)));
     }
 
     @PostMapping("/{id}/resolve")
     @PreAuthorize("hasAnyRole('ADMIN','TECHNICIAN')")
-    public ResponseEntity<MaintenanceRequest> resolve(@PathVariable UUID id) {
-        return ResponseEntity.ok(maintenanceService.resolve(id));
+    public ResponseEntity<MaintenanceRequestResponse> resolve(@PathVariable UUID id) {
+        return ResponseEntity.ok(MaintenanceRequestResponse.from(maintenanceService.resolve(id)));
+    }
+
+    @PostMapping(value = "/with-images", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasRole('TENANT')")
+    public ResponseEntity<MaintenanceRequestResponse> createWithImages(
+            @RequestHeader("Authorization") String authHeader,
+            @RequestParam("title") String title,
+            @RequestParam(value = "description", required = false) String description,
+            @RequestParam(value = "roomId") UUID roomId,
+            @RequestParam(value = "images", required = false) List<MultipartFile> images) {
+        UUID tenantId = jwtTokenProvider.getUserId(authHeader.replace("Bearer ", ""));
+        CreateMaintenanceRequest req = new CreateMaintenanceRequest();
+        req.setRoomId(roomId);
+        req.setTitle(title);
+        req.setDescription(description);
+        MaintenanceRequest created = maintenanceService.create(tenantId, req);
+        if (images != null && !images.isEmpty()) {
+            for (MultipartFile img : images) {
+                String url = storageService.upload("maintenance/" + created.getId(), img);
+                maintenanceService.addImage(created.getId(), url);
+            }
+        }
+        return ResponseEntity.status(HttpStatus.CREATED)
+            .body(MaintenanceRequestResponse.from(maintenanceService.getById(created.getId())));
     }
 }

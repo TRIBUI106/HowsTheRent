@@ -1,9 +1,13 @@
 package chez1s.htrbackend.controller;
 
-import chez1s.htrbackend.domain.entity.Notification;
+import chez1s.htrbackend.dto.response.NotificationResponse;
+import chez1s.htrbackend.dto.response.PageResponse;
 import chez1s.htrbackend.security.JwtTokenProvider;
 import chez1s.htrbackend.service.NotificationService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,9 +24,11 @@ public class NotificationController {
     private final JwtTokenProvider jwtTokenProvider;
 
     @GetMapping
-    public ResponseEntity<List<Notification>> list(@RequestHeader("Authorization") String authHeader) {
+    public ResponseEntity<PageResponse<NotificationResponse>> list(
+            @RequestHeader("Authorization") String authHeader,
+            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
         UUID userId = jwtTokenProvider.getUserId(authHeader.replace("Bearer ", ""));
-        return ResponseEntity.ok(notificationService.listByUser(userId));
+        return ResponseEntity.ok(notificationService.listByUser(userId, pageable));
     }
 
     @PostMapping("/{id}/read")

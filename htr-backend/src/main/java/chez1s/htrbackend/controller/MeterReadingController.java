@@ -1,9 +1,9 @@
 package chez1s.htrbackend.controller;
 
-import chez1s.htrbackend.domain.entity.MeterReading;
-import chez1s.htrbackend.domain.entity.VehicleRecord;
 import chez1s.htrbackend.dto.request.CreateMeterReadingRequest;
 import chez1s.htrbackend.dto.request.UpdateVehicleRecordRequest;
+import chez1s.htrbackend.dto.response.MeterReadingResponse;
+import chez1s.htrbackend.dto.response.VehicleRecordResponse;
 import chez1s.htrbackend.security.JwtTokenProvider;
 import chez1s.htrbackend.service.MeterReadingService;
 import jakarta.validation.Valid;
@@ -26,29 +26,29 @@ public class MeterReadingController {
 
     @GetMapping("/meter-readings")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<MeterReading>> listReadings(@PathVariable UUID roomId) {
-        return ResponseEntity.ok(meterReadingService.listByRoom(roomId));
+    public ResponseEntity<List<MeterReadingResponse>> listReadings(@PathVariable UUID roomId) {
+        return ResponseEntity.ok(meterReadingService.listByRoom(roomId).stream().map(MeterReadingResponse::from).toList());
     }
 
     @PostMapping("/meter-readings")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<MeterReading> createReading(@PathVariable UUID roomId,
-                                                      @RequestHeader("Authorization") String authHeader,
-                                                      @Valid @RequestBody CreateMeterReadingRequest req) {
+    public ResponseEntity<MeterReadingResponse> createReading(@PathVariable UUID roomId,
+                                                              @RequestHeader("Authorization") String authHeader,
+                                                              @Valid @RequestBody CreateMeterReadingRequest req) {
         UUID recordedBy = jwtTokenProvider.getUserId(authHeader.replace("Bearer ", ""));
-        return ResponseEntity.status(HttpStatus.CREATED).body(meterReadingService.create(roomId, recordedBy, req));
+        return ResponseEntity.status(HttpStatus.CREATED).body(MeterReadingResponse.from(meterReadingService.create(roomId, recordedBy, req)));
     }
 
     @GetMapping("/vehicle-records")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<VehicleRecord>> listVehicleRecords(@PathVariable UUID roomId) {
-        return ResponseEntity.ok(meterReadingService.listVehicleRecords(roomId));
+    public ResponseEntity<List<VehicleRecordResponse>> listVehicleRecords(@PathVariable UUID roomId) {
+        return ResponseEntity.ok(meterReadingService.listVehicleRecords(roomId).stream().map(VehicleRecordResponse::from).toList());
     }
 
     @PostMapping("/vehicle-records")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<VehicleRecord> upsertVehicleRecord(@PathVariable UUID roomId,
-                                                             @Valid @RequestBody UpdateVehicleRecordRequest req) {
-        return ResponseEntity.ok(meterReadingService.upsertVehicleRecord(roomId, req));
+    public ResponseEntity<VehicleRecordResponse> upsertVehicleRecord(@PathVariable UUID roomId,
+                                                                     @Valid @RequestBody UpdateVehicleRecordRequest req) {
+        return ResponseEntity.ok(VehicleRecordResponse.from(meterReadingService.upsertVehicleRecord(roomId, req)));
     }
 }

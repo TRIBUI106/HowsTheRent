@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import api from '@/lib/api'
 import { useAuthStore } from '@/stores/authStore'
 import { Button } from '@/components/ui/button'
@@ -87,6 +87,16 @@ export default function LoginPage() {
               {loading ? 'Đang đăng nhập…' : 'Đăng nhập'}
             </Button>
           </form>
+          <p className="text-center mt-4">
+            <Link to="/forgot-password" className="text-sm text-indigo-600 hover:underline">
+              Quên mật khẩu?
+            </Link>
+          </p>
+          <p className="text-center mt-4">
+            <Link to="/forgot-password" className="text-sm text-indigo-600 hover:underline">
+              Quên mật khẩu?
+            </Link>
+          </p>
         </div>
 
         <p className="text-center text-indigo-200/60 text-xs mt-6">PropMS © {new Date().getFullYear()}</p>

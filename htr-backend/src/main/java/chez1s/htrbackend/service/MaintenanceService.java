@@ -7,9 +7,13 @@ import chez1s.htrbackend.domain.enums.MaintenanceStatus;
 import chez1s.htrbackend.domain.repository.MaintenanceRequestRepository;
 import chez1s.htrbackend.domain.repository.UserRepository;
 import chez1s.htrbackend.dto.request.CreateMaintenanceRequest;
+import chez1s.htrbackend.dto.response.MaintenanceRequestResponse;
+import chez1s.htrbackend.dto.response.PageResponse;
 import chez1s.htrbackend.exception.BusinessException;
 import chez1s.htrbackend.exception.ResourceNotFoundException;
+import chez1s.htrbackend.service.StorageService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,8 +34,16 @@ public class MaintenanceService {
         return maintenanceRepository.findAll();
     }
 
+    public PageResponse<MaintenanceRequestResponse> listAll(Pageable pageable) {
+        return PageResponse.from(maintenanceRepository.findAll(pageable).map(MaintenanceRequestResponse::from));
+    }
+
     public List<MaintenanceRequest> listByTenant(UUID tenantId) {
         return maintenanceRepository.findByTenantIdOrderByCreatedAtDesc(tenantId);
+    }
+
+    public PageResponse<MaintenanceRequestResponse> listByTenant(UUID tenantId, Pageable pageable) {
+        return PageResponse.from(maintenanceRepository.findByTenantId(tenantId, pageable).map(MaintenanceRequestResponse::from));
     }
 
     public List<MaintenanceRequest> listByTechnician(UUID techId) {
@@ -88,5 +100,12 @@ public class MaintenanceService {
                 "Maintenance Resolved", mr.getTitle(),
                 "MAINTENANCE", mr.getId());
         return mr;
+    }
+
+    @Transactional
+    public MaintenanceRequest addImage(UUID requestId, String imageUrl) {
+        MaintenanceRequest req = getById(requestId);
+        req.getImages().add(imageUrl);
+        return maintenanceRepository.save(req);
     }
 }

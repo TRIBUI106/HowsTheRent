@@ -3,6 +3,7 @@ package chez1s.htrbackend.controller;
 import chez1s.htrbackend.domain.entity.Room;
 import chez1s.htrbackend.domain.enums.RoomStatus;
 import chez1s.htrbackend.dto.request.CreateRoomRequest;
+import chez1s.htrbackend.dto.response.RoomResponse;
 import chez1s.htrbackend.service.RoomService;
 import chez1s.htrbackend.service.StorageService;
 import jakarta.validation.Valid;
@@ -25,37 +26,37 @@ public class RoomController {
     private final StorageService storageService;
 
     @GetMapping
-    public ResponseEntity<List<Room>> listByProperty(@PathVariable UUID propertyId) {
-        return ResponseEntity.ok(roomService.listByProperty(propertyId));
+    public ResponseEntity<List<RoomResponse>> listByProperty(@PathVariable UUID propertyId) {
+        return ResponseEntity.ok(roomService.listByProperty(propertyId).stream().map(RoomResponse::from).toList());
     }
 
     // Flat list needed by meter readings page — not under a property
     // Exposed as GET /api/rooms via a separate mapping
 
     @GetMapping("/{id}")
-    public ResponseEntity<Room> getById(@PathVariable UUID propertyId, @PathVariable UUID id) {
-        return ResponseEntity.ok(roomService.getById(id));
+    public ResponseEntity<RoomResponse> getById(@PathVariable UUID propertyId, @PathVariable UUID id) {
+        return ResponseEntity.ok(RoomResponse.from(roomService.getById(id)));
     }
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Room> create(@PathVariable UUID propertyId,
-                                       @Valid @RequestBody CreateRoomRequest req) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(roomService.create(propertyId, req));
+    public ResponseEntity<RoomResponse> create(@PathVariable UUID propertyId,
+                                               @Valid @RequestBody CreateRoomRequest req) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(RoomResponse.from(roomService.create(propertyId, req)));
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Room> update(@PathVariable UUID propertyId, @PathVariable UUID id,
-                                       @Valid @RequestBody CreateRoomRequest req) {
-        return ResponseEntity.ok(roomService.update(id, req));
+    public ResponseEntity<RoomResponse> update(@PathVariable UUID propertyId, @PathVariable UUID id,
+                                               @Valid @RequestBody CreateRoomRequest req) {
+        return ResponseEntity.ok(RoomResponse.from(roomService.update(id, req)));
     }
 
     @PatchMapping("/{id}/status")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Room> updateStatus(@PathVariable UUID propertyId, @PathVariable UUID id,
-                                             @RequestParam RoomStatus status) {
-        return ResponseEntity.ok(roomService.updateStatus(id, status));
+    public ResponseEntity<RoomResponse> updateStatus(@PathVariable UUID propertyId, @PathVariable UUID id,
+                                                     @RequestParam RoomStatus status) {
+        return ResponseEntity.ok(RoomResponse.from(roomService.updateStatus(id, status)));
     }
 
     @PostMapping("/{id}/images")

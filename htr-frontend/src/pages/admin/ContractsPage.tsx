@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { Spinner } from '@/components/ui/feedback'
 import api from '@/lib/api'
 import type { Room, User } from '@/types'
+import { Download } from 'lucide-react'
 
 interface Contract {
   id: string
@@ -39,6 +40,10 @@ export default function ContractsPage() {
   const [form, setForm] = useState<CreateForm>(emptyForm())
   const [formError, setFormError] = useState<string | null>(null)
 
+  const [renewing, setRenewing] = useState<string | null>(null)
+  const [renewForm, setRenewForm] = useState({ newEndDate: '', newDepositAmount: '' })
+  const [renewError, setRenewError] = useState('')
+
   const { data: contracts, isLoading, error } = useQuery<Contract[]>({
     queryKey: ['admin-contracts'],
     queryFn: () => api.get('/contracts').then(r => r.data),
@@ -66,6 +71,17 @@ export default function ContractsPage() {
       qc.invalidateQueries({ queryKey: ['admin-contracts'] })
       setTerminating(null)
     },
+  })
+
+  const renewMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: object }) => api.post(`/contracts/${id}/renew`, data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin-contracts'] })
+      setRenewing(null)
+      setRenewForm({ newEndDate: '', newDepositAmount: '' })
+      setRenewError('')
+    },
+    onError: (e: any) => setRenewError(e?.response?.data?.message ?? 'Lỗi'),
   })
 
   const createMutation = useMutation({
@@ -106,9 +122,24 @@ export default function ContractsPage() {
       <div className="p-6 space-y-4">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold text-gray-900">Hợp đồng</h1>
-          <Button variant="primary" onClick={() => { setShowCreate(true); setForm(emptyForm()); setFormError(null) }}>
-            + Tạo hợp đồng
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={() => {
+              const token = localStorage.getItem('accessToken')
+              fetch('/api/export/contracts', { headers: { Authorization: `Bearer ${token}` } })
+                .then(r => r.blob())
+                .then(blob => {
+                  const url = URL.createObjectURL(blob)
+                  const a = document.createElement('a')
+                  a.href = url; a.download = 'hopdong.xlsx'; a.click()
+                  URL.revokeObjectURL(url)
+                })
+            }}>
+              <Download size={14} className="mr-1" /> Excel
+            </Button>
+            <Button variant="primary" onClick={() => { setShowCreate(true); setForm(emptyForm()); setFormError(null) }}>
+              + Tạo hợp đồng
+            </Button>
+          </div>
         </div>
 
         {/* Create modal */}
@@ -243,10 +274,37 @@ export default function ContractsPage() {
                             </Button>
                             <Button size="sm" variant="outline" onClick={() => setTerminating(null)}>Huỷ</Button>
                           </div>
+                        ) : renewing === c.id ? (
+                          <div className="flex flex-col gap-2">
+                            <div className="flex gap-1">
+                              <input type="date" value={renewForm.newEndDate}
+                                onChange={e => setRenewForm(f => ({ ...f, newEndDate: e.target.value }))}
+                                className="border rounded px-2 py-1 text-xs w-32" />
+                              <input type="number" placeholder="Đặt cọc mới"
+                                value={renewForm.newDepositAmount}
+                                onChange={e => setRenewForm(f => ({ ...f, newDepositAmount: e.target.value }))}
+                                className="border rounded px-2 py-1 text-xs w-24" />
+                            </div>
+                            {renewError && <p className="text-xs text-red-600">{renewError}</p>}
+                            <div className="flex gap-2">
+                              <Button size="sm" variant="primary" onClick={() => {
+                                if (!renewForm.newEndDate) { setRenewError('Cần chọn ngày kết thúc'); return }
+                                renewMutation.mutate({ id: c.id, data: { newStartDate: new Date().toISOString().slice(0,10), newEndDate: renewForm.newEndDate, newDepositAmount: Number(renewForm.newDepositAmount) || null } })
+                              }} disabled={renewMutation.isPending}>
+                                Xác nhận
+                              </Button>
+                              <Button size="sm" variant="outline" onClick={() => { setRenewing(null); setRenewError('') }}>Huỷ</Button>
+                            </div>
+                          </div>
                         ) : (
-                          <Button size="sm" variant="outline" onClick={() => setTerminating(c.id)}>
-                            Chấm dứt
-                          </Button>
+                          <div className="flex gap-2">
+                            <Button size="sm" variant="outline" onClick={() => setTerminating(c.id)}>
+                              Chấm dứt
+                            </Button>
+                            <Button size="sm" variant="outline" onClick={() => { setRenewing(c.id); setRenewError('') }}>
+                              Gia hạn
+                            </Button>
+                          </div>
                         )
                       )}
                     </td>

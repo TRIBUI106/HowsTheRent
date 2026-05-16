@@ -8,12 +8,18 @@ import chez1s.htrbackend.domain.enums.RoomStatus;
 import chez1s.htrbackend.domain.repository.ContractRepository;
 import chez1s.htrbackend.domain.repository.UserRepository;
 import chez1s.htrbackend.dto.request.CreateContractRequest;
+import chez1s.htrbackend.dto.request.RenewContractRequest;
+import chez1s.htrbackend.dto.response.ContractResponse;
+import chez1s.htrbackend.dto.response.PageResponse;
 import chez1s.htrbackend.exception.BusinessException;
 import chez1s.htrbackend.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -28,6 +34,10 @@ public class ContractService {
 
     public List<Contract> listAll() {
         return contractRepository.findAll();
+    }
+
+    public PageResponse<ContractResponse> listAll(Pageable pageable) {
+        return PageResponse.from(contractRepository.findAll(pageable).map(ContractResponse::from));
     }
 
     public List<Contract> listByRoom(UUID roomId) {
@@ -80,5 +90,34 @@ public class ContractService {
         contract = contractRepository.save(contract);
         roomService.updateStatus(contract.getRoom().getId(), RoomStatus.EMPTY);
         return contract;
+    }
+
+    @Transactional
+    public Contract renew(UUID oldContractId, RenewContractRequest req) {
+        Contract old = getById(oldContractId);
+        if (old.getStatus() != ContractStatus.ACTIVE) {
+            throw new BusinessException("Contract is not active");
+        }
+        if (req.newEndDate().isBefore(req.newStartDate())) {
+            throw new BusinessException("End date must be after start date");
+        }
+        // Terminate old
+        old.setStatus(ContractStatus.EXPIRED);
+        old.setMoveOutDate(req.newStartDate());
+        contractRepository.save(old);
+        roomService.updateStatus(old.getRoom().getId(), RoomStatus.EMPTY);
+        // Create new contract
+        BigDecimal deposit = req.newDepositAmount() != null ? req.newDepositAmount() : old.getDepositAmount();
+        Contract newContract = Contract.builder()
+                .room(old.getRoom())
+                .tenant(old.getTenant())
+                .moveInDate(req.newStartDate())
+                .status(ContractStatus.ACTIVE)
+                .depositAmount(deposit)
+                .notes(old.getNotes())
+                .build();
+        newContract = contractRepository.save(newContract);
+        roomService.updateStatus(old.getRoom().getId(), RoomStatus.RENTED);
+        return newContract;
     }
 }

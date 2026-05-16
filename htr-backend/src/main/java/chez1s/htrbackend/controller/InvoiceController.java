@@ -1,10 +1,15 @@
 package chez1s.htrbackend.controller;
 
 import chez1s.htrbackend.domain.entity.Invoice;
+import chez1s.htrbackend.dto.response.InvoiceResponse;
+import chez1s.htrbackend.dto.response.PageResponse;
 import chez1s.htrbackend.security.JwtTokenProvider;
 import chez1s.htrbackend.service.InvoiceService;
 import chez1s.htrbackend.service.PayOSService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -25,20 +30,23 @@ public class InvoiceController {
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<Invoice>> listAll() {
-        return ResponseEntity.ok(invoiceService.listAll());
+    public ResponseEntity<PageResponse<InvoiceResponse>> listAll(
+            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        return ResponseEntity.ok(invoiceService.listAll(pageable));
     }
 
     @GetMapping("/mine")
     @PreAuthorize("hasRole('TENANT')")
-    public ResponseEntity<List<Invoice>> listMine(@RequestHeader("Authorization") String authHeader) {
+    public ResponseEntity<PageResponse<InvoiceResponse>> listMine(
+            @RequestHeader("Authorization") String authHeader,
+            @PageableDefault(size = 20, sort = "invoiceMonth", direction = Sort.Direction.DESC) Pageable pageable) {
         UUID tenantId = jwtTokenProvider.getUserId(authHeader.replace("Bearer ", ""));
-        return ResponseEntity.ok(invoiceService.listByTenant(tenantId));
+        return ResponseEntity.ok(invoiceService.listByTenant(tenantId, pageable));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Invoice> getById(@PathVariable UUID id) {
-        return ResponseEntity.ok(invoiceService.getById(id));
+    public ResponseEntity<InvoiceResponse> getById(@PathVariable UUID id) {
+        return ResponseEntity.ok(InvoiceResponse.from(invoiceService.getById(id)));
     }
 
     @PostMapping("/generate")
@@ -51,8 +59,8 @@ public class InvoiceController {
 
     @PostMapping("/{id}/pay-cash")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Invoice> markPaidCash(@PathVariable UUID id) {
-        return ResponseEntity.ok(invoiceService.markPaidCash(id));
+    public ResponseEntity<InvoiceResponse> markPaidCash(@PathVariable UUID id) {
+        return ResponseEntity.ok(InvoiceResponse.from(invoiceService.markPaidCash(id)));
     }
 
     @PostMapping("/{id}/pay-online")

@@ -1,11 +1,12 @@
 package chez1s.htrbackend.controller;
 
-import chez1s.htrbackend.domain.entity.FeeConfig;
 import chez1s.htrbackend.domain.entity.Property;
-import chez1s.htrbackend.domain.entity.VehicleConfig;
 import chez1s.htrbackend.dto.request.CreatePropertyRequest;
 import chez1s.htrbackend.dto.request.UpdateFeeConfigRequest;
 import chez1s.htrbackend.dto.request.UpdateVehicleConfigRequest;
+import chez1s.htrbackend.dto.response.FeeConfigResponse;
+import chez1s.htrbackend.dto.response.PropertyResponse;
+import chez1s.htrbackend.dto.response.VehicleConfigResponse;
 import chez1s.htrbackend.security.JwtTokenProvider;
 import chez1s.htrbackend.service.PropertyService;
 import jakarta.validation.Valid;
@@ -28,61 +29,61 @@ public class PropertyController {
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<Property>> listAll() {
-        return ResponseEntity.ok(propertyService.listAll());
+    public ResponseEntity<List<PropertyResponse>> listAll() {
+        return ResponseEntity.ok(propertyService.listAll().stream().map(PropertyResponse::from).toList());
     }
 
     @GetMapping("/mine")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<Property>> listMine(@RequestHeader("Authorization") String authHeader) {
+    public ResponseEntity<List<PropertyResponse>> listMine(@RequestHeader("Authorization") String authHeader) {
         UUID ownerId = extractUserId(authHeader);
-        return ResponseEntity.ok(propertyService.listByOwner(ownerId));
+        return ResponseEntity.ok(propertyService.listByOwner(ownerId).stream().map(PropertyResponse::from).toList());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Property> getById(@PathVariable UUID id) {
-        return ResponseEntity.ok(propertyService.getById(id));
+    public ResponseEntity<PropertyResponse> getById(@PathVariable UUID id) {
+        return ResponseEntity.ok(PropertyResponse.from(propertyService.getById(id)));
     }
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Property> create(@RequestHeader("Authorization") String authHeader,
-                                           @Valid @RequestBody CreatePropertyRequest req) {
+    public ResponseEntity<PropertyResponse> create(@RequestHeader("Authorization") String authHeader,
+                                                   @Valid @RequestBody CreatePropertyRequest req) {
         UUID ownerId = extractUserId(authHeader);
-        return ResponseEntity.status(HttpStatus.CREATED).body(propertyService.create(ownerId, req));
+        return ResponseEntity.status(HttpStatus.CREATED).body(PropertyResponse.from(propertyService.create(ownerId, req)));
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Property> update(@PathVariable UUID id,
-                                           @Valid @RequestBody CreatePropertyRequest req) {
-        return ResponseEntity.ok(propertyService.update(id, req));
+    public ResponseEntity<PropertyResponse> update(@PathVariable UUID id,
+                                                   @Valid @RequestBody CreatePropertyRequest req) {
+        return ResponseEntity.ok(PropertyResponse.from(propertyService.update(id, req)));
     }
 
     @GetMapping("/{id}/fee-config")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<FeeConfig> getFeeConfig(@PathVariable UUID id) {
-        return ResponseEntity.ok(propertyService.getFeeConfig(id));
+    public ResponseEntity<FeeConfigResponse> getFeeConfig(@PathVariable UUID id) {
+        return ResponseEntity.ok(FeeConfigResponse.from(propertyService.getFeeConfig(id)));
     }
 
     @PutMapping("/{id}/fee-config")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<FeeConfig> updateFeeConfig(@PathVariable UUID id,
-                                                     @Valid @RequestBody UpdateFeeConfigRequest req) {
-        return ResponseEntity.ok(propertyService.updateFeeConfig(id, req));
+    public ResponseEntity<FeeConfigResponse> updateFeeConfig(@PathVariable UUID id,
+                                                             @Valid @RequestBody UpdateFeeConfigRequest req) {
+        return ResponseEntity.ok(FeeConfigResponse.from(propertyService.updateFeeConfig(id, req)));
     }
 
     @GetMapping("/{id}/vehicle-config")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<VehicleConfig> getVehicleConfig(@PathVariable UUID id) {
-        return ResponseEntity.ok(propertyService.getVehicleConfig(id));
+    public ResponseEntity<VehicleConfigResponse> getVehicleConfig(@PathVariable UUID id) {
+        return ResponseEntity.ok(VehicleConfigResponse.from(propertyService.getVehicleConfig(id)));
     }
 
     @PutMapping("/{id}/vehicle-config")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<VehicleConfig> updateVehicleConfig(@PathVariable UUID id,
-                                                             @Valid @RequestBody UpdateVehicleConfigRequest req) {
-        return ResponseEntity.ok(propertyService.updateVehicleConfig(id, req));
+    public ResponseEntity<VehicleConfigResponse> updateVehicleConfig(@PathVariable UUID id,
+                                                                     @Valid @RequestBody UpdateVehicleConfigRequest req) {
+        return ResponseEntity.ok(VehicleConfigResponse.from(propertyService.updateVehicleConfig(id, req)));
     }
 
     private UUID extractUserId(String authHeader) {

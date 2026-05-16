@@ -1,6 +1,8 @@
 package chez1s.htrbackend.domain.repository;
 
 import chez1s.htrbackend.domain.entity.Notification;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -9,6 +11,7 @@ import java.util.List;
 import java.util.UUID;
 
 public interface NotificationRepository extends JpaRepository<Notification, UUID> {
+    Page<Notification> findByUserId(UUID userId, Pageable pageable);
     List<Notification> findByUserIdOrderByCreatedAtDesc(UUID userId);
     long countByUserIdAndReadFalse(UUID userId);
 
