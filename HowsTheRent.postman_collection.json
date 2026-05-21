@@ -1,0 +1,766 @@
+{
+  "info": {
+    "name": "HowsTheRent API",
+    "description": "Full API collection for HowsTheRent (PropMS) backend. Base URL: http://localhost:8080\n\nWorkflow:\n1. POST /api/auth/login → copy accessToken vào variable {{accessToken}}\n2. Các request đã gắn sẵn Bearer token từ {{accessToken}}",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080", "type": "string" },
+    { "key": "accessToken", "value": "", "type": "string" },
+    { "key": "refreshToken", "value": "", "type": "string" },
+    { "key": "userId", "value": "", "type": "string" },
+    { "key": "propertyId", "value": "", "type": "string" },
+    { "key": "roomId", "value": "", "type": "string" },
+    { "key": "contractId", "value": "", "type": "string" },
+    { "key": "invoiceId", "value": "", "type": "string" },
+    { "key": "maintenanceId", "value": "", "type": "string" },
+    { "key": "notificationId", "value": "", "type": "string" },
+    { "key": "technicianId", "value": "", "type": "string" }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json.accessToken) {",
+                  "  pm.collectionVariables.set('accessToken', json.accessToken);",
+                  "  pm.collectionVariables.set('refreshToken', json.refreshToken);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api", "auth", "login"] }
+          }
+        },
+        {
+          "name": "Refresh Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json.accessToken) {",
+                  "  pm.collectionVariables.set('accessToken', json.accessToken);",
+                  "  pm.collectionVariables.set('refreshToken', json.refreshToken);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/auth/refresh", "host": ["{{baseUrl}}"], "path": ["api", "auth", "refresh"] }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{baseUrl}}/api/auth/logout", "host": ["{{baseUrl}}"], "path": ["api", "auth", "logout"] }
+          }
+        },
+        {
+          "name": "Forgot Password",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/auth/forgot-password", "host": ["{{baseUrl}}"], "path": ["api", "auth", "forgot-password"] }
+          }
+        },
+        {
+          "name": "Reset Password",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"otp\": \"123456\",\n  \"newPassword\": \"newpassword123\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/auth/reset-password", "host": ["{{baseUrl}}"], "path": ["api", "auth", "reset-password"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "List All Users",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/users?page=0&size=20&sort=createdAt,desc",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users"],
+              "query": [
+                { "key": "page", "value": "0" },
+                { "key": "size", "value": "20" },
+                { "key": "sort", "value": "createdAt,desc" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get My Profile",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/users/me", "host": ["{{baseUrl}}"], "path": ["api", "users", "me"] }
+          }
+        },
+        {
+          "name": "Get User By ID",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/users/{{userId}}", "host": ["{{baseUrl}}"], "path": ["api", "users", "{{userId}}"] }
+          }
+        },
+        {
+          "name": "Create User",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Nguyen Van A\",\n  \"email\": \"tenant@example.com\",\n  \"phone\": \"0901234567\",\n  \"password\": \"password123\",\n  \"role\": \"TENANT\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/users", "host": ["{{baseUrl}}"], "path": ["api", "users"] }
+          }
+        },
+        {
+          "name": "Update User",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Nguyen Van B\",\n  \"phone\": \"0909999999\",\n  \"role\": \"TENANT\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/users/{{userId}}", "host": ["{{baseUrl}}"], "path": ["api", "users", "{{userId}}"] }
+          }
+        },
+        {
+          "name": "Toggle User Active",
+          "request": {
+            "method": "PATCH",
+            "url": { "raw": "{{baseUrl}}/api/users/{{userId}}/toggle-active", "host": ["{{baseUrl}}"], "path": ["api", "users", "{{userId}}", "toggle-active"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Properties",
+      "item": [
+        {
+          "name": "List All Properties",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/properties", "host": ["{{baseUrl}}"], "path": ["api", "properties"] }
+          }
+        },
+        {
+          "name": "List My Properties",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/properties/mine", "host": ["{{baseUrl}}"], "path": ["api", "properties", "mine"] }
+          }
+        },
+        {
+          "name": "Get Property By ID",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/properties/{{propertyId}}", "host": ["{{baseUrl}}"], "path": ["api", "properties", "{{propertyId}}"] }
+          }
+        },
+        {
+          "name": "Create Property",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Nhà trọ Quận 1\",\n  \"address\": \"123 Nguyễn Huệ, Q.1, TP.HCM\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/properties", "host": ["{{baseUrl}}"], "path": ["api", "properties"] }
+          }
+        },
+        {
+          "name": "Update Property",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Nhà trọ Quận 1 (cập nhật)\",\n  \"address\": \"456 Lê Lợi, Q.1, TP.HCM\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/properties/{{propertyId}}", "host": ["{{baseUrl}}"], "path": ["api", "properties", "{{propertyId}}"] }
+          }
+        },
+        {
+          "name": "Get Fee Config",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/properties/{{propertyId}}/fee-config", "host": ["{{baseUrl}}"], "path": ["api", "properties", "{{propertyId}}", "fee-config"] }
+          }
+        },
+        {
+          "name": "Update Fee Config",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"electricityPricePerUnit\": 3500,\n  \"waterPricePerUnit\": 15000,\n  \"internetFee\": 100000,\n  \"garbageFee\": 20000\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/properties/{{propertyId}}/fee-config", "host": ["{{baseUrl}}"], "path": ["api", "properties", "{{propertyId}}", "fee-config"] }
+          }
+        },
+        {
+          "name": "Get Vehicle Config",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/properties/{{propertyId}}/vehicle-config", "host": ["{{baseUrl}}"], "path": ["api", "properties", "{{propertyId}}", "vehicle-config"] }
+          }
+        },
+        {
+          "name": "Update Vehicle Config",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"motorcycleFee\": 50000,\n  \"carFee\": 200000,\n  \"bicycleFee\": 0\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/properties/{{propertyId}}/vehicle-config", "host": ["{{baseUrl}}"], "path": ["api", "properties", "{{propertyId}}", "vehicle-config"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Rooms",
+      "item": [
+        {
+          "name": "List All Rooms (flat)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/rooms", "host": ["{{baseUrl}}"], "path": ["api", "rooms"] }
+          }
+        },
+        {
+          "name": "List Rented Rooms",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/rooms/rented", "host": ["{{baseUrl}}"], "path": ["api", "rooms", "rented"] }
+          }
+        },
+        {
+          "name": "List Rooms By Property",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/properties/{{propertyId}}/rooms", "host": ["{{baseUrl}}"], "path": ["api", "properties", "{{propertyId}}", "rooms"] }
+          }
+        },
+        {
+          "name": "Get Room By ID",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/properties/{{propertyId}}/rooms/{{roomId}}", "host": ["{{baseUrl}}"], "path": ["api", "properties", "{{propertyId}}", "rooms", "{{roomId}}"] }
+          }
+        },
+        {
+          "name": "Create Room",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Phòng 101\",\n  \"area\": 25.5,\n  \"monthlyRent\": 3000000,\n  \"maxOccupancy\": 2,\n  \"floor\": 1,\n  \"description\": \"Phòng rộng, có ban công\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/properties/{{propertyId}}/rooms", "host": ["{{baseUrl}}"], "path": ["api", "properties", "{{propertyId}}", "rooms"] }
+          }
+        },
+        {
+          "name": "Update Room",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Phòng 101\",\n  \"area\": 25.5,\n  \"monthlyRent\": 3200000,\n  \"maxOccupancy\": 2,\n  \"floor\": 1,\n  \"description\": \"Phòng rộng, có ban công, mới sơn\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/properties/{{propertyId}}/rooms/{{roomId}}", "host": ["{{baseUrl}}"], "path": ["api", "properties", "{{propertyId}}", "rooms", "{{roomId}}"] }
+          }
+        },
+        {
+          "name": "Update Room Status",
+          "request": {
+            "method": "PATCH",
+            "url": {
+              "raw": "{{baseUrl}}/api/properties/{{propertyId}}/rooms/{{roomId}}/status?status=EMPTY",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "properties", "{{propertyId}}", "rooms", "{{roomId}}", "status"],
+              "query": [{ "key": "status", "value": "EMPTY", "description": "EMPTY | RENTED | MAINTENANCE" }]
+            }
+          }
+        },
+        {
+          "name": "Upload Room Images",
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "files", "type": "file", "src": [] }
+              ]
+            },
+            "url": { "raw": "{{baseUrl}}/api/properties/{{propertyId}}/rooms/{{roomId}}/images", "host": ["{{baseUrl}}"], "path": ["api", "properties", "{{propertyId}}", "rooms", "{{roomId}}", "images"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Contracts",
+      "item": [
+        {
+          "name": "List All Contracts",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/contracts", "host": ["{{baseUrl}}"], "path": ["api", "contracts"] }
+          }
+        },
+        {
+          "name": "List Contracts By Room",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/rooms/{{roomId}}/contracts", "host": ["{{baseUrl}}"], "path": ["api", "rooms", "{{roomId}}", "contracts"] }
+          }
+        },
+        {
+          "name": "List My Contracts (Tenant)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/contracts/mine", "host": ["{{baseUrl}}"], "path": ["api", "contracts", "mine"] }
+          }
+        },
+        {
+          "name": "Get Contract By ID",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/contracts/{{contractId}}", "host": ["{{baseUrl}}"], "path": ["api", "contracts", "{{contractId}}"] }
+          }
+        },
+        {
+          "name": "Create Contract",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tenantId\": \"{{userId}}\",\n  \"startDate\": \"2025-06-01\",\n  \"endDate\": \"2026-05-31\",\n  \"monthlyRent\": 3000000,\n  \"depositAmount\": 6000000,\n  \"note\": \"Hợp đồng thuê phòng 101\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/rooms/{{roomId}}/contracts", "host": ["{{baseUrl}}"], "path": ["api", "rooms", "{{roomId}}", "contracts"] }
+          }
+        },
+        {
+          "name": "Terminate Contract",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{baseUrl}}/api/contracts/{{contractId}}/terminate", "host": ["{{baseUrl}}"], "path": ["api", "contracts", "{{contractId}}", "terminate"] }
+          }
+        },
+        {
+          "name": "Upload Contract File",
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "file", "type": "file", "src": [] }
+              ]
+            },
+            "url": { "raw": "{{baseUrl}}/api/contracts/{{contractId}}/upload", "host": ["{{baseUrl}}"], "path": ["api", "contracts", "{{contractId}}", "upload"] }
+          }
+        },
+        {
+          "name": "Renew Contract",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"newEndDate\": \"2027-05-31\",\n  \"newMonthlyRent\": 3200000\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/contracts/{{contractId}}/renew", "host": ["{{baseUrl}}"], "path": ["api", "contracts", "{{contractId}}", "renew"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Invoices",
+      "item": [
+        {
+          "name": "List All Invoices",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/invoices?page=0&size=20&sort=createdAt,desc",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "invoices"],
+              "query": [
+                { "key": "page", "value": "0" },
+                { "key": "size", "value": "20" },
+                { "key": "sort", "value": "createdAt,desc" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "List My Invoices (Tenant)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/invoices/mine?page=0&size=20&sort=invoiceMonth,desc",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "invoices", "mine"],
+              "query": [
+                { "key": "page", "value": "0" },
+                { "key": "size", "value": "20" },
+                { "key": "sort", "value": "invoiceMonth,desc" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Invoice By ID",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/invoices/{{invoiceId}}", "host": ["{{baseUrl}}"], "path": ["api", "invoices", "{{invoiceId}}"] }
+          }
+        },
+        {
+          "name": "Generate Invoices For Month",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/invoices/generate?year=2025&month=6",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "invoices", "generate"],
+              "query": [
+                { "key": "year", "value": "2025" },
+                { "key": "month", "value": "6" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Mark Invoice Paid (Cash)",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{baseUrl}}/api/invoices/{{invoiceId}}/pay-cash", "host": ["{{baseUrl}}"], "path": ["api", "invoices", "{{invoiceId}}", "pay-cash"] }
+          }
+        },
+        {
+          "name": "Create Online Payment Link",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{baseUrl}}/api/invoices/{{invoiceId}}/pay-online", "host": ["{{baseUrl}}"], "path": ["api", "invoices", "{{invoiceId}}", "pay-online"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Meter Readings & Vehicles",
+      "item": [
+        {
+          "name": "List Meter Readings By Room",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/rooms/{{roomId}}/meter-readings", "host": ["{{baseUrl}}"], "path": ["api", "rooms", "{{roomId}}", "meter-readings"] }
+          }
+        },
+        {
+          "name": "Create Meter Reading",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"readingDate\": \"2025-06-01\",\n  \"electricityReading\": 1250,\n  \"waterReading\": 85\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/rooms/{{roomId}}/meter-readings", "host": ["{{baseUrl}}"], "path": ["api", "rooms", "{{roomId}}", "meter-readings"] }
+          }
+        },
+        {
+          "name": "List Vehicle Records By Room",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/rooms/{{roomId}}/vehicle-records", "host": ["{{baseUrl}}"], "path": ["api", "rooms", "{{roomId}}", "vehicle-records"] }
+          }
+        },
+        {
+          "name": "Upsert Vehicle Record",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"motorcycleCount\": 1,\n  \"carCount\": 0,\n  \"bicycleCount\": 1\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/rooms/{{roomId}}/vehicle-records", "host": ["{{baseUrl}}"], "path": ["api", "rooms", "{{roomId}}", "vehicle-records"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Maintenance",
+      "item": [
+        {
+          "name": "List All Maintenance (Admin)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/maintenance?page=0&size=20&sort=createdAt,desc",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "maintenance"],
+              "query": [
+                { "key": "page", "value": "0" },
+                { "key": "size", "value": "20" },
+                { "key": "sort", "value": "createdAt,desc" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "List My Maintenance (Tenant)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/maintenance/mine?page=0&size=20&sort=createdAt,desc",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "maintenance", "mine"],
+              "query": [
+                { "key": "page", "value": "0" },
+                { "key": "size", "value": "20" },
+                { "key": "sort", "value": "createdAt,desc" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "List Assigned Maintenance (Technician)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/maintenance/assigned", "host": ["{{baseUrl}}"], "path": ["api", "maintenance", "assigned"] }
+          }
+        },
+        {
+          "name": "Get Maintenance By ID",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/maintenance/{{maintenanceId}}", "host": ["{{baseUrl}}"], "path": ["api", "maintenance", "{{maintenanceId}}"] }
+          }
+        },
+        {
+          "name": "Create Maintenance Request (Tenant)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Vòi nước bị hỏng\",\n  \"description\": \"Vòi nước trong phòng tắm bị rỉ nước\",\n  \"roomId\": \"{{roomId}}\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/maintenance", "host": ["{{baseUrl}}"], "path": ["api", "maintenance"] }
+          }
+        },
+        {
+          "name": "Create Maintenance With Images (Tenant)",
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "title", "value": "Vòi nước bị hỏng", "type": "text" },
+                { "key": "description", "value": "Vòi nước trong phòng tắm bị rỉ nước", "type": "text" },
+                { "key": "roomId", "value": "{{roomId}}", "type": "text" },
+                { "key": "images", "type": "file", "src": [] }
+              ]
+            },
+            "url": { "raw": "{{baseUrl}}/api/maintenance/with-images", "host": ["{{baseUrl}}"], "path": ["api", "maintenance", "with-images"] }
+          }
+        },
+        {
+          "name": "Assign Technician (Admin)",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/maintenance/{{maintenanceId}}/assign?technicianId={{technicianId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "maintenance", "{{maintenanceId}}", "assign"],
+              "query": [{ "key": "technicianId", "value": "{{technicianId}}" }]
+            }
+          }
+        },
+        {
+          "name": "Resolve Maintenance",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{baseUrl}}/api/maintenance/{{maintenanceId}}/resolve", "host": ["{{baseUrl}}"], "path": ["api", "maintenance", "{{maintenanceId}}", "resolve"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Notifications",
+      "item": [
+        {
+          "name": "List My Notifications",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/notifications?page=0&size=20&sort=createdAt,desc",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "notifications"],
+              "query": [
+                { "key": "page", "value": "0" },
+                { "key": "size", "value": "20" },
+                { "key": "sort", "value": "createdAt,desc" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Mark Notification As Read",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{baseUrl}}/api/notifications/{{notificationId}}/read", "host": ["{{baseUrl}}"], "path": ["api", "notifications", "{{notificationId}}", "read"] }
+          }
+        },
+        {
+          "name": "Mark All Notifications As Read",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{baseUrl}}/api/notifications/read-all", "host": ["{{baseUrl}}"], "path": ["api", "notifications", "read-all"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Dashboard",
+      "item": [
+        {
+          "name": "Get Dashboard Stats",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/dashboard", "host": ["{{baseUrl}}"], "path": ["api", "dashboard"] }
+          }
+        },
+        {
+          "name": "Get Monthly Revenue",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/dashboard/revenue?months=12",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "dashboard", "revenue"],
+              "query": [{ "key": "months", "value": "12", "description": "Số tháng gần nhất (default: 12)" }]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Audit Log",
+      "item": [
+        {
+          "name": "List Audit Logs",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/audit?page=0&size=20&sort=createdAt,desc",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "audit"],
+              "query": [
+                { "key": "page", "value": "0" },
+                { "key": "size", "value": "20" },
+                { "key": "sort", "value": "createdAt,desc" },
+                { "key": "action", "value": "", "disabled": true, "description": "Filter by action (optional)" },
+                { "key": "entityType", "value": "", "disabled": true, "description": "Filter by entity type (optional)" },
+                { "key": "from", "value": "", "disabled": true, "description": "ISO DateTime (e.g. 2025-06-01T00:00:00)" },
+                { "key": "to", "value": "", "disabled": true, "description": "ISO DateTime (e.g. 2025-06-30T23:59:59)" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Export",
+      "item": [
+        {
+          "name": "Export Invoices (XLSX)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/export/invoices", "host": ["{{baseUrl}}"], "path": ["api", "export", "invoices"] }
+          }
+        },
+        {
+          "name": "Export Contracts (XLSX)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/export/contracts", "host": ["{{baseUrl}}"], "path": ["api", "export", "contracts"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Payment Webhook",
+      "item": [
+        {
+          "name": "PayOS Callback (Webhook)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"00\",\n  \"desc\": \"success\",\n  \"data\": {\n    \"orderCode\": 12345,\n    \"amount\": 3000000,\n    \"description\": \"INVOICE-123\",\n    \"accountNumber\": \"12345678\",\n    \"reference\": \"TXN001\",\n    \"transactionDateTime\": \"2025-06-01 10:00:00\",\n    \"currency\": \"VND\",\n    \"paymentLinkId\": \"abc123\",\n    \"code\": \"00\",\n    \"desc\": \"Thanh cong\",\n    \"counterAccountBankId\": \"\",\n    \"counterAccountBankName\": \"\",\n    \"counterAccountName\": \"\",\n    \"counterAccountNumber\": \"\",\n    \"virtualAccountName\": \"\",\n    \"virtualAccountNumber\": \"\"\n  },\n  \"signature\": \"...\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/payment/callback", "host": ["{{baseUrl}}"], "path": ["api", "payment", "callback"] }
+          }
+        }
+      ]
+    }
+  ]
+}
