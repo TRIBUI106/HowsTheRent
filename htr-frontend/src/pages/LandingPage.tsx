@@ -1,273 +1,239 @@
 import { Link } from 'react-router-dom'
 import {
   Building2, FileText, Wrench, FileCheck, CreditCard, Shield,
-  CheckCircle, Users, BarChart3, Bell, ChevronRight,
+  CheckCircle2, Users, BarChart3, Bell, ChevronRight, ArrowRight,
 } from 'lucide-react'
 
-const features = [
+const operatingSignals = [
+  'Công nợ đến hạn trong ngày',
+  'Yêu cầu bảo trì mới từ khách thuê',
+  'Dòng tiền theo tháng và tỷ lệ lấp đầy',
+]
+
+const capabilities = [
   {
-    icon: Building2,
-    title: 'Quản lý tài sản',
-    desc: 'Theo dõi toàn bộ bất động sản, tòa nhà và phòng trọ trên một nền tảng duy nhất.',
+    title: 'Điều hành theo ngày, không bỏ sót việc',
+    desc: 'Một bảng điều hành tập trung công nợ, bảo trì và trạng thái phòng để chủ trọ biết việc nào cần xử lý trước.',
+    points: ['Theo dõi hóa đơn quá hạn theo phòng', 'Nhìn nhanh bảo trì mới và việc đang xử lý', 'Biết số phòng trống để quyết định lấp đầy'],
   },
   {
-    icon: FileText,
-    title: 'Hóa đơn tự động',
-    desc: 'Tự động tạo hóa đơn tiền điện, nước, phòng hàng tháng. Nhắc nhở thanh toán đúng hạn.',
-  },
-  {
-    icon: Wrench,
-    title: 'Quản lý bảo trì',
-    desc: 'Tiếp nhận, phân công và theo dõi tiến độ xử lý yêu cầu sửa chữa từ khách thuê.',
-  },
-  {
-    icon: FileCheck,
-    title: 'Hợp đồng số',
-    desc: 'Ký kết và quản lý hợp đồng thuê phòng. Tự động nhắc gia hạn trước khi hết hạn.',
-  },
-  {
-    icon: CreditCard,
-    title: 'Thanh toán trực tuyến',
-    desc: 'Tích hợp PayOS — khách thuê thanh toán hóa đơn trực tiếp qua app, không cần tiền mặt.',
-  },
-  {
-    icon: Shield,
-    title: 'Nhật ký hoạt động',
-    desc: 'Ghi lại mọi thao tác quan trọng trong hệ thống. Kiểm soát rủi ro và truy vết sự kiện.',
+    title: 'Chuẩn hóa vận hành, không phụ thuộc trí nhớ',
+    desc: 'Hợp đồng, hóa đơn, cấu hình phí và thanh toán được lưu trong cùng một hệ thống, để có thể bàn giao mà không cần giải thích nhiều.',
+    points: ['Quy tắc tính tiền rõ theo từng tòa nhà', 'Lịch sử thao tác và thay đổi được lưu lại', 'Khách thuê và kỹ thuật viên có luồng làm việc riêng'],
   },
 ]
 
-const stats = [
-  { value: '3',    label: 'Vai trò người dùng', sub: 'Quản lý · Khách thuê · Kỹ thuật viên' },
-  { value: '12+',  label: 'Tính năng quản lý',  sub: 'Tích hợp đầy đủ trong một hệ thống' },
-  { value: '100%', label: 'Trên nền web',        sub: 'Không cần cài đặt, dùng mọi thiết bị' },
+const modules = [
+  { icon: FileText, title: 'Hóa đơn hàng tháng', desc: 'Tạo tiền phòng, điện, nước, dịch vụ và theo dõi trạng thái thanh toán.' },
+  { icon: FileCheck, title: 'Hợp đồng thuê', desc: 'Quản lý thời hạn, đặt cọc, gia hạn và thông tin thuê theo từng phòng.' },
+  { icon: Wrench, title: 'Bảo trì', desc: 'Tiếp nhận yêu cầu, phân công kỹ thuật viên và cập nhật tiến độ xử lý.' },
+  { icon: CreditCard, title: 'Thanh toán PayOS', desc: 'Cho phép khách thuê thanh toán trực tuyến, giảm việc đối soát thủ công.' },
+  { icon: Shield, title: 'Nhật ký vận hành', desc: 'Lưu lại hành động quan trọng để kiểm tra, bàn giao và truy vết.' },
 ]
 
-const roles = [
+const roleProof = [
   {
     title: 'Quản lý',
-    items: [
-      'Quản lý tòa nhà và phòng trọ',
-      'Tạo và duyệt hợp đồng thuê',
-      'Theo dõi hóa đơn và doanh thu',
-      'Phân công công việc bảo trì',
-      'Quản lý người dùng và phân quyền',
-      'Xem nhật ký toàn hệ thống',
-    ],
+    summary: 'Theo dõi công nợ, tỷ lệ lấp đầy, hợp đồng và người dùng trong cùng một nơi.',
   },
   {
     title: 'Khách thuê',
-    items: [
-      'Xem thông tin hợp đồng',
-      'Tra cứu và thanh toán hóa đơn',
-      'Gửi yêu cầu bảo trì',
-      'Theo dõi lịch sử thanh toán',
-      'Nhận thông báo từ quản lý',
-      'Thanh toán trực tuyến qua PayOS',
-    ],
+    summary: 'Xem hóa đơn, hợp đồng, gửi yêu cầu bảo trì và theo dõi lịch sử thanh toán.',
   },
   {
     title: 'Kỹ thuật viên',
-    items: [
-      'Nhận yêu cầu bảo trì được phân công',
-      'Cập nhật trạng thái xử lý',
-      'Tải ảnh kết quả hoàn thành',
-      'Xem lịch sử công việc',
-      'Nhận thông báo nhiệm vụ mới',
-    ],
-  },
-]
-
-const steps = [
-  {
-    title: 'Thiết lập hệ thống',
-    desc: 'Tạo tài khoản, thêm tòa nhà, phòng trọ và cấu hình các loại phí dịch vụ.',
-  },
-  {
-    title: 'Thêm khách thuê',
-    desc: 'Tạo hợp đồng thuê phòng, cấp tài khoản cho khách thuê và kỹ thuật viên.',
-  },
-  {
-    title: 'Vận hành tự động',
-    desc: 'Hệ thống tự động tạo hóa đơn, gửi thông báo và xử lý thanh toán hàng tháng.',
+    summary: 'Nhận việc, cập nhật trạng thái sửa chữa và phản hồi ngay trên hệ thống.',
   },
 ]
 
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-bg">
-      {/* Navbar */}
-      <header className="sticky top-0 z-50 bg-surface/95 backdrop-blur-sm border-b border-border">
-        <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 bg-accent rounded-lg flex items-center justify-center shrink-0">
-              <span className="text-accent-fg font-bold text-xs">P</span>
+      <header className="sticky top-0 z-50 border-b border-border/80 bg-surface/92 backdrop-blur-sm">
+        <div className="mx-auto flex h-15 max-w-6xl items-center justify-between px-6">
+          <div className="flex items-center gap-3">
+            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-accent text-accent-fg shadow-[inset_0_1px_0_rgba(255,255,255,0.16)]">
+              <span className="text-[11px] font-bold tracking-[0.12em] uppercase">HTR</span>
             </div>
-            <span className="font-semibold text-fg text-sm">HowsTheRent</span>
+            <div>
+              <p className="text-sm font-semibold leading-none text-fg">How&apos;s The Rent</p>
+              <p className="mt-1 text-xs text-fg-subtle">Hệ thống vận hành nhà trọ</p>
+            </div>
           </div>
           <Link
             to="/login"
-            className="inline-flex items-center gap-1.5 bg-accent hover:bg-accent-hover text-accent-fg text-sm font-medium px-4 py-2 rounded-lg transition-colors duration-100"
+            className="inline-flex items-center gap-2 rounded-xl border border-border/80 bg-surface px-4 py-2 text-sm font-medium text-fg transition-colors hover:bg-sidebar"
           >
             Đăng nhập
           </Link>
         </div>
       </header>
 
-      {/* Hero */}
-      <section className="max-w-6xl mx-auto px-6 pt-20 pb-16 text-center">
-        <div className="inline-flex items-center gap-2 bg-accent-surface text-accent text-xs font-medium px-3 py-1.5 rounded-full mb-8">
-          <span className="w-1.5 h-1.5 bg-accent rounded-full shrink-0" />
-          Hệ thống quản lý nhà trọ chuyên nghiệp
-        </div>
-        <h1 className="text-5xl font-bold text-fg tracking-tight leading-[1.1] mb-5 max-w-3xl mx-auto">
-          Quản lý nhà trọ<br className="hidden sm:block" /> đơn giản và hiệu quả
-        </h1>
-        <p className="text-lg text-fg-muted max-w-xl mx-auto mb-10 leading-relaxed">
-          Số hóa toàn bộ quy trình vận hành: hợp đồng, hóa đơn, bảo trì và thanh toán trong một nền tảng duy nhất.
-        </p>
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-          <Link
-            to="/login"
-            className="inline-flex items-center gap-2 bg-accent hover:bg-accent-hover text-accent-fg font-semibold px-6 py-3 rounded-lg transition-colors duration-100"
-          >
-            Bắt đầu ngay <ChevronRight className="w-4 h-4" />
-          </Link>
-          <a
-            href="#features"
-            className="inline-flex items-center gap-2 text-fg-muted hover:text-fg font-medium px-6 py-3 rounded-lg border border-border hover:border-border-strong transition-colors duration-100"
-          >
-            Khám phá tính năng
-          </a>
-        </div>
-      </section>
-
-      {/* Stats */}
-      <section className="border-y border-border bg-surface">
-        <div className="max-w-6xl mx-auto px-6 py-10 grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-border">
-          {stats.map(s => (
-            <div key={s.label} className="text-center py-6 sm:py-0 sm:px-10">
-              <div className="text-3xl font-bold text-fg mb-1">{s.value}</div>
-              <div className="text-sm font-semibold text-fg mb-0.5">{s.label}</div>
-              <div className="text-xs text-fg-subtle">{s.sub}</div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Features */}
-      <section id="features" className="max-w-6xl mx-auto px-6 py-20">
-        <div className="mb-12">
-          <div className="flex items-center gap-2 text-accent text-xs font-semibold uppercase tracking-wider mb-3">
-            <BarChart3 className="w-3.5 h-3.5" />
-            Tính năng
-          </div>
-          <h2 className="text-3xl font-bold text-fg mb-3 tracking-tight">Mọi thứ bạn cần, trong một nơi</h2>
-          <p className="text-fg-muted max-w-lg text-sm leading-relaxed">
-            HowsTheRent bao phủ toàn bộ quy trình vận hành nhà trọ từ A đến Z.
+      <section className="mx-auto grid max-w-6xl gap-10 px-6 pb-16 pt-16 lg:grid-cols-[1.15fr_0.85fr] lg:items-start lg:pt-20">
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-fg-subtle">Dành cho chủ trọ vận hành 10–50 phòng</p>
+          <h1 className="mt-4 max-w-3xl text-[44px] font-semibold tracking-[-0.04em] leading-[1.02] text-fg sm:text-[56px]">
+            Biết ngay hôm nay cần thu gì, sửa gì, và phòng nào cần chú ý.
+          </h1>
+          <p className="mt-5 max-w-2xl text-base leading-7 text-fg-muted">
+            HowsTheRent gom công nợ, hợp đồng, bảo trì và thanh toán về một luồng vận hành rõ ràng, để việc quản lý nhà trọ không còn phụ thuộc vào ghi nhớ thủ công.
           </p>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-10">
-          {features.map(f => (
-            <div key={f.title}>
-              <div className="w-8 h-8 bg-accent-surface rounded-lg flex items-center justify-center mb-3">
-                <f.icon className="w-4 h-4 text-accent" />
-              </div>
-              <h3 className="font-semibold text-fg text-sm mb-1.5">{f.title}</h3>
-              <p className="text-sm text-fg-muted leading-relaxed">{f.desc}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Roles */}
-      <section className="bg-surface border-y border-border py-20">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="mb-12">
-            <div className="flex items-center gap-2 text-accent text-xs font-semibold uppercase tracking-wider mb-3">
-              <Users className="w-3.5 h-3.5" />
-              Vai trò người dùng
-            </div>
-            <h2 className="text-3xl font-bold text-fg mb-3 tracking-tight">Thiết kế cho từng vai trò</h2>
-            <p className="text-fg-muted text-sm max-w-lg leading-relaxed">
-              Ba giao diện riêng biệt, tối ưu cho công việc hàng ngày của từng nhóm người dùng.
-            </p>
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <Link
+              to="/login"
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-accent px-5 py-3 text-sm font-semibold text-accent-fg shadow-[inset_0_1px_0_rgba(255,255,255,0.16)] transition-colors hover:bg-accent-hover"
+            >
+              Vào hệ thống <ChevronRight className="h-4 w-4" />
+            </Link>
+            <a
+              href="#capabilities"
+              className="inline-flex items-center justify-center gap-2 rounded-xl border border-border/80 px-5 py-3 text-sm font-medium text-fg transition-colors hover:bg-sidebar"
+            >
+              Xem cách vận hành <ArrowRight className="h-4 w-4" />
+            </a>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {roles.map(r => (
-              <div key={r.title}>
-                <p className="text-xs font-semibold text-fg-muted uppercase tracking-wider mb-4 pb-3 border-b border-border">
-                  {r.title}
-                </p>
-                <ul className="space-y-2.5">
-                  {r.items.map(item => (
-                    <li key={item} className="flex items-start gap-2 text-sm text-fg-muted">
-                      <CheckCircle className="w-4 h-4 mt-0.5 shrink-0 text-success" />
-                      {item}
-                    </li>
-                  ))}
-                </ul>
+        </div>
+
+        <div className="rounded-[28px] border border-border/80 bg-surface p-5 shadow-[0_1px_2px_rgba(15,23,42,0.03)]">
+          <div className="flex items-center justify-between gap-4 border-b border-border/80 pb-4">
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-fg-subtle">Bảng điều hành</p>
+              <h2 className="mt-1 text-lg font-semibold tracking-[-0.01em] text-fg">Những gì chủ trọ cần thấy đầu ngày</h2>
+            </div>
+            <div className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-accent-surface text-accent">
+              <BarChart3 className="h-5 w-5" />
+            </div>
+          </div>
+          <div className="mt-5 space-y-3">
+            {operatingSignals.map((item) => (
+              <div key={item} className="flex items-start gap-3 rounded-2xl border border-border/70 bg-bg px-4 py-3">
+                <span className="mt-0.5 inline-flex h-7 w-7 items-center justify-center rounded-lg bg-accent-surface text-accent shrink-0">
+                  <CheckCircle2 className="h-4 w-4" />
+                </span>
+                <div>
+                  <p className="text-sm font-medium text-fg">{item}</p>
+                  <p className="mt-1 text-sm text-fg-muted">Hiển thị trực tiếp trong dashboard, không phải đối chiếu từ nhiều file khác nhau.</p>
+                </div>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* How it works */}
-      <section className="max-w-6xl mx-auto px-6 py-20">
-        <div className="mb-12">
-          <div className="flex items-center gap-2 text-accent text-xs font-semibold uppercase tracking-wider mb-3">
-            <Bell className="w-3.5 h-3.5" />
-            Quy trình
+      <section className="border-y border-border/80 bg-surface">
+        <div className="mx-auto grid max-w-6xl gap-6 px-6 py-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-fg-subtle">Giá trị vận hành</p>
+            <h2 className="mt-2 text-3xl font-semibold tracking-[-0.03em] text-fg">Không phải phần mềm đẹp để trình diễn, mà là công cụ để không bỏ sót việc.</h2>
           </div>
-          <h2 className="text-3xl font-bold text-fg mb-3 tracking-tight">Hoạt động trong 3 bước</h2>
-          <p className="text-fg-muted text-sm max-w-lg leading-relaxed">
-            Triển khai và vận hành ngay từ ngày đầu, không cần đào tạo phức tạp.
-          </p>
+          <div className="grid gap-3 sm:grid-cols-3">
+            <div className="rounded-2xl border border-border/70 bg-bg px-4 py-4">
+              <p className="text-2xl font-semibold tracking-[-0.03em] text-fg">3</p>
+              <p className="mt-2 text-sm font-medium text-fg">Vai trò riêng biệt</p>
+              <p className="mt-1 text-sm text-fg-muted">Quản lý, khách thuê, kỹ thuật viên.</p>
+            </div>
+            <div className="rounded-2xl border border-border/70 bg-bg px-4 py-4">
+              <p className="text-2xl font-semibold tracking-[-0.03em] text-fg">12+</p>
+              <p className="mt-2 text-sm font-medium text-fg">Nghiệp vụ chính</p>
+              <p className="mt-1 text-sm text-fg-muted">Bao phủ công nợ, hợp đồng, bảo trì và đối soát.</p>
+            </div>
+            <div className="rounded-2xl border border-border/70 bg-bg px-4 py-4">
+              <p className="text-2xl font-semibold tracking-[-0.03em] text-fg">100%</p>
+              <p className="mt-2 text-sm font-medium text-fg">Trên nền web</p>
+              <p className="mt-1 text-sm text-fg-muted">Dùng được ở quầy tiếp khách, văn phòng nhỏ hoặc khi đi kiểm tra phòng.</p>
+            </div>
+          </div>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
-          {steps.map((s, i) => (
-            <div key={s.title}>
-              <div className="inline-flex items-center justify-center w-10 h-10 bg-accent text-accent-fg rounded-lg font-bold text-sm mb-4">
-                {String(i + 1).padStart(2, '0')}
-              </div>
-              <h3 className="font-semibold text-fg mb-2 text-sm">{s.title}</h3>
-              <p className="text-sm text-fg-muted leading-relaxed">{s.desc}</p>
+      </section>
+
+      <section id="capabilities" className="mx-auto max-w-6xl px-6 py-18">
+        <div className="grid gap-6 lg:grid-cols-2">
+          {capabilities.map((capability, index) => (
+            <div key={capability.title} className={`rounded-[28px] border border-border/80 ${index === 0 ? 'bg-surface' : 'bg-sidebar/55'} p-6`}>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-fg-subtle">Năng lực {String(index + 1).padStart(2, '0')}</p>
+              <h3 className="mt-2 text-2xl font-semibold tracking-[-0.02em] text-fg">{capability.title}</h3>
+              <p className="mt-3 text-sm leading-6 text-fg-muted">{capability.desc}</p>
+              <ul className="mt-6 space-y-3">
+                {capability.points.map(point => (
+                  <li key={point} className="flex items-start gap-3 text-sm text-fg">
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
+                    <span>{point}</span>
+                  </li>
+                ))}
+              </ul>
             </div>
           ))}
         </div>
       </section>
 
-      {/* CTA — inverted */}
-      <section className="bg-fg py-20">
-        <div className="max-w-2xl mx-auto px-6 text-center">
-          <h2 className="text-3xl font-bold text-fg-inverted tracking-tight mb-4">
-            Sẵn sàng số hóa việc quản lý nhà trọ?
-          </h2>
-          <p className="text-fg-inverted-muted text-sm mb-8 leading-relaxed">
-            Đăng nhập ngay để trải nghiệm toàn bộ tính năng của HowsTheRent.
+      <section className="mx-auto max-w-6xl px-6 pb-18">
+        <div className="mb-8 flex items-end justify-between gap-6">
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-fg-subtle">Các mô-đun chính</p>
+            <h2 className="mt-2 text-3xl font-semibold tracking-[-0.03em] text-fg">Những phần việc được gom về cùng một hệ thống.</h2>
+          </div>
+        </div>
+        <div className="grid gap-x-8 gap-y-8 lg:grid-cols-3">
+          {modules.map((module, index) => (
+            <div key={module.title} className={index < 2 ? 'lg:col-span-1' : ''}>
+              <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-accent-surface text-accent">
+                <module.icon className="h-5 w-5" />
+              </div>
+              <h3 className="text-base font-semibold text-fg">{module.title}</h3>
+              <p className="mt-2 text-sm leading-6 text-fg-muted">{module.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="border-y border-border/80 bg-surface">
+        <div className="mx-auto max-w-6xl px-6 py-16">
+          <div className="mb-8 max-w-2xl">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-fg-subtle">Kiểm chứng theo vai trò</p>
+            <h2 className="mt-2 text-3xl font-semibold tracking-[-0.03em] text-fg">Mỗi người thấy đúng phần việc của mình, không phải một giao diện chung cho tất cả.</h2>
+          </div>
+          <div className="grid gap-4 md:grid-cols-3">
+            {roleProof.map((role) => (
+              <div key={role.title} className="rounded-2xl border border-border/70 bg-bg px-5 py-5">
+                <div className="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-sidebar text-fg-muted">
+                  <Users className="h-4 w-4" />
+                </div>
+                <h3 className="text-lg font-semibold text-fg">{role.title}</h3>
+                <p className="mt-2 text-sm leading-6 text-fg-muted">{role.summary}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-5xl px-6 py-18">
+        <div className="rounded-[32px] border border-border/80 bg-fg px-6 py-8 text-center sm:px-10 sm:py-10">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-fg-inverted-muted">Bắt đầu vận hành rõ ràng hơn</p>
+          <h2 className="mt-3 text-3xl font-semibold tracking-[-0.03em] text-fg-inverted">Đăng nhập để xem bảng điều hành, công nợ và bảo trì trong cùng một luồng làm việc.</h2>
+          <p className="mx-auto mt-3 max-w-2xl text-sm leading-6 text-fg-inverted-muted">
+            Phù hợp cho chủ trọ cần một hệ thống gọn, rõ, đủ chặt để bàn giao cho người khác mà không phải giải thích lại cách quản lý.
           </p>
           <Link
             to="/login"
-            className="inline-flex items-center gap-2 bg-surface hover:bg-bg text-fg font-semibold px-8 py-3 rounded-lg transition-colors duration-100"
+            className="mt-6 inline-flex items-center gap-2 rounded-xl bg-surface px-6 py-3 text-sm font-semibold text-fg transition-colors hover:bg-bg"
           >
-            Đăng nhập vào hệ thống <ChevronRight className="w-4 h-4" />
+            Đăng nhập vào hệ thống <ChevronRight className="h-4 w-4" />
           </Link>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t border-border bg-surface py-6">
-        <div className="max-w-6xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <div className="w-5 h-5 bg-accent rounded flex items-center justify-center">
-              <span className="text-accent-fg font-bold text-xs">P</span>
+      <footer className="border-t border-border/80 bg-surface py-6">
+        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-6 sm:flex-row">
+          <div className="flex items-center gap-3">
+            <div className="flex h-7 w-7 items-center justify-center rounded-xl bg-accent text-accent-fg">
+              <span className="text-[10px] font-bold tracking-[0.12em] uppercase">HTR</span>
             </div>
-            <span className="text-sm font-semibold text-fg">HowsTheRent</span>
+            <div>
+              <p className="text-sm font-semibold text-fg">How&apos;s The Rent</p>
+              <p className="text-xs text-fg-subtle">Hệ thống quản lý nhà trọ</p>
+            </div>
           </div>
-          <p className="text-xs text-fg-subtle">
-            © {new Date().getFullYear()} HowsTheRent. Hệ thống Quản lý Nhà trọ.
-          </p>
+          <p className="text-xs text-fg-subtle">© {new Date().getFullYear()} HowsTheRent. Dành cho vận hành nhà trọ hằng ngày.</p>
         </div>
       </footer>
     </div>

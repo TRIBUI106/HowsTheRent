@@ -15,16 +15,23 @@ export function Spinner({ className }: SpinnerProps) {
 
 export function LoadingScreen() {
   return (
-    <div className="flex h-64 items-center justify-center">
-      <Spinner className="h-8 w-8" />
+    <div className="rounded-2xl border border-border/80 bg-surface px-5 py-6">
+      <div className="flex items-center gap-3">
+        <Spinner className="h-5 w-5" />
+        <div>
+          <p className="text-sm font-medium text-fg">Đang tải dữ liệu</p>
+          <p className="text-xs text-fg-subtle">Vui lòng chờ trong giây lát.</p>
+        </div>
+      </div>
     </div>
   )
 }
 
 export function EmptyState({ message = 'Không có dữ liệu' }: { message?: string }) {
   return (
-    <div className="flex h-32 items-center justify-center">
-      <p className="text-sm text-fg-subtle">{message}</p>
+    <div className="rounded-2xl border border-dashed border-border-strong/70 bg-sidebar/45 px-5 py-8 text-center">
+      <p className="text-sm font-medium text-fg">Chưa có nội dung</p>
+      <p className="mt-1 text-sm text-fg-subtle">{message}</p>
     </div>
   )
 }

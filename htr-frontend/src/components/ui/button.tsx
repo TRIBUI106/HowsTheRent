@@ -18,7 +18,7 @@ export function Button({
   ...props
 }: ButtonProps) {
   const variants = {
-    primary:   'bg-accent text-accent-fg hover:bg-accent-hover active:bg-accent-active focus-visible:ring-accent',
+    primary:   'bg-accent text-accent-fg hover:bg-accent-hover active:bg-accent-active shadow-[inset_0_1px_0_rgba(255,255,255,0.18)] focus-visible:ring-accent',
     secondary: 'bg-surface text-fg border border-border hover:bg-sidebar active:bg-border focus-visible:ring-accent',
     danger:    'bg-error text-white hover:bg-error-hover active:bg-error-fg focus-visible:ring-error',
     outline:   'border border-border text-fg bg-transparent hover:bg-sidebar active:bg-border focus-visible:ring-accent',
@@ -26,7 +26,7 @@ export function Button({
   }
   const sizes = {
     sm: 'px-3 py-1.5 text-sm min-h-[34px]',
-    md: 'px-4 py-2 text-sm min-h-[38px]',
+    md: 'px-4 py-2 text-sm min-h-[40px]',
     lg: 'px-6 py-2.5 text-sm min-h-[44px]',
   }
   return (

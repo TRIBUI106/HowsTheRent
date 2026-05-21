@@ -1,42 +1,71 @@
+import { useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import api from '@/lib/api'
 import Layout from '@/components/Layout'
-import { Card, CardContent } from '@/components/ui/card'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { EmptyState } from '@/components/ui/feedback'
 import { formatCurrency } from '@/lib/utils'
 import type { Dashboard } from '@/types'
 import {
   Building2, Home, DoorOpen, TrendingUp, BadgeDollarSign,
-  AlertCircle, Wrench, Clock
+  AlertCircle, Wrench, Clock,
 } from 'lucide-react'
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from 'recharts'
-import { useState } from 'react'
 
-interface RevenueEntry { month: string; label: string; amount: number }
+interface RevenueEntry {
+  month: string
+  label: string
+  amount: number
+}
 
-function SkeletonCard() {
+const summaryCards = [
+  { label: 'Doanh thu tháng', key: 'revenueThisMonth', icon: BadgeDollarSign, tone: 'success', format: 'currency' },
+  { label: 'Hóa đơn quá hạn', key: 'overdueInvoices', icon: AlertCircle, tone: 'error' },
+  { label: 'Bảo trì mới', key: 'openMaintenance', icon: Wrench, tone: 'warning' },
+  { label: 'Đang xử lý', key: 'inProgressMaintenance', icon: Clock, tone: 'accent' },
+] as const
+
+const inventoryCards = [
+  { label: 'Tổng tài sản', key: 'totalProperties', icon: Building2 },
+  { label: 'Tổng phòng', key: 'totalRooms', icon: Home },
+  { label: 'Phòng trống', key: 'emptyRooms', icon: DoorOpen },
+  { label: 'Tỷ lệ lấp đầy', key: 'occupancyRate', icon: TrendingUp, suffix: '%' },
+] as const
+
+function DashboardSkeleton() {
   return (
-    <Card><CardContent className="p-5">
-      <div className="flex items-center justify-between mb-3">
-        <div className="h-3 w-24 bg-gray-200 rounded animate-pulse" />
-        <div className="h-9 w-9 bg-gray-200 rounded-lg animate-pulse" />
+    <div className="space-y-5">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="rounded-2xl border border-border/80 bg-surface p-5">
+            <div className="h-3 w-24 rounded bg-sidebar animate-pulse" />
+            <div className="mt-4 h-8 w-32 rounded bg-sidebar animate-pulse" />
+            <div className="mt-5 h-9 w-9 rounded-xl bg-sidebar animate-pulse" />
+          </div>
+        ))}
       </div>
-      <div className="h-8 w-20 bg-gray-200 rounded animate-pulse" />
-    </CardContent></Card>
+      <div className="grid grid-cols-1 gap-5 xl:grid-cols-[1.2fr_0.8fr]">
+        <div className="rounded-2xl border border-border/80 bg-surface p-5 h-80 animate-pulse" />
+        <div className="rounded-2xl border border-border/80 bg-surface p-5 h-80 animate-pulse" />
+      </div>
+    </div>
   )
 }
 
-const cards = [
-  { label: 'Tổng tài sản',      key: 'totalProperties',       icon: Building2,       color: 'text-accent',         bg: 'bg-accent-surface' },
-  { label: 'Tổng phòng',        key: 'totalRooms',            icon: Home,            color: 'text-accent',         bg: 'bg-accent-surface' },
-  { label: 'Phòng trống',       key: 'emptyRooms',            icon: DoorOpen,        color: 'text-warning-fg',     bg: 'bg-warning-surface' },
-  { label: 'Tỷ lệ lấp đầy',    key: 'occupancyRate',         icon: TrendingUp,      color: 'text-success-fg',     bg: 'bg-success-surface', suffix: '%' },
-  { label: 'Doanh thu tháng',   key: 'revenueThisMonth',      icon: BadgeDollarSign, color: 'text-success-fg',     bg: 'bg-success-surface', isCurrency: true },
-  { label: 'Hóa đơn quá hạn',  key: 'overdueInvoices',       icon: AlertCircle,     color: 'text-error-fg',       bg: 'bg-error-surface' },
-  { label: 'Bảo trì mới',      key: 'openMaintenance',       icon: Wrench,          color: 'text-badge-orange-text', bg: 'bg-badge-orange' },
-  { label: 'Đang xử lý',       key: 'inProgressMaintenance', icon: Clock,           color: 'text-accent',         bg: 'bg-accent-surface' },
-]
+function toneClasses(tone: string) {
+  switch (tone) {
+    case 'success':
+      return 'bg-success-surface text-success-fg'
+    case 'error':
+      return 'bg-error-surface text-error-fg'
+    case 'warning':
+      return 'bg-warning-surface text-warning-fg'
+    default:
+      return 'bg-accent-surface text-accent'
+  }
+}
 
 export default function AdminDashboard() {
   const { data, isLoading } = useQuery<Dashboard>({
@@ -45,91 +74,157 @@ export default function AdminDashboard() {
   })
 
   const [chartMonths, setChartMonths] = useState(6)
-  const { data: revenueData2 } = useQuery<RevenueEntry[]>({
+  const { data: revenueData = [] } = useQuery<RevenueEntry[]>({
     queryKey: ['monthly-revenue', chartMonths],
     queryFn: () => api.get(`/dashboard/revenue?months=${chartMonths}`).then(r => r.data),
-    enabled: false,
   })
 
-  const chartData = revenueData2?.map((r: RevenueEntry) => ({
+  const chartData = useMemo(() => revenueData.map((r) => ({
     ...r,
     amount: Number(r.amount) / 1_000_000,
-  })) ?? []
+  })), [revenueData])
+
+  const occupancyData = [
+    { label: 'Đang thuê', value: Number((data?.occupancyRate ?? 0).toFixed(1)) },
+    { label: 'Phòng trống', value: Number((100 - (data?.occupancyRate ?? 0)).toFixed(1)) },
+  ]
+
+  if (isLoading) {
+    return (
+      <Layout title="Tổng quan">
+        <DashboardSkeleton />
+      </Layout>
+    )
+  }
 
   return (
     <Layout title="Tổng quan">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
-        {isLoading
-          ? Array.from({ length: 8 }).map((_, i) => <SkeletonCard key={i} />)
-          : cards.map(card => {
-              const Icon = card.icon
-              let value = (data as any)?.[card.key] ?? 0
-              if (card.isCurrency) value = formatCurrency(value)
-              else if (card.suffix) value = `${(value as number).toFixed(1)}${card.suffix}`
-              return (
-                <Card key={card.key} className="hover:shadow-md transition-shadow duration-200">
-                  <CardContent className="p-5">
-                    <div className="flex items-center justify-between mb-3">
-                      <p className="text-sm font-medium text-gray-500">{card.label}</p>
-                      <div className={`${card.bg} p-2 rounded-lg`}><Icon size={18} className={card.color} /></div>
-                    </div>
-                    <p className={`text-2xl font-bold ${card.color}`}>{value}</p>
-                  </CardContent>
-                </Card>
-              )
-            })
-        }
-      </div>
-
-      {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardContent className="p-5">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold text-gray-900">Doanh thu theo tháng</h3>
-              <div className="flex gap-2">
-                {[3, 6, 12].map(m => (
-                  <button key={m} onClick={() => setChartMonths(m)}
-                    className={`px-3 py-1 rounded text-xs font-medium ${chartMonths === m ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-600'}`}>
-                    {m} tháng
-                  </button>
-                ))}
+      <section className="mb-5 flex flex-col gap-4 rounded-[28px] border border-border/80 bg-surface px-6 py-6 lg:flex-row lg:items-end lg:justify-between">
+        <div className="max-w-2xl">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-fg-subtle">Tình hình hôm nay</p>
+          <h2 className="mt-2 text-[28px] font-semibold tracking-[-0.02em] text-fg">Nắm nhanh việc cần xử lý trước khi bắt đầu ngày làm việc.</h2>
+          <p className="mt-2 text-sm leading-6 text-fg-muted">
+            Tập trung vào công nợ, yêu cầu bảo trì và tỷ lệ lấp đầy để biết khu vực nào cần can thiệp ngay.
+          </p>
+        </div>
+        <div className="grid grid-cols-2 gap-3 text-sm sm:grid-cols-4 lg:w-[480px]">
+          {inventoryCards.map(card => {
+            const Icon = card.icon
+            const value = card.suffix
+              ? `${Number((data as any)?.[card.key] ?? 0).toFixed(1)}${card.suffix}`
+              : (data as any)?.[card.key] ?? 0
+            return (
+              <div key={card.key} className="rounded-2xl border border-border/70 bg-bg px-4 py-3">
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-xs text-fg-muted">{card.label}</p>
+                  <Icon size={14} className="text-fg-subtle" />
+                </div>
+                <p className="mt-3 text-xl font-semibold tracking-[-0.02em] text-fg">{value}</p>
               </div>
+            )
+          })}
+        </div>
+      </section>
+
+      <section className="mb-5 grid grid-cols-1 gap-4 xl:grid-cols-4">
+        {summaryCards.map(card => {
+          const Icon = card.icon
+          const rawValue = (data as any)?.[card.key] ?? 0
+          const value = card.format === 'currency' ? formatCurrency(rawValue) : rawValue
+          return (
+            <Card key={card.key} className="overflow-hidden">
+              <CardContent className="p-5">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <p className="text-sm text-fg-muted">{card.label}</p>
+                    <p className="mt-3 text-[28px] font-semibold tracking-[-0.03em] text-fg">{value}</p>
+                  </div>
+                  <div className={`inline-flex h-11 w-11 items-center justify-center rounded-2xl ${toneClasses(card.tone)}`}>
+                    <Icon size={18} />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )
+        })}
+      </section>
+
+      <section className="grid grid-cols-1 gap-5 xl:grid-cols-[1.2fr_0.8fr]">
+        <Card>
+          <CardHeader className="flex flex-col gap-4 border-b border-border/80 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-fg-subtle">Doanh thu</p>
+              <h3 className="mt-1 text-lg font-semibold tracking-[-0.01em] text-fg">Dòng tiền theo tháng</h3>
+              <p className="mt-1 text-sm text-fg-muted">Theo dõi xu hướng thu tiền trong các kỳ gần nhất.</p>
             </div>
+            <div className="flex gap-1.5 rounded-xl bg-sidebar p-1">
+              {[3, 6, 12].map(m => (
+                <button
+                  key={m}
+                  onClick={() => setChartMonths(m)}
+                  className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+                    chartMonths === m ? 'bg-surface text-fg shadow-sm' : 'text-fg-muted hover:text-fg'
+                  }`}
+                >
+                  {m} tháng
+                </button>
+              ))}
+            </div>
+          </CardHeader>
+          <CardContent className="pt-5">
             {chartData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={220}>
-                <BarChart data={chartData} margin={{ top: 5, right: 10, left: -10, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis dataKey="label" tick={{ fontSize: 11 }} />
-                  <YAxis tick={{ fontSize: 11 }} tickFormatter={v => `${v} tr`} />
-                  <Tooltip formatter={(v: any) => [`${Number(v).toFixed(1)} triệu`, 'Doanh thu']} />
-                  <Bar dataKey="amount" fill="var(--color-accent)" radius={[4, 4, 0, 0]} name="Doanh thu" />
+              <ResponsiveContainer width="100%" height={280}>
+                <BarChart data={chartData} margin={{ top: 6, right: 8, left: -12, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} />
+                  <XAxis dataKey="label" tick={{ fontSize: 11, fill: 'var(--color-fg-subtle)' }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fontSize: 11, fill: 'var(--color-fg-subtle)' }} tickFormatter={(v) => `${v} tr`} axisLine={false} tickLine={false} />
+                  <Tooltip
+                    cursor={{ fill: 'var(--color-accent-surface)' }}
+                    formatter={(v: number) => [`${Number(v).toFixed(1)} triệu`, 'Doanh thu']}
+                    contentStyle={{ borderRadius: 16, border: '1px solid var(--color-border)', background: 'var(--color-surface)' }}
+                  />
+                  <Bar dataKey="amount" fill="var(--color-accent)" radius={[8, 8, 0, 0]} name="Doanh thu" />
                 </BarChart>
               </ResponsiveContainer>
             ) : (
-              <div className="flex h-48 items-center justify-center text-gray-400 text-sm">Chưa có dữ liệu doanh thu</div>
+              <EmptyState message="Chưa có dữ liệu doanh thu cho khoảng thời gian này." />
             )}
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-5">
-            <h3 className="font-semibold text-gray-900 mb-4">Tỷ lệ lấp đầy</h3>
+          <CardHeader>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-fg-subtle">Công suất</p>
+            <h3 className="mt-1 text-lg font-semibold tracking-[-0.01em] text-fg">Tỷ lệ lấp đầy hiện tại</h3>
+            <p className="mt-1 text-sm text-fg-muted">So sánh nhanh giữa số phòng đang thuê và số phòng còn trống.</p>
+          </CardHeader>
+          <CardContent className="pt-5">
+            <div className="mb-5 flex items-end justify-between gap-3">
+              <div>
+                <p className="text-sm text-fg-muted">Đang khai thác</p>
+                <p className="mt-1 text-[32px] font-semibold tracking-[-0.03em] text-fg">{(data?.occupancyRate ?? 0).toFixed(1)}%</p>
+              </div>
+              <div className="rounded-2xl bg-accent-surface px-3 py-2 text-right">
+                <p className="text-xs text-accent">Phòng trống</p>
+                <p className="mt-1 text-sm font-semibold text-accent">{data?.emptyRooms ?? 0} phòng</p>
+              </div>
+            </div>
             <ResponsiveContainer width="100%" height={220}>
-              <BarChart data={[
-                { label: 'Đang thuê', value: (data?.occupancyRate ?? 0).toFixed(1) },
-                { label: 'Phòng trống', value: (100 - (data?.occupancyRate ?? 0)).toFixed(1) },
-              ]} margin={{ top: 5, right: 10, left: -10, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                <XAxis dataKey="label" tick={{ fontSize: 11 }} />
-                <YAxis tick={{ fontSize: 11 }} tickFormatter={v => `${v}%`} />
-                <Tooltip formatter={(v: any) => [`${v}%`]} />
-                <Bar dataKey="value" fill="#10b981" radius={[4, 4, 0, 0]} />
+              <BarChart data={occupancyData} margin={{ top: 6, right: 8, left: -12, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} />
+                <XAxis dataKey="label" tick={{ fontSize: 11, fill: 'var(--color-fg-subtle)' }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 11, fill: 'var(--color-fg-subtle)' }} tickFormatter={(v) => `${v}%`} axisLine={false} tickLine={false} />
+                <Tooltip
+                  cursor={{ fill: 'var(--color-accent-surface)' }}
+                  formatter={(v: number) => [`${v}%`, 'Tỷ lệ']}
+                  contentStyle={{ borderRadius: 16, border: '1px solid var(--color-border)', background: 'var(--color-surface)' }}
+                />
+                <Bar dataKey="value" fill="var(--color-success)" radius={[8, 8, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
-      </div>
+      </section>
     </Layout>
   )
 }

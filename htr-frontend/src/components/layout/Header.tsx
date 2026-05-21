@@ -13,6 +13,10 @@ export default function Header({ title }: HeaderProps) {
   const role = user?.role ?? ''
 
   const pageTitle = title ?? resolveTitle(location.pathname)
+  const roleLabel =
+    role === 'ADMIN' ? 'Quản trị vận hành' :
+    role === 'TENANT' ? 'Cổng khách thuê' :
+    'Bảng công việc kỹ thuật'
 
   const notifPath =
     role === 'ADMIN' ? '/admin/notifications' :
@@ -20,12 +24,17 @@ export default function Header({ title }: HeaderProps) {
     '/tech/notifications'
 
   return (
-    <header className="bg-surface border-b border-border px-6 py-3 flex items-center justify-between shrink-0">
-      <h1 className="text-sm font-semibold text-fg">{pageTitle}</h1>
-      <div className="flex items-center gap-3">
-        <Link to={notifPath} className="p-1.5 rounded-lg hover:bg-sidebar transition-colors">
-          <Bell size={16} className="text-fg-muted" />
-        </Link>
+    <header className="border-b border-border/80 bg-surface/92 px-6 py-3.5 backdrop-blur-sm shrink-0 lg:px-8">
+      <div className="flex items-center justify-between gap-4">
+        <div className="min-w-0">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-fg-subtle">{roleLabel}</p>
+          <h1 className="mt-1 truncate text-lg font-semibold tracking-[-0.01em] text-fg">{pageTitle}</h1>
+        </div>
+        <div className="flex items-center gap-3">
+          <Link to={notifPath} className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-border/80 bg-surface text-fg-muted hover:bg-sidebar hover:text-fg transition-colors">
+            <Bell size={16} />
+          </Link>
+        </div>
       </div>
     </header>
   )

@@ -182,6 +182,24 @@
       "type": "file"
     },
     {
+      "path": "src\\components\\layout\\Layout.tsx",
+      "accessCount": 3,
+      "lastAccessed": 1779365195726,
+      "type": "file"
+    },
+    {
+      "path": "src\\components\\layout\\Header.tsx",
+      "accessCount": 3,
+      "lastAccessed": 1779365345941,
+      "type": "file"
+    },
+    {
+      "path": "src\\components\\layout\\Sidebar.tsx",
+      "accessCount": 3,
+      "lastAccessed": 1779365346287,
+      "type": "file"
+    },
+    {
       "path": "src\\types\\index.ts",
       "accessCount": 2,
       "lastAccessed": 1779362996386,
@@ -236,6 +254,42 @@
       "type": "file"
     },
     {
+      "path": "src\\components\\ui\\card.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1779365196058,
+      "type": "file"
+    },
+    {
+      "path": "src\\components\\ui\\button.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1779365196362,
+      "type": "file"
+    },
+    {
+      "path": "src\\components\\ui\\table.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1779365196685,
+      "type": "file"
+    },
+    {
+      "path": "src\\components\\ui\\feedback.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1779365196985,
+      "type": "file"
+    },
+    {
+      "path": "src\\features\\admin\\pages\\DashboardPage.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1779365346755,
+      "type": "file"
+    },
+    {
+      "path": "src\\pages\\LandingPage.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1779365347120,
+      "type": "file"
+    },
+    {
       "path": "src\\api\\index.ts",
       "accessCount": 1,
       "lastAccessed": 1779362819296,
@@ -260,27 +314,39 @@
       "type": "file"
     },
     {
-      "path": "src\\components\\layout\\Sidebar.tsx",
-      "accessCount": 1,
-      "lastAccessed": 1779363526921,
-      "type": "file"
-    },
-    {
-      "path": "src\\components\\layout\\Header.tsx",
-      "accessCount": 1,
-      "lastAccessed": 1779363529961,
-      "type": "file"
-    },
-    {
-      "path": "src\\components\\layout\\Layout.tsx",
-      "accessCount": 1,
-      "lastAccessed": 1779363531684,
-      "type": "file"
-    },
-    {
       "path": "src\\components\\layout\\index.ts",
       "accessCount": 1,
       "lastAccessed": 1779363532286,
+      "type": "file"
+    },
+    {
+      "path": "C:\\Users\\chez1s\\.claude\\skills\\impeccable\\reference\\product.md",
+      "accessCount": 1,
+      "lastAccessed": 1779364882580,
+      "type": "file"
+    },
+    {
+      "path": "C:\\Users\\chez1s\\.claude\\plans\\zazzy-wishing-clarke.md",
+      "accessCount": 1,
+      "lastAccessed": 1779365086311,
+      "type": "file"
+    },
+    {
+      "path": "src\\index.css",
+      "accessCount": 1,
+      "lastAccessed": 1779365163027,
+      "type": "file"
+    },
+    {
+      "path": "src",
+      "accessCount": 1,
+      "lastAccessed": 1779365576675,
+      "type": "directory"
+    },
+    {
+      "path": "src\\assets\\logo-htr.png",
+      "accessCount": 1,
+      "lastAccessed": 1779365576746,
       "type": "file"
     }
   ],

@@ -42,7 +42,8 @@
       "Bash(tailwind\")",
       "Bash(mvn clean *)",
       "Bash(node *)",
-      "Skill(impeccable)"
+      "Skill(impeccable)",
+      "PowerShell(Get-ChildItem -Path \"D:\\\\Code\\\\HowsTheRent\" -File | Where-Object { $_.Name -match '^\\(?i\\)\\(PRODUCT|DESIGN\\)\\\\.md$' } | Select-Object -ExpandProperty FullName)"
     ]
   }
 }
