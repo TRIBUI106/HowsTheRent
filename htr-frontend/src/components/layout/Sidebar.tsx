@@ -15,10 +15,12 @@ export default function Sidebar() {
       <div className="px-4 py-4 border-b border-border">
         <div className="flex items-center gap-2.5">
           <div className="w-7 h-7 bg-accent rounded-lg flex items-center justify-center shrink-0">
-            <span className="text-accent-fg font-bold text-xs">P</span>
+            <Link to="/" className="text-accent-fg font-bold text-xs">
+              P
+            </Link>
           </div>
           <div>
-            <p className="font-semibold text-sm text-fg leading-none">HowsTheRent</p>
+            <p className="font-semibold text-sm text-fg leading-none">How's The Rent</p>
             <p className="text-xs text-fg-subtle mt-0.5">Quản lý nhà trọ</p>
           </div>
         </div>

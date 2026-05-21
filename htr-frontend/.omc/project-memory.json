@@ -170,6 +170,12 @@
   },
   "hotPaths": [
     {
+      "path": "src\\App.tsx",
+      "accessCount": 7,
+      "lastAccessed": 1779364749474,
+      "type": "file"
+    },
+    {
       "path": "src\\pages\\admin\\MaintenancePage.tsx",
       "accessCount": 3,
       "lastAccessed": 1779363047626,
@@ -224,9 +230,9 @@
       "type": "file"
     },
     {
-      "path": "src\\App.tsx",
+      "path": "src\\components\\Layout.tsx",
       "accessCount": 2,
-      "lastAccessed": 1779363140319,
+      "lastAccessed": 1779363536149,
       "type": "file"
     },
     {
@@ -245,6 +251,36 @@
       "path": "src\\router\\adminRoutes.tsx",
       "accessCount": 1,
       "lastAccessed": 1779363135525,
+      "type": "file"
+    },
+    {
+      "path": "src\\components\\layout\\navItems.ts",
+      "accessCount": 1,
+      "lastAccessed": 1779363519456,
+      "type": "file"
+    },
+    {
+      "path": "src\\components\\layout\\Sidebar.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1779363526921,
+      "type": "file"
+    },
+    {
+      "path": "src\\components\\layout\\Header.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1779363529961,
+      "type": "file"
+    },
+    {
+      "path": "src\\components\\layout\\Layout.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1779363531684,
+      "type": "file"
+    },
+    {
+      "path": "src\\components\\layout\\index.ts",
+      "accessCount": 1,
+      "lastAccessed": 1779363532286,
       "type": "file"
     }
   ],

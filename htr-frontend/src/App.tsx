@@ -12,12 +12,13 @@ import tenantRoutes from '@/router/tenantRoutes'
 import techRoutes from '@/router/techRoutes'
 
 export default function App() {
-  const { accessToken } = useAuthStore()
+  const { accessToken, user } = useAuthStore()
 
   if (!accessToken) {
     return (
       <Routes>
         <Route path="/" element={<LandingPage />} />
+        <Route path="/landing" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
@@ -28,8 +29,15 @@ export default function App() {
     )
   }
 
+  const homePath =
+    user?.role === 'ADMIN' ? '/admin' :
+    user?.role === 'TENANT' ? '/tenant' :
+    '/tech'
+
   return (
     <Routes>
+      <Route path="/" element={<Navigate to={homePath} replace />} />
+      <Route path="/landing" element={<LandingPage />} />
       {adminRoutes}
       {tenantRoutes}
       {techRoutes}
