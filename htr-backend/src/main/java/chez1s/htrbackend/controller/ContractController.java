@@ -5,7 +5,6 @@ import chez1s.htrbackend.dto.request.CreateContractRequest;
 import chez1s.htrbackend.dto.request.RenewContractRequest;
 import chez1s.htrbackend.dto.response.ContractResponse;
 import chez1s.htrbackend.dto.response.PageResponse;
-import chez1s.htrbackend.security.JwtTokenProvider;
 import chez1s.htrbackend.service.ContractService;
 import chez1s.htrbackend.service.StorageService;
 import jakarta.validation.Valid;
@@ -16,6 +15,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -29,7 +29,6 @@ public class ContractController {
 
     private final ContractService contractService;
     private final StorageService storageService;
-    private final JwtTokenProvider jwtTokenProvider;
 
     @GetMapping("/contracts")
     @PreAuthorize("hasRole('ADMIN')")
@@ -45,8 +44,8 @@ public class ContractController {
 
     @GetMapping("/contracts/mine")
     @PreAuthorize("hasRole('TENANT')")
-    public ResponseEntity<List<ContractResponse>> listMine(@RequestHeader("Authorization") String authHeader) {
-        UUID tenantId = jwtTokenProvider.getUserId(authHeader.replace("Bearer ", ""));
+    public ResponseEntity<List<ContractResponse>> listMine(Authentication auth) {
+        UUID tenantId = (UUID) auth.getPrincipal();
         return ResponseEntity.ok(contractService.listByTenant(tenantId).stream().map(ContractResponse::from).toList());
     }
 

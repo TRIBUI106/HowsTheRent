@@ -8,6 +8,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -15,7 +16,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -26,7 +26,6 @@ import chez1s.htrbackend.dto.response.PageResponse;
 import chez1s.htrbackend.dto.response.UserResponse;
 import chez1s.htrbackend.exception.BusinessException;
 import chez1s.htrbackend.exception.ResourceNotFoundException;
-import chez1s.htrbackend.security.JwtTokenProvider;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -41,7 +40,6 @@ public class UserController {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final JwtTokenProvider jwtTokenProvider;
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
@@ -51,8 +49,8 @@ public class UserController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<UserResponse> getMe(@RequestHeader("Authorization") String authHeader) {
-        UUID userId = jwtTokenProvider.getUserId(authHeader.replace("Bearer ", ""));
+    public ResponseEntity<UserResponse> getMe(Authentication auth) {
+        UUID userId = (UUID) auth.getPrincipal();
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User", userId));
         return ResponseEntity.ok(UserResponse.from(user));

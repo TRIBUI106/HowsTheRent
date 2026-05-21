@@ -3,7 +3,6 @@ package chez1s.htrbackend.controller;
 import chez1s.htrbackend.domain.entity.Invoice;
 import chez1s.htrbackend.dto.response.InvoiceResponse;
 import chez1s.htrbackend.dto.response.PageResponse;
-import chez1s.htrbackend.security.JwtTokenProvider;
 import chez1s.htrbackend.service.InvoiceService;
 import chez1s.htrbackend.service.PayOSService;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +11,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.YearMonth;
@@ -26,7 +26,6 @@ public class InvoiceController {
 
     private final InvoiceService invoiceService;
     private final PayOSService payOSService;
-    private final JwtTokenProvider jwtTokenProvider;
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
@@ -38,9 +37,9 @@ public class InvoiceController {
     @GetMapping("/mine")
     @PreAuthorize("hasRole('TENANT')")
     public ResponseEntity<PageResponse<InvoiceResponse>> listMine(
-            @RequestHeader("Authorization") String authHeader,
+            Authentication auth,
             @PageableDefault(size = 20, sort = "invoiceMonth", direction = Sort.Direction.DESC) Pageable pageable) {
-        UUID tenantId = jwtTokenProvider.getUserId(authHeader.replace("Bearer ", ""));
+        UUID tenantId = (UUID) auth.getPrincipal();
         return ResponseEntity.ok(invoiceService.listByTenant(tenantId, pageable));
     }
 

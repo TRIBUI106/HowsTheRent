@@ -3,7 +3,6 @@ package chez1s.htrbackend.controller;
 import chez1s.htrbackend.domain.enums.AuditAction;
 import chez1s.htrbackend.dto.response.AuditLogResponse;
 import chez1s.htrbackend.dto.response.PageResponse;
-import chez1s.htrbackend.security.JwtTokenProvider;
 import chez1s.htrbackend.service.AuditService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -23,7 +22,6 @@ import java.util.UUID;
 public class AuditController {
 
     private final AuditService auditService;
-    private final JwtTokenProvider jwtTokenProvider;
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")

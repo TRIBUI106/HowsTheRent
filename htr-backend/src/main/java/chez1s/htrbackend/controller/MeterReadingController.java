@@ -4,13 +4,13 @@ import chez1s.htrbackend.dto.request.CreateMeterReadingRequest;
 import chez1s.htrbackend.dto.request.UpdateVehicleRecordRequest;
 import chez1s.htrbackend.dto.response.MeterReadingResponse;
 import chez1s.htrbackend.dto.response.VehicleRecordResponse;
-import chez1s.htrbackend.security.JwtTokenProvider;
 import chez1s.htrbackend.service.MeterReadingService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,7 +22,6 @@ import java.util.UUID;
 public class MeterReadingController {
 
     private final MeterReadingService meterReadingService;
-    private final JwtTokenProvider jwtTokenProvider;
 
     @GetMapping("/meter-readings")
     @PreAuthorize("hasRole('ADMIN')")
@@ -33,9 +32,9 @@ public class MeterReadingController {
     @PostMapping("/meter-readings")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<MeterReadingResponse> createReading(@PathVariable UUID roomId,
-                                                              @RequestHeader("Authorization") String authHeader,
+                                                              Authentication auth,
                                                               @Valid @RequestBody CreateMeterReadingRequest req) {
-        UUID recordedBy = jwtTokenProvider.getUserId(authHeader.replace("Bearer ", ""));
+        UUID recordedBy = (UUID) auth.getPrincipal();
         return ResponseEntity.status(HttpStatus.CREATED).body(MeterReadingResponse.from(meterReadingService.create(roomId, recordedBy, req)));
     }
 

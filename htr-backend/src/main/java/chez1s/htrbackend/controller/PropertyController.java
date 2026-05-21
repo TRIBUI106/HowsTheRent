@@ -1,19 +1,18 @@
 package chez1s.htrbackend.controller;
 
-import chez1s.htrbackend.domain.entity.Property;
 import chez1s.htrbackend.dto.request.CreatePropertyRequest;
 import chez1s.htrbackend.dto.request.UpdateFeeConfigRequest;
 import chez1s.htrbackend.dto.request.UpdateVehicleConfigRequest;
 import chez1s.htrbackend.dto.response.FeeConfigResponse;
 import chez1s.htrbackend.dto.response.PropertyResponse;
 import chez1s.htrbackend.dto.response.VehicleConfigResponse;
-import chez1s.htrbackend.security.JwtTokenProvider;
 import chez1s.htrbackend.service.PropertyService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,7 +24,6 @@ import java.util.UUID;
 public class PropertyController {
 
     private final PropertyService propertyService;
-    private final JwtTokenProvider jwtTokenProvider;
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
@@ -35,8 +33,8 @@ public class PropertyController {
 
     @GetMapping("/mine")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<PropertyResponse>> listMine(@RequestHeader("Authorization") String authHeader) {
-        UUID ownerId = extractUserId(authHeader);
+    public ResponseEntity<List<PropertyResponse>> listMine(Authentication auth) {
+        UUID ownerId = (UUID) auth.getPrincipal();
         return ResponseEntity.ok(propertyService.listByOwner(ownerId).stream().map(PropertyResponse::from).toList());
     }
 
@@ -47,9 +45,9 @@ public class PropertyController {
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<PropertyResponse> create(@RequestHeader("Authorization") String authHeader,
+    public ResponseEntity<PropertyResponse> create(Authentication auth,
                                                    @Valid @RequestBody CreatePropertyRequest req) {
-        UUID ownerId = extractUserId(authHeader);
+        UUID ownerId = (UUID) auth.getPrincipal();
         return ResponseEntity.status(HttpStatus.CREATED).body(PropertyResponse.from(propertyService.create(ownerId, req)));
     }
 
@@ -84,10 +82,5 @@ public class PropertyController {
     public ResponseEntity<VehicleConfigResponse> updateVehicleConfig(@PathVariable UUID id,
                                                                      @Valid @RequestBody UpdateVehicleConfigRequest req) {
         return ResponseEntity.ok(VehicleConfigResponse.from(propertyService.updateVehicleConfig(id, req)));
-    }
-
-    private UUID extractUserId(String authHeader) {
-        String token = authHeader.replace("Bearer ", "");
-        return jwtTokenProvider.getUserId(token);
     }
 }

@@ -44,7 +44,11 @@
       "Bash(node *)",
       "Skill(impeccable)",
       "PowerShell(Get-ChildItem -Path \"D:\\\\Code\\\\HowsTheRent\" -File | Where-Object { $_.Name -match '^\\(?i\\)\\(PRODUCT|DESIGN\\)\\\\.md$' } | Select-Object -ExpandProperty FullName)",
-      "PowerShell(Copy-Item *)"
+      "PowerShell(Copy-Item *)",
+      "Bash(netstat -ano)",
+      "Bash(findstr \":8080.*LISTENING\")",
+      "Bash(findstr \":5173.*LISTENING\")",
+      "Bash(wmic process *)"
     ]
   }
 }

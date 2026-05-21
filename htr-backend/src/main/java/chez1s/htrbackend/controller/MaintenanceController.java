@@ -4,7 +4,6 @@ import chez1s.htrbackend.domain.entity.MaintenanceRequest;
 import chez1s.htrbackend.dto.request.CreateMaintenanceRequest;
 import chez1s.htrbackend.dto.response.MaintenanceRequestResponse;
 import chez1s.htrbackend.dto.response.PageResponse;
-import chez1s.htrbackend.security.JwtTokenProvider;
 import chez1s.htrbackend.service.MaintenanceService;
 import chez1s.htrbackend.service.StorageService;
 import jakarta.validation.Valid;
@@ -16,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -28,7 +28,6 @@ import java.util.UUID;
 public class MaintenanceController {
 
     private final MaintenanceService maintenanceService;
-    private final JwtTokenProvider jwtTokenProvider;
     private final StorageService storageService;
 
     @GetMapping
@@ -41,16 +40,16 @@ public class MaintenanceController {
     @GetMapping("/mine")
     @PreAuthorize("hasRole('TENANT')")
     public ResponseEntity<PageResponse<MaintenanceRequestResponse>> listMine(
-            @RequestHeader("Authorization") String authHeader,
+            Authentication auth,
             @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
-        UUID tenantId = jwtTokenProvider.getUserId(authHeader.replace("Bearer ", ""));
+        UUID tenantId = (UUID) auth.getPrincipal();
         return ResponseEntity.ok(maintenanceService.listByTenant(tenantId, pageable));
     }
 
     @GetMapping("/assigned")
     @PreAuthorize("hasRole('TECHNICIAN')")
-    public ResponseEntity<List<MaintenanceRequestResponse>> listAssigned(@RequestHeader("Authorization") String authHeader) {
-        UUID techId = jwtTokenProvider.getUserId(authHeader.replace("Bearer ", ""));
+    public ResponseEntity<List<MaintenanceRequestResponse>> listAssigned(Authentication auth) {
+        UUID techId = (UUID) auth.getPrincipal();
         return ResponseEntity.ok(maintenanceService.listByTechnician(techId).stream().map(MaintenanceRequestResponse::from).toList());
     }
 
@@ -61,9 +60,9 @@ public class MaintenanceController {
 
     @PostMapping
     @PreAuthorize("hasRole('TENANT')")
-    public ResponseEntity<MaintenanceRequestResponse> create(@RequestHeader("Authorization") String authHeader,
+    public ResponseEntity<MaintenanceRequestResponse> create(Authentication auth,
                                                              @Valid @RequestBody CreateMaintenanceRequest req) {
-        UUID tenantId = jwtTokenProvider.getUserId(authHeader.replace("Bearer ", ""));
+        UUID tenantId = (UUID) auth.getPrincipal();
         return ResponseEntity.status(HttpStatus.CREATED).body(MaintenanceRequestResponse.from(maintenanceService.create(tenantId, req)));
     }
 
@@ -82,12 +81,12 @@ public class MaintenanceController {
     @PostMapping(value = "/with-images", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasRole('TENANT')")
     public ResponseEntity<MaintenanceRequestResponse> createWithImages(
-            @RequestHeader("Authorization") String authHeader,
+            Authentication auth,
             @RequestParam("title") String title,
             @RequestParam(value = "description", required = false) String description,
             @RequestParam(value = "roomId") UUID roomId,
             @RequestParam(value = "images", required = false) List<MultipartFile> images) {
-        UUID tenantId = jwtTokenProvider.getUserId(authHeader.replace("Bearer ", ""));
+        UUID tenantId = (UUID) auth.getPrincipal();
         CreateMaintenanceRequest req = new CreateMaintenanceRequest();
         req.setRoomId(roomId);
         req.setTitle(title);

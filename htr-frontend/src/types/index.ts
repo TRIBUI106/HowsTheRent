@@ -27,7 +27,7 @@ export interface Property {
   owner: User
   name: string
   address: string
-  type: 'HOUSE' | 'CONDO' | 'APARTMENT' | 'DORMITORY'
+  type: 'HOUSE' | 'CONDO' | 'APARTMENT' | 'DORMITORY' | 'SHARED'
   description?: string
   createdAt: string
   updatedAt: string

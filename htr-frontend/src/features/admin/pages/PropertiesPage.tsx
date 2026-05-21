@@ -44,6 +44,7 @@ export default function PropertiesPage() {
                   <option value="HOUSE">Nhà riêng</option>
                   <option value="CONDO">Chung cư</option>
                   <option value="APARTMENT">Căn hộ</option>
+                  <option value="SHARED">Phòng trọ chung</option>
                   <option value="DORMITORY">Ký túc xá</option>
                 </select>
               </div>

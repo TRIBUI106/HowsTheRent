@@ -2,7 +2,6 @@ package chez1s.htrbackend.controller;
 
 import chez1s.htrbackend.domain.repository.ContractRepository;
 import chez1s.htrbackend.domain.repository.InvoiceRepository;
-import chez1s.htrbackend.security.JwtTokenProvider;
 import chez1s.htrbackend.service.PropertyService;
 import lombok.RequiredArgsConstructor;
 import org.apache.poi.ss.usermodel.*;
@@ -11,6 +10,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.format.DateTimeFormatter;
@@ -24,14 +24,13 @@ public class ExportController {
     private final InvoiceRepository invoiceRepository;
     private final ContractRepository contractRepository;
     private final PropertyService propertyService;
-    private final JwtTokenProvider jwtTokenProvider;
 
     private static final DateTimeFormatter DTF = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     @GetMapping("/invoices")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<byte[]> exportInvoices(@RequestHeader("Authorization") String authHeader) {
-        UUID ownerId = jwtTokenProvider.getUserId(authHeader.replace("Bearer ", ""));
+    public ResponseEntity<byte[]> exportInvoices(Authentication auth) {
+        UUID ownerId = (UUID) auth.getPrincipal();
         var properties = propertyService.listByOwner(ownerId);
         var propertyIds = properties.stream().map(p -> p.getId()).toList();
 
@@ -70,8 +69,8 @@ public class ExportController {
 
     @GetMapping("/contracts")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<byte[]> exportContracts(@RequestHeader("Authorization") String authHeader) {
-        UUID ownerId = jwtTokenProvider.getUserId(authHeader.replace("Bearer ", ""));
+    public ResponseEntity<byte[]> exportContracts(Authentication auth) {
+        UUID ownerId = (UUID) auth.getPrincipal();
         var properties = propertyService.listByOwner(ownerId);
         var propertyIds = properties.stream().map(p -> p.getId()).toList();
 

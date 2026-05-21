@@ -6,11 +6,11 @@ import chez1s.htrbackend.domain.enums.RoomStatus;
 import chez1s.htrbackend.domain.repository.InvoiceRepository;
 import chez1s.htrbackend.domain.repository.MaintenanceRequestRepository;
 import chez1s.htrbackend.domain.repository.RoomRepository;
-import chez1s.htrbackend.security.JwtTokenProvider;
 import chez1s.htrbackend.service.PropertyService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -32,12 +32,11 @@ public class DashboardController {
     private final RoomRepository roomRepository;
     private final InvoiceRepository invoiceRepository;
     private final MaintenanceRequestRepository maintenanceRepository;
-    private final JwtTokenProvider jwtTokenProvider;
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Map<String, Object>> getDashboard(@RequestHeader("Authorization") String authHeader) {
-        UUID ownerId = jwtTokenProvider.getUserId(authHeader.replace("Bearer ", ""));
+    public ResponseEntity<Map<String, Object>> getDashboard(Authentication auth) {
+        UUID ownerId = (UUID) auth.getPrincipal();
         var properties = propertyService.listByOwner(ownerId);
 
         long totalRooms = 0;
@@ -76,9 +75,9 @@ public class DashboardController {
     @GetMapping("/revenue")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<Map<String, Object>>> getMonthlyRevenue(
-            @RequestHeader("Authorization") String authHeader,
+            Authentication auth,
             @RequestParam(defaultValue = "12") int months) {
-        UUID ownerId = jwtTokenProvider.getUserId(authHeader.replace("Bearer ", ""));
+        UUID ownerId = (UUID) auth.getPrincipal();
         var properties = propertyService.listByOwner(ownerId);
         List<Map<String, Object>> result = new ArrayList<>();
         LocalDate today = LocalDate.now();
