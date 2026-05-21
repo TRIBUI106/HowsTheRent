@@ -7,9 +7,9 @@ import ResetPasswordPage from '@/pages/auth/ResetPasswordPage'
 import PaymentSuccessPage from '@/pages/payment/SuccessPage'
 import PaymentCancelPage from '@/pages/payment/CancelPage'
 import NotFoundPage from '@/pages/NotFoundPage'
-import AdminRoutes from '@/router/adminRoutes'
-import TenantRoutes from '@/router/tenantRoutes'
-import TechRoutes from '@/router/techRoutes'
+import adminRoutes from '@/router/adminRoutes'
+import tenantRoutes from '@/router/tenantRoutes'
+import techRoutes from '@/router/techRoutes'
 
 export default function App() {
   const { accessToken } = useAuthStore()
@@ -30,9 +30,9 @@ export default function App() {
 
   return (
     <Routes>
-      <AdminRoutes />
-      <TenantRoutes />
-      <TechRoutes />
+      {adminRoutes}
+      {tenantRoutes}
+      {techRoutes}
       <Route path="/payment/success" element={<PaymentSuccessPage />} />
       <Route path="/payment/cancel" element={<PaymentCancelPage />} />
       <Route path="*" element={<NotFoundPage />} />
