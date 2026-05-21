@@ -1,11 +1,11 @@
 import { Route } from 'react-router-dom'
 import RequireRole from './RequireRole'
-import TenantDashboard from '@/pages/tenant/DashboardPage'
-import TenantInvoicesPage from '@/pages/tenant/InvoicesPage'
-import TenantMaintenancePage from '@/pages/tenant/MaintenancePage'
-import TenantNotificationsPage from '@/pages/tenant/NotificationsPage'
-import TenantContractDetailPage from '@/pages/tenant/ContractDetailPage'
-import TenantPaymentHistoryPage from '@/pages/tenant/PaymentHistoryPage'
+import TenantDashboard from '@/features/tenant/pages/DashboardPage'
+import TenantInvoicesPage from '@/features/tenant/pages/InvoicesPage'
+import TenantMaintenancePage from '@/features/tenant/pages/MaintenancePage'
+import TenantNotificationsPage from '@/features/tenant/pages/NotificationsPage'
+import TenantContractDetailPage from '@/features/tenant/pages/ContractDetailPage'
+import TenantPaymentHistoryPage from '@/features/tenant/pages/PaymentHistoryPage'
 
 const TENANT = ['TENANT']
 

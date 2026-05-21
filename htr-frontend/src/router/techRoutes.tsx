@@ -1,7 +1,7 @@
 import { Route } from 'react-router-dom'
 import RequireRole from './RequireRole'
-import TechMaintenancePage from '@/pages/tech/MaintenancePage'
-import TechNotificationsPage from '@/pages/tech/NotificationsPage'
+import TechMaintenancePage from '@/features/tech/pages/MaintenancePage'
+import TechNotificationsPage from '@/features/tech/pages/NotificationsPage'
 
 const TECH = ['TECHNICIAN']
 

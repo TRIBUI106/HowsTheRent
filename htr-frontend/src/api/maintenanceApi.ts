@@ -1,9 +1,9 @@
 import api from '@/lib/api'
-import type { MaintenanceRequest } from '@/types'
+import type { MaintenanceRequest, Page } from '@/types'
 
 export const maintenanceApi = {
-  listAll: () => api.get<MaintenanceRequest[]>('/maintenance').then(r => r.data),
-  listMine: () => api.get<MaintenanceRequest[]>('/maintenance/my').then(r => r.data),
+  listAll: () => api.get<Page<MaintenanceRequest>>('/maintenance').then(r => r.data.content ?? []),
+  listMine: () => api.get<Page<MaintenanceRequest>>('/maintenance/my').then(r => r.data.content ?? []),
   getById: (id: string) => api.get<MaintenanceRequest>(`/maintenance/${id}`).then(r => r.data),
   create: (data: { roomId: string; title: string; description?: string }) =>
     api.post<MaintenanceRequest>('/maintenance', data).then(r => r.data),
