@@ -97,8 +97,8 @@
     },
     {
       "path": "htr-frontend\\src\\App.tsx",
-      "accessCount": 33,
-      "lastAccessed": 1779355541147,
+      "accessCount": 34,
+      "lastAccessed": 1779359785870,
       "type": "file"
     },
     {
@@ -150,6 +150,12 @@
       "type": "file"
     },
     {
+      "path": "htr-frontend\\src\\lib\\api.ts",
+      "accessCount": 6,
+      "lastAccessed": 1779359777517,
+      "type": "file"
+    },
+    {
       "path": "htr-frontend\\src\\stores\\authStore.ts",
       "accessCount": 4,
       "lastAccessed": 1778307041595,
@@ -165,12 +171,6 @@
       "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\controller\\RoomController.java",
       "accessCount": 4,
       "lastAccessed": 1779356259881,
-      "type": "file"
-    },
-    {
-      "path": "htr-frontend\\src\\lib\\api.ts",
-      "accessCount": 3,
-      "lastAccessed": 1778306835269,
       "type": "file"
     },
     {

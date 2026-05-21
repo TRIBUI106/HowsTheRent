@@ -1,7 +1,7 @@
 {
-  "tool_name": "Bash",
-  "tool_input_preview": "{\"command\":\"cd D:/Code/cz-HTR/htr-backend && mvn compile -q 2>&1\",\"description\":\"Compile backend\"}",
-  "error": "Exit code 1\nPicked up JAVA_TOOL_OPTIONS: -Dstdout.encoding=UTF-8 -Dstderr.encoding=UTF-8\n[ERROR] COMPILATION ERROR : \r\n[ERROR] /D:/Code/cz-HTR/htr-backend/src/main/java/chez1s/htrbackend/config/AuditInterceptor.java:[21,5] method does not override or implement a method from a supertype\r\n[ERROR] /D:/Code/cz-HTR/htr-backend/src/main/java/chez1s/htrbackend/config/AuditInterceptor.java:[38,26] bad operand types for binary operator '!='\n  first type:  boolean\n  second type: <nulltype>\r\n[ERROR] /D:/Co...",
-  "timestamp": "2026-05-09T08:15:26.880Z",
+  "tool_name": "Read",
+  "tool_input_preview": "{\"file_path\":\"D:\\\\Code\\\\HowsTheRent\\\\htr-frontend\\\\src\\\\router\"}",
+  "error": "File does not exist. Note: your current working directory is D:\\Code\\HowsTheRent\\htr-backend.",
+  "timestamp": "2026-05-21T10:35:28.783Z",
   "retry_count": 1
 }

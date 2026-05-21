@@ -1,0 +1,7 @@
+{
+  "tool_name": "Bash",
+  "tool_input_preview": "{\"command\":\"python -c \\\"import bcrypt; h = bcrypt.hashpw(b'Admin@123', bcrypt.gensalt(10)); print(h.decode())\\\"\",\"description\":\"Generate BCrypt hash for Admin@123\"}",
+  "error": "Exit code 1\nTraceback (most recent call last):\r\n  File \"<string>\", line 1, in <module>\r\n    import bcrypt; h = bcrypt.hashpw(b'Admin@123', bcrypt.gensalt(10)); print(h.decode())\r\n    ^^^^^^^^^^^^^\r\nModuleNotFoundError: No module named 'bcrypt'",
+  "timestamp": "2026-05-21T10:19:48.214Z",
+  "retry_count": 1
+}

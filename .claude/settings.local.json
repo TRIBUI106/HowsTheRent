@@ -40,7 +40,8 @@
       "mcp__plugin_oh-my-claudecode_t__wiki_ingest",
       "Bash(tsconfig)",
       "Bash(tailwind\")",
-      "Bash(mvn clean *)"
+      "Bash(mvn clean *)",
+      "Bash(node *)"
     ]
   }
 }
