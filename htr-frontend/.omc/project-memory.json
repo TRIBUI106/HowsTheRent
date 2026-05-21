@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
-  "lastScanned": 1778306569567,
-  "projectRoot": "D:\\Code\\cz-HTR\\htr-frontend",
+  "lastScanned": 1779362792012,
+  "projectRoot": "D:\\Code\\HowsTheRent\\htr-frontend",
   "techStack": {
     "languages": [
       {
@@ -42,7 +42,7 @@
     "runtime": null
   },
   "build": {
-    "buildCommand": "cd \"D:\\Code\\HowsTheRent\\htr-frontend\" && npx tsc --noEmit 2>&1 | head -60",
+    "buildCommand": "npm run build",
     "testCommand": null,
     "lintCommand": "npm run lint",
     "devCommand": "npm run dev",
@@ -73,11 +73,22 @@
   },
   "customNotes": [],
   "directoryMap": {
+    "dist": {
+      "path": "dist",
+      "purpose": "Distribution/build output",
+      "fileCount": 3,
+      "lastAccessed": 1779362791993,
+      "keyFiles": [
+        "favicon.svg",
+        "icons.svg",
+        "index.html"
+      ]
+    },
     "public": {
       "path": "public",
       "purpose": "Public files",
       "fileCount": 2,
-      "lastAccessed": 1778306569546,
+      "lastAccessed": 1779362791993,
       "keyFiles": [
         "favicon.svg",
         "icons.svg"
@@ -87,7 +98,7 @@
       "path": "src",
       "purpose": "Source code",
       "fileCount": 4,
-      "lastAccessed": 1778306569547,
+      "lastAccessed": 1779362791997,
       "keyFiles": [
         "App.css",
         "App.tsx",
@@ -95,11 +106,32 @@
         "main.tsx"
       ]
     },
+    "dist\\assets": {
+      "path": "dist\\assets",
+      "purpose": "Static assets",
+      "fileCount": 2,
+      "lastAccessed": 1779362791998,
+      "keyFiles": [
+        "index-BHF6tW-j.js",
+        "index-DTARdKUI.css"
+      ]
+    },
+    "src\\api": {
+      "path": "src\\api",
+      "purpose": "API routes",
+      "fileCount": 11,
+      "lastAccessed": 1779362791998,
+      "keyFiles": [
+        "authApi.ts",
+        "contractApi.ts",
+        "dashboardApi.ts"
+      ]
+    },
     "src\\assets": {
       "path": "src\\assets",
       "purpose": "Static assets",
       "fileCount": 3,
-      "lastAccessed": 1778306569553,
+      "lastAccessed": 1779362791998,
       "keyFiles": [
         "hero.png",
         "react.svg",
@@ -110,7 +142,7 @@
       "path": "src\\components",
       "purpose": "UI components",
       "fileCount": 1,
-      "lastAccessed": 1778306569553,
+      "lastAccessed": 1779362791999,
       "keyFiles": [
         "Layout.tsx"
       ]
@@ -119,7 +151,7 @@
       "path": "src\\lib",
       "purpose": "Library code",
       "fileCount": 2,
-      "lastAccessed": 1778306569553,
+      "lastAccessed": 1779362791999,
       "keyFiles": [
         "api.ts",
         "utils.ts"
@@ -128,61 +160,91 @@
     "src\\pages": {
       "path": "src\\pages",
       "purpose": "Page components",
-      "fileCount": 0,
-      "lastAccessed": 1778306569553,
-      "keyFiles": []
-    },
-    "src\\types": {
-      "path": "src\\types",
-      "purpose": "Type definitions",
-      "fileCount": 1,
-      "lastAccessed": 1778306569553,
+      "fileCount": 2,
+      "lastAccessed": 1779362791999,
       "keyFiles": [
-        "index.ts"
+        "LandingPage.tsx",
+        "NotFoundPage.tsx"
       ]
     }
   },
   "hotPaths": [
     {
+      "path": "src\\pages\\admin\\MaintenancePage.tsx",
+      "accessCount": 3,
+      "lastAccessed": 1779363047626,
+      "type": "file"
+    },
+    {
       "path": "src\\types\\index.ts",
-      "accessCount": 4,
-      "lastAccessed": 1778314696357,
-      "type": "file"
-    },
-    {
-      "path": "src\\pages\\tenant\\MaintenancePage.tsx",
       "accessCount": 2,
-      "lastAccessed": 1778314735884,
+      "lastAccessed": 1779362996386,
       "type": "file"
     },
     {
-      "path": "src\\pages\\admin\\AuditLogPage.tsx",
+      "path": "src\\api\\userApi.ts",
       "accessCount": 2,
-      "lastAccessed": 1778314799296,
+      "lastAccessed": 1779363001282,
       "type": "file"
     },
     {
-      "path": "src\\components\\ui\\pagination.tsx",
-      "accessCount": 1,
-      "lastAccessed": 1778310991529,
+      "path": "src\\api\\notificationApi.ts",
+      "accessCount": 2,
+      "lastAccessed": 1779363002760,
       "type": "file"
     },
     {
-      "path": "C:\\Users\\chez1s\\AppData\\Local\\Temp\\claude\\D--Code-HowsTheRent\\c7314faa-9f92-4f40-a98a-ddfd87394b97\\tasks\\b6d5fu38c.output",
-      "accessCount": 1,
-      "lastAccessed": 1779361577426,
+      "path": "src\\api\\maintenanceApi.ts",
+      "accessCount": 2,
+      "lastAccessed": 1779363005049,
       "type": "file"
     },
     {
-      "path": "C:\\Users\\chez1s\\.claude\\projects\\D--Code-HowsTheRent\\memory\\project_design_system.md",
-      "accessCount": 1,
-      "lastAccessed": 1779361601850,
+      "path": "src\\pages\\admin\\NotificationsPage.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1779363037000,
       "type": "file"
     },
     {
-      "path": "C:\\Users\\chez1s\\.claude\\projects\\D--Code-HowsTheRent\\memory\\MEMORY.md",
+      "path": "src\\pages\\admin\\UsersPage.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1779363061846,
+      "type": "file"
+    },
+    {
+      "path": "src\\router\\tenantRoutes.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1779363136340,
+      "type": "file"
+    },
+    {
+      "path": "src\\router\\techRoutes.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1779363137391,
+      "type": "file"
+    },
+    {
+      "path": "src\\App.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1779363140319,
+      "type": "file"
+    },
+    {
+      "path": "src\\api\\index.ts",
       "accessCount": 1,
-      "lastAccessed": 1779361610345,
+      "lastAccessed": 1779362819296,
+      "type": "file"
+    },
+    {
+      "path": "src\\lib\\utils.ts",
+      "accessCount": 1,
+      "lastAccessed": 1779362877337,
+      "type": "file"
+    },
+    {
+      "path": "src\\router\\adminRoutes.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1779363135525,
       "type": "file"
     }
   ],
