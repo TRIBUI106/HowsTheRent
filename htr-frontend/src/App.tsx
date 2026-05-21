@@ -2,6 +2,9 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import type { ReactNode } from 'react'
 import { useAuthStore } from '@/stores/authStore'
 
+// Landing
+import LandingPage from '@/pages/LandingPage'
+
 // Auth
 import LoginPage from '@/pages/auth/LoginPage'
 import ForgotPasswordPage from '@/pages/auth/ForgotPasswordPage'
@@ -50,6 +53,7 @@ export default function App() {
   if (!accessToken) {
     return (
       <Routes>
+        <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
