@@ -43,7 +43,7 @@ export default function LoginPage() {
           <div className="inline-flex items-center justify-center w-12 h-12 bg-white rounded-xl shadow-lg mb-4">
             <span className="text-indigo-600 font-bold text-xl">P</span>
           </div>
-          <h1 className="text-2xl font-bold text-white">PropMS</h1>
+          <h1 className="text-2xl font-bold text-white">HowsTheRent</h1>
           <p className="text-indigo-200 text-sm mt-1">Hệ thống Quản lý Nhà trọ</p>
         </div>
 
@@ -92,14 +92,9 @@ export default function LoginPage() {
               Quên mật khẩu?
             </Link>
           </p>
-          <p className="text-center mt-4">
-            <Link to="/forgot-password" className="text-sm text-indigo-600 hover:underline">
-              Quên mật khẩu?
-            </Link>
-          </p>
         </div>
 
-        <p className="text-center text-indigo-200/60 text-xs mt-6">PropMS © {new Date().getFullYear()}</p>
+        <p className="text-center text-indigo-200/60 text-xs mt-6">HowsTheRent © {new Date().getFullYear()}</p>
       </div>
     </div>
   )

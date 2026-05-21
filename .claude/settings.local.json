@@ -26,7 +26,7 @@
       "Bash(Sort-Object)",
       "Bash(./mvnw test *)",
       "Bash(python -m json.tool)",
-      "Bash(py skills/ui-ux-pro-max/scripts/search.py \"property management admin dashboard SaaS\" --design-system -p \"PropMS\" -f markdown)",
+      "Bash(py skills/ui-ux-pro-max/scripts/search.py \"property management admin dashboard SaaS\" --design-system -p \"HowsTheRent\" -f markdown)",
       "Bash(npx tsc *)",
       "Bash(grep -v \"^[~?] \\\\\\\\.omc\\\\|^[~?] \\\\\\\\.claude\")",
       "WebSearch",
@@ -37,7 +37,9 @@
       "Bash(mvn compile *)",
       "mcp__plugin_oh-my-claudecode_t__notepad_write_working",
       "mcp__plugin_oh-my-claudecode_t__wiki_read",
-      "mcp__plugin_oh-my-claudecode_t__wiki_ingest"
+      "mcp__plugin_oh-my-claudecode_t__wiki_ingest",
+      "Bash(tsconfig)",
+      "Bash(tailwind\")"
     ]
   }
 }

@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
-  "lastScanned": 1778306590025,
-  "projectRoot": "D:\\Code\\cz-HTR",
+  "lastScanned": 1779354767322,
+  "projectRoot": "D:\\Code\\HowsTheRent",
   "techStack": {
     "languages": [],
     "frameworks": [],
@@ -9,7 +9,7 @@
     "runtime": null
   },
   "build": {
-    "buildCommand": "cd \"D:\\Code\\cz-HTR\\htr-frontend\" && npm run build 2>&1",
+    "buildCommand": null,
     "testCommand": null,
     "lintCommand": null,
     "devCommand": null,
@@ -38,7 +38,7 @@
       "path": "docs",
       "purpose": "Documentation",
       "fileCount": 1,
-      "lastAccessed": 1778306590008,
+      "lastAccessed": 1779354767294,
       "keyFiles": [
         "DEPLOYMENT.md"
       ]
@@ -47,7 +47,7 @@
       "path": "htr-backend",
       "purpose": null,
       "fileCount": 7,
-      "lastAccessed": 1778306590008,
+      "lastAccessed": 1779354767294,
       "keyFiles": [
         "Dockerfile",
         "mvnw",
@@ -60,7 +60,7 @@
       "path": "htr-frontend",
       "purpose": null,
       "fileCount": 13,
-      "lastAccessed": 1778306590008,
+      "lastAccessed": 1779354767295,
       "keyFiles": [
         "bun.lock",
         "Dockerfile",
@@ -69,18 +69,22 @@
         "nginx.conf"
       ]
     },
-    "htr-backend\\src": {
-      "path": "htr-backend\\src",
-      "purpose": "Source code",
-      "fileCount": 0,
-      "lastAccessed": 1778306590009,
-      "keyFiles": []
+    "htr-frontend\\dist": {
+      "path": "htr-frontend\\dist",
+      "purpose": "Distribution/build output",
+      "fileCount": 3,
+      "lastAccessed": 1779354767296,
+      "keyFiles": [
+        "favicon.svg",
+        "icons.svg",
+        "index.html"
+      ]
     },
     "htr-frontend\\node_modules": {
       "path": "htr-frontend\\node_modules",
       "purpose": "Dependencies",
       "fileCount": 1,
-      "lastAccessed": 1778306590009,
+      "lastAccessed": 1779354767297,
       "keyFiles": []
     }
   },
@@ -93,8 +97,8 @@
     },
     {
       "path": "htr-frontend\\src\\App.tsx",
-      "accessCount": 29,
-      "lastAccessed": 1778314624264,
+      "accessCount": 31,
+      "lastAccessed": 1779355457494,
       "type": "file"
     },
     {
@@ -104,15 +108,15 @@
       "type": "file"
     },
     {
-      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\controller\\DashboardController.java",
-      "accessCount": 11,
-      "lastAccessed": 1778313151484,
+      "path": "htr-frontend\\src\\components\\Layout.tsx",
+      "accessCount": 12,
+      "lastAccessed": 1779355324678,
       "type": "file"
     },
     {
-      "path": "htr-frontend\\src\\components\\Layout.tsx",
+      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\controller\\DashboardController.java",
       "accessCount": 11,
-      "lastAccessed": 1778314633889,
+      "lastAccessed": 1778313151484,
       "type": "file"
     },
     {

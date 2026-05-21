@@ -43,7 +43,7 @@ function resolveTitle(pathname: string): string {
   const match = [...navItems].reverse().find(item =>
     item.exact ? pathname === item.to : pathname.startsWith(item.to)
   )
-  return match?.label ?? 'PropMS'
+  return match?.label ?? 'HowsTheRent'
 }
 
 export default function Layout({ children, title }: LayoutProps) {
@@ -63,7 +63,7 @@ export default function Layout({ children, title }: LayoutProps) {
           <div className="flex items-center gap-2.5">
             <div className="w-7 h-7 bg-indigo-500 rounded-lg flex items-center justify-center text-white font-bold text-sm">P</div>
             <div>
-              <p className="font-semibold text-sm leading-none">PropMS</p>
+              <p className="font-semibold text-sm leading-none">HowsTheRent</p>
               <p className="text-xs text-slate-400 mt-0.5">Quản lý nhà trọ</p>
             </div>
           </div>

@@ -1,0 +1,7 @@
+{
+  "tool_name": "Bash",
+  "tool_input_preview": "{\"command\":\"ls -la \\\"D:\\\\Code\\\\HowsTheRent\\\\htr-frontend\\\\\\\" | grep -E \\\"vite|tsconfig|tailwind\\\"\"}",
+  "error": "Exit code 2\n/usr/bin/bash: eval: line 3: unexpected EOF while looking for matching `\"'",
+  "timestamp": "2026-05-21T09:23:13.115Z",
+  "retry_count": 1
+}

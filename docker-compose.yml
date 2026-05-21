@@ -1,26 +1,27 @@
 version: '3.8'
+name: htr-stack
 
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: propms-postgres
+    container_name: htr-postgres
     environment:
-      POSTGRES_DB: propms
-      POSTGRES_USER: propms
+      POSTGRES_DB: htr
+      POSTGRES_USER: htr
       POSTGRES_PASSWORD: secret
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U propms"]
+      test: ["CMD-SHELL", "pg_isready -U htr"]
       interval: 5s
       timeout: 5s
       retries: 5
 
   redis:
     image: redis:7-alpine
-    container_name: propms-redis
+    container_name: htr-redis
     ports:
       - "6379:6379"
     healthcheck:
@@ -31,7 +32,7 @@ services:
 
   minio:
     image: minio/minio:latest
-    container_name: propms-minio
+    container_name: htr-minio
     command: server /data --console-address ":9001"
     environment:
       MINIO_ROOT_USER: minioadmin
@@ -51,7 +52,7 @@ services:
     build:
       context: ./htr-backend
       dockerfile: Dockerfile
-    container_name: propms-backend
+    container_name: htr-backend
     depends_on:
       postgres:
         condition: service_healthy
@@ -60,8 +61,8 @@ services:
       minio:
         condition: service_healthy
     environment:
-      DB_URL: jdbc:postgresql://postgres:5432/propms
-      DB_USER: propms
+      DB_URL: jdbc:postgresql://postgres:5432/htr
+      DB_USER: htr
       DB_PASSWORD: secret
       REDIS_HOST: redis
       REDIS_PORT: 6379
@@ -73,22 +74,12 @@ services:
       MINIO_URL: http://minio:9000
       MINIO_ACCESS_KEY: minioadmin
       MINIO_SECRET_KEY: minioadmin
-      MINIO_BUCKET: propms
+      MINIO_BUCKET: htr
       PAYOS_CLIENT_ID: ${PAYOS_CLIENT_ID}
       PAYOS_API_KEY: ${PAYOS_API_KEY}
       PAYOS_CHECKSUM_KEY: ${PAYOS_CHECKSUM_KEY}
     ports:
       - "8080:8080"
-
-  frontend:
-    build:
-      context: ./htr-frontend
-      dockerfile: Dockerfile
-    container_name: propms-frontend
-    ports:
-      - "5173:80"
-    depends_on:
-      - backend
 
 volumes:
   postgres_data:
