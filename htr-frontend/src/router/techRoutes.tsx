@@ -5,12 +5,10 @@ import TechNotificationsPage from '@/pages/tech/NotificationsPage'
 
 const TECH = ['TECHNICIAN']
 
-export default function TechRoutes() {
-  return (
-    <>
-      <Route path="/tech" element={<RequireRole roles={TECH}><TechMaintenancePage /></RequireRole>} />
-      <Route path="/tech/maintenance" element={<RequireRole roles={TECH}><TechMaintenancePage /></RequireRole>} />
-      <Route path="/tech/notifications" element={<RequireRole roles={TECH}><TechNotificationsPage /></RequireRole>} />
-    </>
-  )
-}
+const techRoutes = [
+  <Route key="/tech" path="/tech" element={<RequireRole roles={TECH}><TechMaintenancePage /></RequireRole>} />,
+  <Route key="/tech/maintenance" path="/tech/maintenance" element={<RequireRole roles={TECH}><TechMaintenancePage /></RequireRole>} />,
+  <Route key="/tech/notifications" path="/tech/notifications" element={<RequireRole roles={TECH}><TechNotificationsPage /></RequireRole>} />,
+]
+
+export default techRoutes

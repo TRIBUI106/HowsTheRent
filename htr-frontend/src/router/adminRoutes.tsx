@@ -15,21 +15,19 @@ import AuditLogPage from '@/pages/admin/AuditLogPage'
 
 const ADMIN = ['ADMIN']
 
-export default function AdminRoutes() {
-  return (
-    <>
-      <Route path="/admin" element={<RequireRole roles={ADMIN}><AdminDashboard /></RequireRole>} />
-      <Route path="/admin/properties" element={<RequireRole roles={ADMIN}><PropertiesPage /></RequireRole>} />
-      <Route path="/admin/rooms" element={<RequireRole roles={ADMIN}><RoomsPage /></RequireRole>} />
-      <Route path="/admin/contracts" element={<RequireRole roles={ADMIN}><ContractsPage /></RequireRole>} />
-      <Route path="/admin/invoices" element={<RequireRole roles={ADMIN}><AdminInvoicesPage /></RequireRole>} />
-      <Route path="/admin/maintenance" element={<RequireRole roles={ADMIN}><AdminMaintenancePage /></RequireRole>} />
-      <Route path="/admin/notifications" element={<RequireRole roles={ADMIN}><AdminNotificationsPage /></RequireRole>} />
-      <Route path="/admin/fee-config" element={<RequireRole roles={ADMIN}><FeeConfigPage /></RequireRole>} />
-      <Route path="/admin/users" element={<RequireRole roles={ADMIN}><UsersPage /></RequireRole>} />
-      <Route path="/admin/meter-readings" element={<RequireRole roles={ADMIN}><MeterReadingsPage /></RequireRole>} />
-      <Route path="/admin/vehicle-config" element={<RequireRole roles={ADMIN}><VehicleConfigPage /></RequireRole>} />
-      <Route path="/admin/audit-log" element={<RequireRole roles={ADMIN}><AuditLogPage /></RequireRole>} />
-    </>
-  )
-}
+const adminRoutes = [
+  <Route key="/admin" path="/admin" element={<RequireRole roles={ADMIN}><AdminDashboard /></RequireRole>} />,
+  <Route key="/admin/properties" path="/admin/properties" element={<RequireRole roles={ADMIN}><PropertiesPage /></RequireRole>} />,
+  <Route key="/admin/rooms" path="/admin/rooms" element={<RequireRole roles={ADMIN}><RoomsPage /></RequireRole>} />,
+  <Route key="/admin/contracts" path="/admin/contracts" element={<RequireRole roles={ADMIN}><ContractsPage /></RequireRole>} />,
+  <Route key="/admin/invoices" path="/admin/invoices" element={<RequireRole roles={ADMIN}><AdminInvoicesPage /></RequireRole>} />,
+  <Route key="/admin/maintenance" path="/admin/maintenance" element={<RequireRole roles={ADMIN}><AdminMaintenancePage /></RequireRole>} />,
+  <Route key="/admin/notifications" path="/admin/notifications" element={<RequireRole roles={ADMIN}><AdminNotificationsPage /></RequireRole>} />,
+  <Route key="/admin/fee-config" path="/admin/fee-config" element={<RequireRole roles={ADMIN}><FeeConfigPage /></RequireRole>} />,
+  <Route key="/admin/users" path="/admin/users" element={<RequireRole roles={ADMIN}><UsersPage /></RequireRole>} />,
+  <Route key="/admin/meter-readings" path="/admin/meter-readings" element={<RequireRole roles={ADMIN}><MeterReadingsPage /></RequireRole>} />,
+  <Route key="/admin/vehicle-config" path="/admin/vehicle-config" element={<RequireRole roles={ADMIN}><VehicleConfigPage /></RequireRole>} />,
+  <Route key="/admin/audit-log" path="/admin/audit-log" element={<RequireRole roles={ADMIN}><AuditLogPage /></RequireRole>} />,
+]
+
+export default adminRoutes

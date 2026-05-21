@@ -9,15 +9,13 @@ import TenantPaymentHistoryPage from '@/pages/tenant/PaymentHistoryPage'
 
 const TENANT = ['TENANT']
 
-export default function TenantRoutes() {
-  return (
-    <>
-      <Route path="/tenant" element={<RequireRole roles={TENANT}><TenantDashboard /></RequireRole>} />
-      <Route path="/tenant/invoices" element={<RequireRole roles={TENANT}><TenantInvoicesPage /></RequireRole>} />
-      <Route path="/tenant/maintenance" element={<RequireRole roles={TENANT}><TenantMaintenancePage /></RequireRole>} />
-      <Route path="/tenant/notifications" element={<RequireRole roles={TENANT}><TenantNotificationsPage /></RequireRole>} />
-      <Route path="/tenant/contract" element={<RequireRole roles={TENANT}><TenantContractDetailPage /></RequireRole>} />
-      <Route path="/tenant/payment-history" element={<RequireRole roles={TENANT}><TenantPaymentHistoryPage /></RequireRole>} />
-    </>
-  )
-}
+const tenantRoutes = [
+  <Route key="/tenant" path="/tenant" element={<RequireRole roles={TENANT}><TenantDashboard /></RequireRole>} />,
+  <Route key="/tenant/invoices" path="/tenant/invoices" element={<RequireRole roles={TENANT}><TenantInvoicesPage /></RequireRole>} />,
+  <Route key="/tenant/maintenance" path="/tenant/maintenance" element={<RequireRole roles={TENANT}><TenantMaintenancePage /></RequireRole>} />,
+  <Route key="/tenant/notifications" path="/tenant/notifications" element={<RequireRole roles={TENANT}><TenantNotificationsPage /></RequireRole>} />,
+  <Route key="/tenant/contract" path="/tenant/contract" element={<RequireRole roles={TENANT}><TenantContractDetailPage /></RequireRole>} />,
+  <Route key="/tenant/payment-history" path="/tenant/payment-history" element={<RequireRole roles={TENANT}><TenantPaymentHistoryPage /></RequireRole>} />,
+]
+
+export default tenantRoutes
