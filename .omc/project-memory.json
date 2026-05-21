@@ -90,15 +90,15 @@
   },
   "hotPaths": [
     {
-      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\controller\\MaintenanceController.java",
-      "accessCount": 35,
-      "lastAccessed": 1779356261363,
+      "path": "htr-frontend\\src\\App.tsx",
+      "accessCount": 36,
+      "lastAccessed": 1779360388421,
       "type": "file"
     },
     {
-      "path": "htr-frontend\\src\\App.tsx",
+      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\controller\\MaintenanceController.java",
       "accessCount": 35,
-      "lastAccessed": 1779359842104,
+      "lastAccessed": 1779356261363,
       "type": "file"
     },
     {
@@ -109,8 +109,8 @@
     },
     {
       "path": "htr-frontend\\src\\components\\Layout.tsx",
-      "accessCount": 12,
-      "lastAccessed": 1779355324678,
+      "accessCount": 14,
+      "lastAccessed": 1779361415687,
       "type": "file"
     },
     {

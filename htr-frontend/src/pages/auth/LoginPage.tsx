@@ -4,6 +4,14 @@ import api from '@/lib/api'
 import { useAuthStore } from '@/stores/authStore'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { CheckCircle } from 'lucide-react'
+
+const brandPoints = [
+  'Tự động tạo hóa đơn hàng tháng',
+  'Theo dõi bảo trì theo thời gian thực',
+  'Thanh toán trực tuyến qua PayOS',
+  'Nhật ký hoạt động đầy đủ',
+]
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -30,26 +38,50 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-600 via-indigo-700 to-blue-800 flex items-center justify-center p-4">
-      {/* Background decoration */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-96 h-96 bg-white/5 rounded-full" />
-        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-white/5 rounded-full" />
+    <div className="min-h-screen bg-bg flex">
+      {/* Left: brand panel */}
+      <div className="hidden lg:flex w-96 bg-fg flex-col justify-between p-10 shrink-0">
+        <div>
+          <div className="flex items-center gap-2.5 mb-12">
+            <div className="w-7 h-7 bg-accent rounded-lg flex items-center justify-center shrink-0">
+              <span className="text-accent-fg font-bold text-xs">P</span>
+            </div>
+            <span className="font-semibold text-fg-inverted text-sm">HowsTheRent</span>
+          </div>
+          <h2 className="text-2xl font-bold text-fg-inverted tracking-tight mb-3 leading-snug">
+            Quản lý nhà trọ<br />chuyên nghiệp
+          </h2>
+          <p className="text-sm text-fg-inverted-muted leading-relaxed mb-8">
+            Hợp đồng, hóa đơn, bảo trì và thanh toán — tất cả trong một nền tảng.
+          </p>
+          <ul className="space-y-3">
+            {brandPoints.map(item => (
+              <li key={item} className="flex items-center gap-2.5 text-sm text-fg-inverted-muted">
+                <CheckCircle className="w-4 h-4 text-success shrink-0" />
+                {item}
+              </li>
+            ))}
+          </ul>
+        </div>
+        <p className="text-xs text-fg-inverted-muted opacity-50">
+          © {new Date().getFullYear()} HowsTheRent
+        </p>
       </div>
 
-      <div className="relative w-full max-w-sm">
-        {/* Logo */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-12 h-12 bg-white rounded-xl shadow-lg mb-4">
-            <span className="text-indigo-600 font-bold text-xl">P</span>
+      {/* Right: form */}
+      <div className="flex-1 flex items-center justify-center p-8">
+        <div className="w-full max-w-sm">
+          {/* Mobile logo */}
+          <div className="flex items-center gap-2.5 mb-8 lg:hidden">
+            <div className="w-7 h-7 bg-accent rounded-lg flex items-center justify-center shrink-0">
+              <span className="text-accent-fg font-bold text-xs">P</span>
+            </div>
+            <span className="font-semibold text-fg">HowsTheRent</span>
           </div>
-          <h1 className="text-2xl font-bold text-white">HowsTheRent</h1>
-          <p className="text-indigo-200 text-sm mt-1">Hệ thống Quản lý Nhà trọ</p>
-        </div>
 
-        {/* Card */}
-        <div className="bg-white rounded-2xl shadow-2xl p-8">
-          <h2 className="text-lg font-semibold text-gray-900 mb-6">Đăng nhập</h2>
+          <h1 className="text-xl font-bold text-fg mb-1 tracking-tight">Đăng nhập</h1>
+          <p className="text-sm text-fg-muted mb-7">Nhập thông tin tài khoản của bạn</p>
+
           <form onSubmit={handleSubmit} className="space-y-4" noValidate>
             <Input
               label="Email"
@@ -71,30 +103,24 @@ export default function LoginPage() {
               autoComplete="current-password"
             />
             {error && (
-              <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg" role="alert">
-                <svg className="w-4 h-4 text-red-500 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <div className="flex items-start gap-2.5 p-3 bg-error-surface border border-error-border rounded-lg" role="alert">
+                <svg className="w-4 h-4 text-error shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                 </svg>
-                <p className="text-sm text-red-700">{error}</p>
+                <p className="text-sm text-error-fg">{error}</p>
               </div>
             )}
-            <Button
-              type="submit"
-              className="w-full mt-2"
-              size="lg"
-              loading={loading}
-            >
+            <Button type="submit" className="w-full mt-1" size="lg" loading={loading}>
               {loading ? 'Đang đăng nhập…' : 'Đăng nhập'}
             </Button>
           </form>
-          <p className="text-center mt-4">
-            <Link to="/forgot-password" className="text-sm text-indigo-600 hover:underline">
+
+          <p className="text-center mt-5">
+            <Link to="/forgot-password" className="text-sm text-accent hover:text-accent-hover transition-colors">
               Quên mật khẩu?
             </Link>
           </p>
         </div>
-
-        <p className="text-center text-indigo-200/60 text-xs mt-6">HowsTheRent © {new Date().getFullYear()}</p>
       </div>
     </div>
   )

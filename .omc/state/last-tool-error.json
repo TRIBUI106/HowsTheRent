@@ -1,0 +1,7 @@
+{
+  "tool_name": "Bash",
+  "tool_input_preview": "{\"command\":\"ls D:\\\\Code\\\\HowsTheRent\",\"description\":\"List project root files\"}",
+  "error": "Exit code 2\nls: cannot access 'D:CodeHowsTheRent': No such file or directory",
+  "timestamp": "2026-05-21T10:46:23.096Z",
+  "retry_count": 1
+}

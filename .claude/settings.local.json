@@ -41,7 +41,8 @@
       "Bash(tsconfig)",
       "Bash(tailwind\")",
       "Bash(mvn clean *)",
-      "Bash(node *)"
+      "Bash(node *)",
+      "Skill(impeccable)"
     ]
   }
 }

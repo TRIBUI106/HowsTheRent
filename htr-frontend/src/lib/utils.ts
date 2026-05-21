@@ -15,20 +15,20 @@ export function formatDate(dateStr: string): string {
 
 export function statusColor(status: string): string {
   const map: Record<string, string> = {
-    EMPTY: 'bg-gray-100 text-gray-700',
-    RENTED: 'bg-green-100 text-green-700',
-    MAINTENANCE: 'bg-yellow-100 text-yellow-700',
-    PENDING: 'bg-blue-100 text-blue-700',
-    PAID: 'bg-green-100 text-green-700',
-    OVERDUE: 'bg-red-100 text-red-700',
-    OPEN: 'bg-orange-100 text-orange-700',
-    IN_PROGRESS: 'bg-blue-100 text-blue-700',
-    DONE: 'bg-green-100 text-green-700',
-    ACTIVE: 'bg-green-100 text-green-700',
-    TERMINATED: 'bg-gray-100 text-gray-700',
-    EXPIRED: 'bg-gray-100 text-gray-700',
+    EMPTY:       'bg-badge-neutral    text-badge-neutral-text',
+    RENTED:      'bg-badge-green      text-badge-green-text',
+    MAINTENANCE: 'bg-badge-amber      text-badge-amber-text',
+    PENDING:     'bg-badge-blue       text-badge-blue-text',
+    PAID:        'bg-badge-green      text-badge-green-text',
+    OVERDUE:     'bg-badge-red        text-badge-red-text',
+    OPEN:        'bg-badge-orange     text-badge-orange-text',
+    IN_PROGRESS: 'bg-badge-blue       text-badge-blue-text',
+    DONE:        'bg-badge-green      text-badge-green-text',
+    ACTIVE:      'bg-badge-green      text-badge-green-text',
+    TERMINATED:  'bg-badge-neutral    text-badge-neutral-text',
+    EXPIRED:     'bg-badge-neutral    text-badge-neutral-text',
   }
-  return map[status] || 'bg-gray-100 text-gray-700'
+  return map[status] || 'bg-badge-neutral text-badge-neutral-text'
 }
 
 export function statusLabel(status: string): string {

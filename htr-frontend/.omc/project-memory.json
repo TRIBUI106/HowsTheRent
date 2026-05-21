@@ -42,7 +42,7 @@
     "runtime": null
   },
   "build": {
-    "buildCommand": "cd D:/Code/cz-HTR/htr-frontend && npm run build 2>&1 | tail -10",
+    "buildCommand": "cd \"D:\\Code\\HowsTheRent\\htr-frontend\" && npx tsc --noEmit 2>&1 | head -60",
     "testCommand": null,
     "lintCommand": "npm run lint",
     "devCommand": "npm run dev",
@@ -165,6 +165,24 @@
       "path": "src\\components\\ui\\pagination.tsx",
       "accessCount": 1,
       "lastAccessed": 1778310991529,
+      "type": "file"
+    },
+    {
+      "path": "C:\\Users\\chez1s\\AppData\\Local\\Temp\\claude\\D--Code-HowsTheRent\\c7314faa-9f92-4f40-a98a-ddfd87394b97\\tasks\\b6d5fu38c.output",
+      "accessCount": 1,
+      "lastAccessed": 1779361577426,
+      "type": "file"
+    },
+    {
+      "path": "C:\\Users\\chez1s\\.claude\\projects\\D--Code-HowsTheRent\\memory\\project_design_system.md",
+      "accessCount": 1,
+      "lastAccessed": 1779361601850,
+      "type": "file"
+    },
+    {
+      "path": "C:\\Users\\chez1s\\.claude\\projects\\D--Code-HowsTheRent\\memory\\MEMORY.md",
+      "accessCount": 1,
+      "lastAccessed": 1779361610345,
       "type": "file"
     }
   ],

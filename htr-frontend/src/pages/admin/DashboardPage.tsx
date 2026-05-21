@@ -28,14 +28,14 @@ function SkeletonCard() {
 }
 
 const cards = [
-  { label: 'Tổng tài sản',     key: 'totalProperties',    icon: Building2,        color: 'text-indigo-600', bg: 'bg-indigo-50' },
-  { label: 'Tổng phòng',       key: 'totalRooms',         icon: Home,             color: 'text-blue-600',   bg: 'bg-blue-50' },
-  { label: 'Phòng trống',      key: 'emptyRooms',         icon: DoorOpen,         color: 'text-amber-600',  bg: 'bg-amber-50' },
-  { label: 'Tỷ lệ lấp đầy',   key: 'occupancyRate',      icon: TrendingUp,       color: 'text-green-600',  bg: 'bg-green-50', suffix: '%' },
-  { label: 'Doanh thu tháng',  key: 'revenueThisMonth',   icon: BadgeDollarSign,  color: 'text-emerald-600',bg: 'bg-emerald-50', isCurrency: true },
-  { label: 'Hóa đơn quá hạn',  key: 'overdueInvoices',    icon: AlertCircle,      color: 'text-red-600',    bg: 'bg-red-50' },
-  { label: 'Bảo trì mới',     key: 'openMaintenance',     icon: Wrench,           color: 'text-orange-600', bg: 'bg-orange-50' },
-  { label: 'Đang xử lý',      key: 'inProgressMaintenance',icon: Clock,           color: 'text-sky-600',    bg: 'bg-sky-50' },
+  { label: 'Tổng tài sản',      key: 'totalProperties',       icon: Building2,       color: 'text-accent',         bg: 'bg-accent-surface' },
+  { label: 'Tổng phòng',        key: 'totalRooms',            icon: Home,            color: 'text-accent',         bg: 'bg-accent-surface' },
+  { label: 'Phòng trống',       key: 'emptyRooms',            icon: DoorOpen,        color: 'text-warning-fg',     bg: 'bg-warning-surface' },
+  { label: 'Tỷ lệ lấp đầy',    key: 'occupancyRate',         icon: TrendingUp,      color: 'text-success-fg',     bg: 'bg-success-surface', suffix: '%' },
+  { label: 'Doanh thu tháng',   key: 'revenueThisMonth',      icon: BadgeDollarSign, color: 'text-success-fg',     bg: 'bg-success-surface', isCurrency: true },
+  { label: 'Hóa đơn quá hạn',  key: 'overdueInvoices',       icon: AlertCircle,     color: 'text-error-fg',       bg: 'bg-error-surface' },
+  { label: 'Bảo trì mới',      key: 'openMaintenance',       icon: Wrench,          color: 'text-badge-orange-text', bg: 'bg-badge-orange' },
+  { label: 'Đang xử lý',       key: 'inProgressMaintenance', icon: Clock,           color: 'text-accent',         bg: 'bg-accent-surface' },
 ]
 
 export default function AdminDashboard() {
@@ -103,7 +103,7 @@ export default function AdminDashboard() {
                   <XAxis dataKey="label" tick={{ fontSize: 11 }} />
                   <YAxis tick={{ fontSize: 11 }} tickFormatter={v => `${v} tr`} />
                   <Tooltip formatter={(v: any) => [`${Number(v).toFixed(1)} triệu`, 'Doanh thu']} />
-                  <Bar dataKey="amount" fill="#6366f1" radius={[4, 4, 0, 0]} name="Doanh thu" />
+                  <Bar dataKey="amount" fill="var(--color-accent)" radius={[4, 4, 0, 0]} name="Doanh thu" />
                 </BarChart>
               </ResponsiveContainer>
             ) : (
