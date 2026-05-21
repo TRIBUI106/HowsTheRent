@@ -5,6 +5,7 @@ import { useAuthStore } from '@/stores/authStore'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { CheckCircle } from 'lucide-react'
+import logoHtr from '@/assets/logo-htr.png'
 
 const brandPoints = [
   'Tự động tạo hóa đơn hàng tháng',
@@ -43,9 +44,7 @@ export default function LoginPage() {
       <div className="hidden lg:flex w-96 bg-fg flex-col justify-between p-10 shrink-0">
         <div>
           <div className="flex items-center gap-2.5 mb-12">
-            <div className="w-7 h-7 bg-accent rounded-lg flex items-center justify-center shrink-0">
-              <span className="text-accent-fg font-bold text-xs">P</span>
-            </div>
+            <img src={logoHtr} alt="HowsTheRent" className="h-7 w-7 rounded-lg object-cover shrink-0" />
             <span className="font-semibold text-fg-inverted text-sm">HowsTheRent</span>
           </div>
           <h2 className="text-2xl font-bold text-fg-inverted tracking-tight mb-3 leading-snug">
@@ -73,9 +72,7 @@ export default function LoginPage() {
         <div className="w-full max-w-sm">
           {/* Mobile logo */}
           <div className="flex items-center gap-2.5 mb-8 lg:hidden">
-            <div className="w-7 h-7 bg-accent rounded-lg flex items-center justify-center shrink-0">
-              <span className="text-accent-fg font-bold text-xs">P</span>
-            </div>
+            <img src={logoHtr} alt="HowsTheRent" className="h-7 w-7 rounded-lg object-cover shrink-0" />
             <span className="font-semibold text-fg">HowsTheRent</span>
           </div>
 

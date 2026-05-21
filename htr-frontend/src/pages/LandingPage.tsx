@@ -3,6 +3,7 @@ import {
   Building2, FileText, Wrench, FileCheck, CreditCard, Shield,
   CheckCircle2, Users, BarChart3, Bell, ChevronRight, ArrowRight,
 } from 'lucide-react'
+import logoHtr from '@/assets/logo-htr.png'
 
 const operatingSignals = [
   'Công nợ đến hạn trong ngày',
@@ -52,9 +53,7 @@ export default function LandingPage() {
       <header className="sticky top-0 z-50 border-b border-border/80 bg-surface/92 backdrop-blur-sm">
         <div className="mx-auto flex h-15 max-w-6xl items-center justify-between px-6">
           <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-accent text-accent-fg shadow-[inset_0_1px_0_rgba(255,255,255,0.16)]">
-              <span className="text-[11px] font-bold tracking-[0.12em] uppercase">HTR</span>
-            </div>
+            <img src={logoHtr} alt="HowsTheRent" className="h-8 w-8 rounded-xl object-cover shadow-[0_1px_2px_rgba(15,23,42,0.08)]" />
             <div>
               <p className="text-sm font-semibold leading-none text-fg">How&apos;s The Rent</p>
               <p className="mt-1 text-xs text-fg-subtle">Hệ thống vận hành nhà trọ</p>
@@ -225,9 +224,7 @@ export default function LandingPage() {
       <footer className="border-t border-border/80 bg-surface py-6">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-6 sm:flex-row">
           <div className="flex items-center gap-3">
-            <div className="flex h-7 w-7 items-center justify-center rounded-xl bg-accent text-accent-fg">
-              <span className="text-[10px] font-bold tracking-[0.12em] uppercase">HTR</span>
-            </div>
+            <img src={logoHtr} alt="HowsTheRent" className="h-7 w-7 rounded-xl object-cover" />
             <div>
               <p className="text-sm font-semibold text-fg">How&apos;s The Rent</p>
               <p className="text-xs text-fg-subtle">Hệ thống quản lý nhà trọ</p>

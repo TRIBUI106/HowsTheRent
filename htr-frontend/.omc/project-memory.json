@@ -42,7 +42,7 @@
     "runtime": null
   },
   "build": {
-    "buildCommand": "npm run build",
+    "buildCommand": "npx tsc --noEmit",
     "testCommand": null,
     "lintCommand": "npm run lint",
     "devCommand": "npm run dev",
@@ -176,6 +176,24 @@
       "type": "file"
     },
     {
+      "path": "src\\components\\layout\\Sidebar.tsx",
+      "accessCount": 7,
+      "lastAccessed": 1779366290264,
+      "type": "file"
+    },
+    {
+      "path": "src\\pages\\LandingPage.tsx",
+      "accessCount": 7,
+      "lastAccessed": 1779366290988,
+      "type": "file"
+    },
+    {
+      "path": "src\\features\\auth\\pages\\LoginPage.tsx",
+      "accessCount": 5,
+      "lastAccessed": 1779366291661,
+      "type": "file"
+    },
+    {
       "path": "src\\pages\\admin\\MaintenancePage.tsx",
       "accessCount": 3,
       "lastAccessed": 1779363047626,
@@ -194,10 +212,22 @@
       "type": "file"
     },
     {
-      "path": "src\\components\\layout\\Sidebar.tsx",
+      "path": "src\\features\\auth\\pages\\ForgotPasswordPage.tsx",
       "accessCount": 3,
-      "lastAccessed": 1779365346287,
+      "lastAccessed": 1779366291992,
       "type": "file"
+    },
+    {
+      "path": "src\\features\\auth\\pages\\ResetPasswordPage.tsx",
+      "accessCount": 3,
+      "lastAccessed": 1779366292319,
+      "type": "file"
+    },
+    {
+      "path": "src",
+      "accessCount": 3,
+      "lastAccessed": 1779366304821,
+      "type": "directory"
     },
     {
       "path": "src\\types\\index.ts",
@@ -284,9 +314,9 @@
       "type": "file"
     },
     {
-      "path": "src\\pages\\LandingPage.tsx",
+      "path": "index.html",
       "accessCount": 2,
-      "lastAccessed": 1779365347120,
+      "lastAccessed": 1779365883402,
       "type": "file"
     },
     {
@@ -336,12 +366,6 @@
       "accessCount": 1,
       "lastAccessed": 1779365163027,
       "type": "file"
-    },
-    {
-      "path": "src",
-      "accessCount": 1,
-      "lastAccessed": 1779365576675,
-      "type": "directory"
     },
     {
       "path": "src\\assets\\logo-htr.png",

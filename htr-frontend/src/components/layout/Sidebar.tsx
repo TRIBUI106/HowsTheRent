@@ -1,6 +1,7 @@
 import { Link, useLocation } from 'react-router-dom'
 import { useAuthStore } from '@/stores/authStore'
 import { LogOut } from 'lucide-react'
+import logoHtr from '@/assets/logo-htr.png'
 import { cn } from '@/lib/utils'
 import { navItems } from './navItems'
 
@@ -14,11 +15,9 @@ export default function Sidebar() {
     <aside className="w-64 bg-sidebar/92 border-r border-border/80 flex flex-col shrink-0 backdrop-blur-sm">
       <div className="px-4 py-4 border-b border-border/80">
         <div className="flex items-center gap-3">
-          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-accent text-accent-fg shrink-0 shadow-[inset_0_1px_0_rgba(255,255,255,0.16)]">
-            <Link to="/" className="text-[11px] font-bold tracking-[0.12em] uppercase">
-              HTR
-            </Link>
-          </div>
+          <Link to="/" className="shrink-0 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-sidebar">
+            <img src={logoHtr} alt="HowsTheRent" className="h-8 w-8 rounded-xl object-cover shadow-[0_1px_2px_rgba(15,23,42,0.08)]" />
+          </Link>
           <div className="min-w-0">
             <p className="font-semibold text-sm text-fg leading-none truncate">How's The Rent</p>
             <p className="text-xs text-fg-subtle mt-1">Bảng vận hành nhà trọ</p>

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import api from '@/lib/api'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
+import logoHtr from '@/assets/logo-htr.png'
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('')
@@ -28,7 +29,7 @@ export default function ForgotPasswordPage() {
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <div className="w-full max-w-sm bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
         <div className="text-center mb-6">
-          <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-bold text-lg mx-auto mb-3">P</div>
+          <img src={logoHtr} alt="HowsTheRent" className="mx-auto mb-3 h-10 w-10 rounded-xl object-cover" />
           <h1 className="text-xl font-semibold text-gray-900">Quên mật khẩu</h1>
           <p className="text-sm text-gray-500 mt-1">Nhập email để nhận mã OTP</p>
         </div>
