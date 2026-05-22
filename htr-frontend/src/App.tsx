@@ -12,9 +12,9 @@ import tenantRoutes from '@/router/tenantRoutes'
 import techRoutes from '@/router/techRoutes'
 
 export default function App() {
-  const { accessToken, user } = useAuthStore()
+  const { user } = useAuthStore()
 
-  if (!accessToken) {
+  if (!user) {
     return (
       <Routes>
         <Route path="/" element={<LandingPage />} />
@@ -37,6 +37,7 @@ export default function App() {
   return (
     <Routes>
       <Route path="/" element={<Navigate to={homePath} replace />} />
+      <Route path="/login" element={<Navigate to={homePath} replace />} />
       <Route path="/landing" element={<LandingPage />} />
       {adminRoutes}
       {tenantRoutes}

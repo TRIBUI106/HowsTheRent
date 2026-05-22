@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import {
-  Building2, FileText, Wrench, FileCheck, CreditCard, Shield,
-  CheckCircle2, Users, BarChart3, Bell, ChevronRight, ArrowRight,
+  FileText, Wrench, FileCheck, CreditCard, Shield,
+  CheckCircle2, Users, BarChart3, ChevronRight, ArrowRight,
 } from 'lucide-react'
 import logoHtr from '@/assets/logo-htr.png'
 

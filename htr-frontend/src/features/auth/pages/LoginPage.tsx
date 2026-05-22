@@ -4,14 +4,14 @@ import api from '@/lib/api'
 import { useAuthStore } from '@/stores/authStore'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { CheckCircle } from 'lucide-react'
+import { BarChart3, CreditCard, Home, Wrench } from 'lucide-react'
 import logoHtr from '@/assets/logo-htr.png'
 
-const brandPoints = [
-  'Tự động tạo hóa đơn hàng tháng',
-  'Theo dõi bảo trì theo thời gian thực',
-  'Thanh toán trực tuyến qua PayOS',
-  'Nhật ký hoạt động đầy đủ',
+const systemHighlights = [
+  { icon: Home, label: 'Quản lý phòng và hợp đồng' },
+  { icon: CreditCard, label: 'Theo dõi công nợ, thanh toán' },
+  { icon: Wrench, label: 'Ghi nhận bảo trì và vận hành' },
+  { icon: BarChart3, label: 'Tổng quan dữ liệu theo thời gian thực' },
 ]
 
 export default function LoginPage() {
@@ -20,7 +20,7 @@ export default function LoginPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
-  const { setAuth } = useAuthStore()
+  const { setUser } = useAuthStore()
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -28,7 +28,7 @@ export default function LoginPage() {
     setLoading(true)
     try {
       const { data } = await api.post('/auth/login', { email, password })
-      setAuth(data.user, data.accessToken, data.refreshToken)
+      setUser(data.user)
       const role = data.user.role.toLowerCase()
       navigate(role === 'admin' ? '/admin' : role === 'tenant' ? '/tenant' : '/tech')
     } catch (err: any) {
@@ -39,86 +39,111 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-bg flex">
-      {/* Left: brand panel */}
-      <div className="hidden lg:flex w-96 bg-fg flex-col justify-between p-10 shrink-0">
-        <div>
-          <div className="flex items-center gap-2.5 mb-12">
-            <img src={logoHtr} alt="HowsTheRent" className="h-7 w-7 rounded-lg object-cover shrink-0" />
-            <span className="font-semibold text-fg-inverted text-sm">HowsTheRent</span>
-          </div>
-          <h2 className="text-2xl font-bold text-fg-inverted tracking-tight mb-3 leading-snug">
-            Quản lý nhà trọ<br />chuyên nghiệp
-          </h2>
-          <p className="text-sm text-fg-inverted-muted leading-relaxed mb-8">
-            Hợp đồng, hóa đơn, bảo trì và thanh toán — tất cả trong một nền tảng.
-          </p>
-          <ul className="space-y-3">
-            {brandPoints.map(item => (
-              <li key={item} className="flex items-center gap-2.5 text-sm text-fg-inverted-muted">
-                <CheckCircle className="w-4 h-4 text-success shrink-0" />
-                {item}
-              </li>
-            ))}
-          </ul>
-        </div>
-        <p className="text-xs text-fg-inverted-muted opacity-50">
-          © {new Date().getFullYear()} HowsTheRent
-        </p>
-      </div>
+    <div className="min-h-screen bg-bg text-fg">
+      <main className="grid min-h-screen grid-cols-1 lg:grid-cols-[30%_70%]">
 
-      {/* Right: form */}
-      <div className="flex-1 flex items-center justify-center p-8">
-        <div className="w-full max-w-sm">
-          {/* Mobile logo */}
-          <div className="flex items-center gap-2.5 mb-8 lg:hidden">
-            <img src={logoHtr} alt="HowsTheRent" className="h-7 w-7 rounded-lg object-cover shrink-0" />
-            <span className="font-semibold text-fg">HowsTheRent</span>
-          </div>
+        {/* System Highlights */}
 
-          <h1 className="text-xl font-bold text-fg mb-1 tracking-tight">Đăng nhập</h1>
-          <p className="text-sm text-fg-muted mb-7">Nhập thông tin tài khoản của bạn</p>
+        <section className="relative overflow-hidden border-b border-border bg-[linear-gradient(135deg,var(--color-accent-surface)_0%,var(--color-accent-surface)_48%,var(--color-bg)_52%,var(--color-surface)_100%)] px-6 py-8 lg:border-b-0 lg:border-r lg:px-8 lg:py-10">
+          <div className="absolute inset-0 opacity-35 [background-image:linear-gradient(var(--color-accent)_1px,transparent_1px),linear-gradient(90deg,var(--color-accent)_1px,transparent_1px)] [background-size:28px_28px]" />
+          <div className="absolute -left-24 top-16 h-72 w-72 rounded-full bg-accent/24 blur-3xl" />
+          <div className="absolute bottom-[-7rem] right-[-5rem] h-72 w-72 rounded-full bg-bg/75 blur-3xl" />
 
-          <form onSubmit={handleSubmit} className="space-y-4" noValidate>
-            <Input
-              label="Email"
-              type="email"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              placeholder="admin@example.com"
-              required
-              autoComplete="email"
-              autoFocus
-            />
-            <Input
-              label="Mật khẩu"
-              type="password"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              placeholder="••••••••"
-              required
-              autoComplete="current-password"
-            />
-            {error && (
-              <div className="flex items-start gap-2.5 p-3 bg-error-surface border border-error-border rounded-lg" role="alert">
-                <svg className="w-4 h-4 text-error shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                </svg>
-                <p className="text-sm text-error-fg">{error}</p>
+          <div className="relative flex h-full min-h-[320px] flex-col justify-between lg:min-h-0">
+            <div className="flex items-center gap-3">
+              <img src={logoHtr} alt="HowsTheRent" className="h-10 w-10 rounded-2xl object-cover shadow-sm ring-1 ring-border" />
+              <div>
+                <p className="text-sm font-semibold leading-none text-fg">HowsTheRent</p>
+                <p className="mt-1 text-xs text-fg-subtle">Rental operations workspace</p>
               </div>
-            )}
-            <Button type="submit" className="w-full mt-1" size="lg" loading={loading}>
-              {loading ? 'Đang đăng nhập…' : 'Đăng nhập'}
-            </Button>
-          </form>
+            </div>
 
-          <p className="text-center mt-5">
-            <Link to="/forgot-password" className="text-sm text-accent hover:text-accent-hover transition-colors">
-              Quên mật khẩu?
-            </Link>
-          </p>
-        </div>
-      </div>
+            <div className="py-10 lg:py-0">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-accent">Hệ thống quản lý nhà trọ</p>
+              <h1 className="mt-5 max-w-sm text-4xl font-semibold leading-[1.02] tracking-[-0.05em] text-fg lg:text-[42px]">
+                Một nơi gọn gàng cho toàn bộ vận hành thuê trọ.
+              </h1>
+              <p className="mt-5 max-w-sm text-sm leading-7 text-fg-muted">
+                Từ phòng, hợp đồng, hóa đơn đến bảo trì — mọi dữ liệu được gom lại để chủ trọ xử lý nhanh và rõ ràng hơn mỗi ngày.
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              {systemHighlights.map(item => {
+                const Icon = item.icon
+                return (
+                  <div key={item.label} className="flex items-center gap-3 rounded-2xl border border-border/80 bg-surface/65 px-3.5 py-3 shadow-sm backdrop-blur-md">
+                    <span className="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-accent-surface text-accent">
+                      <Icon size={15} />
+                    </span>
+                    <span className="text-sm text-fg-muted">{item.label}</span>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        </section>
+
+        {/* Login Form */}
+
+        <section className="flex min-h-[calc(100vh-320px)] items-center justify-center bg-surface px-6 py-12 sm:px-10 lg:min-h-screen">
+          <div className="w-full max-w-[420px]">
+            <div className="mb-9">
+              <h2 className="text-[30px] font-semibold leading-tight tracking-[-0.04em] text-fg">Đăng nhập</h2>
+              <p className="mt-3 text-sm leading-6 text-fg-muted">Nhập tài khoản để tiếp tục vào dashboard quản lý.</p>
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+              <Input
+                label="Email"
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                placeholder="admin@example.com"
+                required
+                autoComplete="email"
+                autoFocus
+                className="min-h-[48px] rounded-xl bg-bg"
+              />
+
+              <div className="space-y-2">
+                <Input
+                  label="Mật khẩu"
+                  type="password"
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  required
+                  autoComplete="current-password"
+                  className="min-h-[48px] rounded-xl bg-bg"
+                />
+                <div className="flex justify-end">
+                  <Link to="/forgot-password" className="text-xs font-medium text-accent transition-colors hover:text-accent-hover">
+                    Quên mật khẩu?
+                  </Link>
+                </div>
+              </div>
+
+              {error && (
+                <div className="flex items-start gap-2.5 rounded-2xl border border-error-border bg-error-surface p-3" role="alert">
+                  <svg className="mt-0.5 h-4 w-4 shrink-0 text-error" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                  </svg>
+                  <p className="text-sm text-error-fg">{error}</p>
+                </div>
+              )}
+
+              <Button type="submit" className="w-full rounded-xl" size="lg" loading={loading}>
+                {loading ? 'Đang đăng nhập…' : 'Đăng nhập'}
+              </Button>
+            </form>
+
+            <p className="mt-8 border-t border-border pt-6 text-xs leading-5 text-fg-subtle text-center">
+              © {new Date().getFullYear()} HowsTheRent
+            </p>
+          </div>
+        </section>
+      </main>
     </div>
   )
 }

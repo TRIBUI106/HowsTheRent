@@ -12,7 +12,7 @@ import type { Property } from '@/types'
 export default function PropertiesPage() {
   const qc = useQueryClient()
   const [showForm, setShowForm] = useState(false)
-  const [form, setForm] = useState({ name: '', address: '', type: 'HOUSE', description: '' })
+  const [form, setForm] = useState({ name: '', address: '', type: 'BOARDING_HOUSE', description: '' })
 
   const { data: properties, isLoading } = useQuery<Property[]>({
     queryKey: ['properties'],
@@ -21,7 +21,7 @@ export default function PropertiesPage() {
 
   const create = useMutation({
     mutationFn: (d: typeof form) => api.post('/properties', d),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['properties'] }); setShowForm(false); setForm({ name: '', address: '', type: 'HOUSE', description: '' }) },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['properties'] }); setShowForm(false); setForm({ name: '', address: '', type: 'BOARDING_HOUSE', description: '' }) },
   })
 
   return (
@@ -41,11 +41,8 @@ export default function PropertiesPage() {
               <div className="space-y-1">
                 <label className="block text-sm font-medium text-gray-700">Loại</label>
                 <select className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm" value={form.type} onChange={e => setForm({ ...form, type: e.target.value })}>
-                  <option value="HOUSE">Nhà riêng</option>
+                  <option value="BOARDING_HOUSE">Nhà trọ</option>
                   <option value="CONDO">Chung cư</option>
-                  <option value="APARTMENT">Căn hộ</option>
-                  <option value="SHARED">Phòng trọ chung</option>
-                  <option value="DORMITORY">Ký túc xá</option>
                 </select>
               </div>
               <Input label="Mô tả" value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} />

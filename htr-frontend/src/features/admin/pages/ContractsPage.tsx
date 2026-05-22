@@ -124,9 +124,8 @@ export default function ContractsPage() {
           <h1 className="text-2xl font-bold text-gray-900">Hợp đồng</h1>
           <div className="flex gap-2">
             <Button variant="outline" size="sm" onClick={() => {
-              const token = localStorage.getItem('accessToken')
-              fetch('/api/export/contracts', { headers: { Authorization: `Bearer ${token}` } })
-                .then(r => r.blob())
+              api.get('/export/contracts', { responseType: 'blob' })
+                .then(r => r.data)
                 .then(blob => {
                   const url = URL.createObjectURL(blob)
                   const a = document.createElement('a')

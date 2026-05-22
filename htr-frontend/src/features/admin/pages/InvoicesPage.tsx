@@ -38,9 +38,8 @@ export default function AdminInvoicesPage() {
           <h1 className="text-2xl font-bold text-gray-900">Hóa đơn</h1>
           <div className="flex gap-2">
             <Button variant="outline" size="sm" onClick={() => {
-              const token = localStorage.getItem('accessToken')
-              fetch('/api/export/invoices', { headers: { Authorization: `Bearer ${token}` } })
-                .then(r => r.blob())
+              api.get('/export/invoices', { responseType: 'blob' })
+                .then(r => r.data)
                 .then(blob => {
                   const url = URL.createObjectURL(blob)
                   const a = document.createElement('a')

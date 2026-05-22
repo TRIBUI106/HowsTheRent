@@ -17,8 +17,6 @@ export interface User {
 }
 
 export interface AuthResponse {
-  accessToken: string
-  refreshToken: string
   user: User
 }
 
@@ -27,7 +25,7 @@ export interface Property {
   owner: User
   name: string
   address: string
-  type: 'HOUSE' | 'CONDO' | 'APARTMENT' | 'DORMITORY' | 'SHARED'
+  type: 'BOARDING_HOUSE' | 'CONDO'
   description?: string
   createdAt: string
   updatedAt: string

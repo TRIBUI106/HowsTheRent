@@ -1,14 +1,25 @@
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '@/stores/authStore'
 import { LogOut } from 'lucide-react'
 import logoHtr from '@/assets/logo-htr.png'
 import { cn } from '@/lib/utils'
 import { navItems } from './navItems'
+import api from '@/lib/api'
 
 export default function Sidebar() {
   const { user, clearAuth } = useAuthStore()
   const location = useLocation()
+  const navigate = useNavigate()
   const role = user?.role ?? ''
+
+  const handleLogout = async () => {
+    try {
+      await api.post('/auth/logout')
+    } finally {
+      clearAuth()
+      navigate('/login', { replace: true })
+    }
+  }
   const filteredNav = navItems.filter(item => item.roles.includes(role))
 
   return (
@@ -68,7 +79,7 @@ export default function Sidebar() {
             </div>
           </div>
           <button
-            onClick={clearAuth}
+            onClick={handleLogout}
             className="flex items-center gap-2 text-xs text-fg-subtle hover:text-error transition-colors w-full rounded-lg px-2 py-1.5 hover:bg-error-surface/80"
           >
             <LogOut size={13} />

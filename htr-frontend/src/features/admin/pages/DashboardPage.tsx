@@ -25,14 +25,25 @@ const summaryCards = [
   { label: 'Hóa đơn quá hạn', key: 'overdueInvoices', icon: AlertCircle, tone: 'error' },
   { label: 'Bảo trì mới', key: 'openMaintenance', icon: Wrench, tone: 'warning' },
   { label: 'Đang xử lý', key: 'inProgressMaintenance', icon: Clock, tone: 'accent' },
-] as const
+] satisfies Array<{
+  label: string
+  key: keyof Dashboard
+  icon: typeof BadgeDollarSign
+  tone: string
+  format?: 'currency'
+}>
 
 const inventoryCards = [
   { label: 'Tổng tài sản', key: 'totalProperties', icon: Building2 },
   { label: 'Tổng phòng', key: 'totalRooms', icon: Home },
   { label: 'Phòng trống', key: 'emptyRooms', icon: DoorOpen },
   { label: 'Tỷ lệ lấp đầy', key: 'occupancyRate', icon: TrendingUp, suffix: '%' },
-] as const
+] satisfies Array<{
+  label: string
+  key: keyof Dashboard
+  icon: typeof Building2
+  suffix?: string
+}>
 
 function DashboardSkeleton() {
   return (
@@ -110,9 +121,10 @@ export default function AdminDashboard() {
         <div className="grid grid-cols-2 gap-3 text-sm sm:grid-cols-4 lg:w-[480px]">
           {inventoryCards.map(card => {
             const Icon = card.icon
+            const rawValue = data?.[card.key] ?? 0
             const value = card.suffix
-              ? `${Number((data as any)?.[card.key] ?? 0).toFixed(1)}${card.suffix}`
-              : (data as any)?.[card.key] ?? 0
+              ? `${Number(rawValue).toFixed(1)}${card.suffix}`
+              : rawValue
             return (
               <div key={card.key} className="rounded-2xl border border-border/70 bg-bg px-4 py-3">
                 <div className="flex items-center justify-between gap-3">
@@ -129,8 +141,8 @@ export default function AdminDashboard() {
       <section className="mb-5 grid grid-cols-1 gap-4 xl:grid-cols-4">
         {summaryCards.map(card => {
           const Icon = card.icon
-          const rawValue = (data as any)?.[card.key] ?? 0
-          const value = card.format === 'currency' ? formatCurrency(rawValue) : rawValue
+          const rawValue = data?.[card.key] ?? 0
+          const value = card.format === 'currency' ? formatCurrency(Number(rawValue)) : rawValue
           return (
             <Card key={card.key} className="overflow-hidden">
               <CardContent className="p-5">
@@ -180,7 +192,7 @@ export default function AdminDashboard() {
                   <YAxis tick={{ fontSize: 11, fill: 'var(--color-fg-subtle)' }} tickFormatter={(v) => `${v} tr`} axisLine={false} tickLine={false} />
                   <Tooltip
                     cursor={{ fill: 'var(--color-accent-surface)' }}
-                    formatter={(v: number) => [`${Number(v).toFixed(1)} triệu`, 'Doanh thu']}
+                    formatter={(v) => [`${Number(v).toFixed(1)} triệu`, 'Doanh thu']}
                     contentStyle={{ borderRadius: 16, border: '1px solid var(--color-border)', background: 'var(--color-surface)' }}
                   />
                   <Bar dataKey="amount" fill="var(--color-accent)" radius={[8, 8, 0, 0]} name="Doanh thu" />
@@ -216,7 +228,7 @@ export default function AdminDashboard() {
                 <YAxis tick={{ fontSize: 11, fill: 'var(--color-fg-subtle)' }} tickFormatter={(v) => `${v}%`} axisLine={false} tickLine={false} />
                 <Tooltip
                   cursor={{ fill: 'var(--color-accent-surface)' }}
-                  formatter={(v: number) => [`${v}%`, 'Tỷ lệ']}
+                  formatter={(v) => [`${Number(v)}%`, 'Tỷ lệ']}
                   contentStyle={{ borderRadius: 16, border: '1px solid var(--color-border)', background: 'var(--color-surface)' }}
                 />
                 <Bar dataKey="value" fill="var(--color-success)" radius={[8, 8, 0, 0]} />
