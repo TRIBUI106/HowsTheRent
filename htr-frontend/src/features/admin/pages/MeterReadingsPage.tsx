@@ -104,7 +104,7 @@ export default function MeterReadingsPage() {
                 onClick={generateInvoices}
                 disabled={generating}
               >
-                {generating ? 'Đang tạo…' : '⚡ Tạo hóa đơn tháng này'}
+                {generating ? 'Đang tạo…' : 'Tạo hóa đơn tháng này'}
               </Button>
             </div>
           </div>

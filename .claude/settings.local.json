@@ -48,7 +48,18 @@
       "Bash(netstat -ano)",
       "Bash(findstr \":8080.*LISTENING\")",
       "Bash(findstr \":5173.*LISTENING\")",
-      "Bash(wmic process *)"
+      "Bash(wmic process *)",
+      "mcp__plugin_oh-my-claudecode_t__lsp_diagnostics_directory",
+      "Bash(D:/Code/HowsTheRent/htr-backend/mvnw.cmd *)",
+      "Bash(npm *)",
+      "Bash(npx *)",
+      "PowerShell($env:SERVER_PORT = '8081'; & \"D:/Code/HowsTheRent/htr-backend/mvnw.cmd\" -f \"D:/Code/HowsTheRent/htr-backend/pom.xml\" spring-boot:run)",
+      "mcp__21st-dev-magic__21st_magic_component_refiner",
+      "Bash(Get-ChildItem \"D:\\\\Code\\\\HowsTheRent\\\\htr-frontend\\\\src\\\\components\\\\ui\")",
+      "Bash(Select-Object Name)",
+      "PowerShell(npm *)",
+      "PowerShell(Remove-Item *)",
+      "WebFetch(domain:skills.sh)"
     ]
   }
 }

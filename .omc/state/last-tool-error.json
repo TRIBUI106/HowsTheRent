@@ -1,7 +1,7 @@
 {
-  "tool_name": "Bash",
-  "tool_input_preview": "{\"command\":\"cd D:\\\\Code\\\\HowsTheRent\\\\htr-frontend && npx tsc --noEmit 2>&1\",\"timeout\":60000,\"description\":\"TypeScript type-check frontend changes\"}",
-  "error": "Exit code 1\n/usr/bin/bash: line 3: cd: D:CodeHowsTheRenthtr-frontend: No such file or directory",
-  "timestamp": "2026-05-21T15:54:46.863Z",
+  "tool_name": "PowerShell",
+  "tool_input_preview": "{\"command\":\"npm --prefix \\\"D:\\\\Code\\\\HowsTheRent\\\\htr-frontend\\\" exec -- playwright test \\\"D:\\\\Code\\\\HowsTheRent\\\\htr-frontend\\\\.tmp-login-smoke.spec.mjs\\\" --project=chromium\",\"timeout\":120000,\"descri...",
+  "error": "Exit code 1\nnpm warn Unknown cli config \"--project\". This will stop working in the next major version of npm.\nError: No tests found.\nMake sure that arguments are regular expressions matching test files.\nYou may need to escape symbols like \"$\" or \"*\" and quote the arguments.",
+  "timestamp": "2026-05-22T02:38:17.614Z",
   "retry_count": 1
 }
