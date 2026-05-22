@@ -23,4 +23,5 @@ public interface RoomRepository extends JpaRepository<Room, UUID> {
     Optional<Room> findById(UUID id);
 
     long countByPropertyIdAndStatus(UUID propertyId, RoomStatus status);
+    void deleteByPropertyId(UUID propertyId);
 }

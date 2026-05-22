@@ -59,6 +59,13 @@ public class RoomController {
         return ResponseEntity.ok(RoomResponse.from(roomService.updateStatus(id, status)));
     }
 
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> delete(@PathVariable UUID propertyId, @PathVariable UUID id) {
+        roomService.delete(id);
+        return ResponseEntity.noContent().build();
+    }
+
     @PostMapping("/{id}/images")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<String>> uploadImages(@PathVariable UUID propertyId, @PathVariable UUID id,

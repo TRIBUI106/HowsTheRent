@@ -8,4 +8,5 @@ import java.util.UUID;
 
 public interface VehicleConfigRepository extends JpaRepository<VehicleConfig, UUID> {
     Optional<VehicleConfig> findByPropertyId(UUID propertyId);
+    void deleteByPropertyId(UUID propertyId);
 }

@@ -63,6 +63,12 @@ public class RoomService {
     }
 
     @Transactional
+    public void delete(UUID id) {
+        Room room = getById(id);
+        roomRepository.delete(room);
+    }
+
+    @Transactional
     public Room save(Room room) {
         return roomRepository.save(room);
     }

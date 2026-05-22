@@ -58,6 +58,13 @@ public class PropertyController {
         return ResponseEntity.ok(PropertyResponse.from(propertyService.update(id, req)));
     }
 
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> delete(@PathVariable UUID id) {
+        propertyService.delete(id);
+        return ResponseEntity.noContent().build();
+    }
+
     @GetMapping("/{id}/fee-config")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<FeeConfigResponse> getFeeConfig(@PathVariable UUID id) {

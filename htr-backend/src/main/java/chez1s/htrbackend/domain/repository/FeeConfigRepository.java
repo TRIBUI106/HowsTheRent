@@ -8,4 +8,5 @@ import java.util.UUID;
 
 public interface FeeConfigRepository extends JpaRepository<FeeConfig, UUID> {
     Optional<FeeConfig> findByPropertyId(UUID propertyId);
+    void deleteByPropertyId(UUID propertyId);
 }

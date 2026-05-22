@@ -33,7 +33,9 @@ export interface Property {
 
 export interface Room {
   id: string
-  property: Property
+  property?: Property
+  propertyId: string
+  propertyName: string
   roomNumber: string
   floor?: number
   areaM2?: number

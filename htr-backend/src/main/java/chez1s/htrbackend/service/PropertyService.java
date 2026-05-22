@@ -21,6 +21,7 @@ public class PropertyService {
     private final PropertyRepository propertyRepository;
     private final FeeConfigRepository feeConfigRepository;
     private final VehicleConfigRepository vehicleConfigRepository;
+    private final RoomRepository roomRepository;
     private final UserRepository userRepository;
 
     public List<Property> listByOwner(UUID ownerId) {
@@ -80,6 +81,15 @@ public class PropertyService {
         property.setType(req.getType());
         property.setDescription(req.getDescription());
         return propertyRepository.save(property);
+    }
+
+    @Transactional
+    public void delete(UUID id) {
+        getById(id);
+        roomRepository.deleteByPropertyId(id);
+        feeConfigRepository.deleteByPropertyId(id);
+        vehicleConfigRepository.deleteByPropertyId(id);
+        propertyRepository.deleteById(id);
     }
 
     public FeeConfig getFeeConfig(UUID propertyId) {
