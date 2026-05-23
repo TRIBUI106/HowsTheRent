@@ -170,6 +170,12 @@
   },
   "hotPaths": [
     {
+      "path": "src",
+      "accessCount": 9,
+      "lastAccessed": 1779521701979,
+      "type": "directory"
+    },
+    {
       "path": "src\\App.tsx",
       "accessCount": 7,
       "lastAccessed": 1779364749474,
@@ -188,9 +194,21 @@
       "type": "file"
     },
     {
+      "path": "src\\components\\ui\\feedback.tsx",
+      "accessCount": 6,
+      "lastAccessed": 1779521550576,
+      "type": "file"
+    },
+    {
       "path": "src\\features\\auth\\pages\\LoginPage.tsx",
       "accessCount": 5,
       "lastAccessed": 1779366291661,
+      "type": "file"
+    },
+    {
+      "path": "src\\features\\admin\\pages\\FeeConfigPage.tsx",
+      "accessCount": 4,
+      "lastAccessed": 1779521615548,
       "type": "file"
     },
     {
@@ -224,10 +242,10 @@
       "type": "file"
     },
     {
-      "path": "src",
+      "path": "src\\features\\admin\\pages\\UsersPage.tsx",
       "accessCount": 3,
-      "lastAccessed": 1779366304821,
-      "type": "directory"
+      "lastAccessed": 1779521658777,
+      "type": "file"
     },
     {
       "path": "src\\types\\index.ts",
@@ -302,12 +320,6 @@
       "type": "file"
     },
     {
-      "path": "src\\components\\ui\\feedback.tsx",
-      "accessCount": 2,
-      "lastAccessed": 1779365196985,
-      "type": "file"
-    },
-    {
       "path": "src\\features\\admin\\pages\\DashboardPage.tsx",
       "accessCount": 2,
       "lastAccessed": 1779365346755,
@@ -317,6 +329,84 @@
       "path": "index.html",
       "accessCount": 2,
       "lastAccessed": 1779365883402,
+      "type": "file"
+    },
+    {
+      "path": "src\\features\\admin\\pages\\InvoicesPage.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1779521572656,
+      "type": "file"
+    },
+    {
+      "path": "src\\features\\tenant\\pages\\InvoicesPage.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1779521575728,
+      "type": "file"
+    },
+    {
+      "path": "src\\features\\tenant\\pages\\PaymentHistoryPage.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1779521579108,
+      "type": "file"
+    },
+    {
+      "path": "src\\features\\tenant\\pages\\ContractDetailPage.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1779521582782,
+      "type": "file"
+    },
+    {
+      "path": "src\\features\\admin\\pages\\AuditLogPage.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1779521605784,
+      "type": "file"
+    },
+    {
+      "path": "src\\features\\admin\\pages\\ContractsPage.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1779521608874,
+      "type": "file"
+    },
+    {
+      "path": "src\\features\\admin\\pages\\MaintenancePage.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1779521651149,
+      "type": "file"
+    },
+    {
+      "path": "src\\features\\admin\\pages\\MeterReadingsPage.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1779521655121,
+      "type": "file"
+    },
+    {
+      "path": "src\\features\\admin\\pages\\VehicleConfigPage.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1779521662356,
+      "type": "file"
+    },
+    {
+      "path": "src\\features\\tech\\pages\\MaintenancePage.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1779521683372,
+      "type": "file"
+    },
+    {
+      "path": "src\\features\\tech\\pages\\NotificationsPage.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1779521686030,
+      "type": "file"
+    },
+    {
+      "path": "src\\features\\tenant\\pages\\MaintenancePage.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1779521688917,
+      "type": "file"
+    },
+    {
+      "path": "src\\features\\tenant\\pages\\NotificationsPage.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1779521692368,
       "type": "file"
     },
     {

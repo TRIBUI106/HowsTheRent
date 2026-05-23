@@ -47,7 +47,7 @@ export default function Sidebar() {
               key={item.to + item.label}
               to={item.to}
               className={cn(
-                'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-colors duration-100',
+                'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-150',
                 isActive
                   ? 'bg-surface text-fg shadow-[0_1px_2px_rgba(15,23,42,0.04)] ring-1 ring-border/90'
                   : 'text-fg-muted hover:bg-surface/70 hover:text-fg'

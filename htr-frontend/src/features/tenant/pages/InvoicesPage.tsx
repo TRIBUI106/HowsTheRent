@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Table, TableRow, TableCell } from '@/components/ui/table'
+import { TableSkeleton } from '@/components/ui/feedback'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import type { Invoice } from '@/types'
 
@@ -26,9 +27,7 @@ export default function TenantInvoicesPage() {
   return (
     <Layout title="Hóa đơn">
       {isLoading ? (
-        <div className="flex h-32 items-center justify-center">
-          <div className="animate-spin h-6 w-6 border-2 border-blue-600 border-t-transparent rounded-full" />
-        </div>
+        <TableSkeleton rows={5} columns={6} />
       ) : (
         <Card>
           <Table headers={['Tháng', 'Phòng', 'Tổng tiền', 'Trạng thái', 'Hạn', 'Thao tác']}>
@@ -43,7 +42,7 @@ export default function TenantInvoicesPage() {
                   {inv.status === 'PENDING' && (
                     <Button size="sm" onClick={() => handlePay(inv)}>Thanh toán</Button>
                   )}
-                  {inv.status === 'PAID' && <span className="text-sm text-green-600">Đã thanh toán</span>}
+                  {inv.status === 'PAID' && <span className="text-sm text-success">Đã thanh toán</span>}
                 </TableCell>
               </TableRow>
             ))}

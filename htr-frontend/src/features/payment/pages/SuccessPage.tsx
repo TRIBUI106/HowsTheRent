@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuthStore } from '@/stores/authStore'
+import { CheckCircle2 } from 'lucide-react'
 
 export default function PaymentSuccessPage() {
   const [params] = useSearchParams()
@@ -18,27 +19,25 @@ export default function PaymentSuccessPage() {
   }, [navigate, user])
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-lg p-8 max-w-md w-full text-center space-y-4">
-        <div className="flex items-center justify-center w-16 h-16 mx-auto bg-green-100 rounded-full">
-          <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-          </svg>
+    <div className="min-h-screen bg-bg flex items-center justify-center p-4">
+      <div className="bg-surface rounded-2xl shadow-[0_2px_8px_rgba(15,23,42,0.06)] border border-border/80 p-8 max-w-md w-full text-center space-y-4 animate-scale-in">
+        <div className="flex items-center justify-center w-16 h-16 mx-auto bg-success-surface rounded-full">
+          <CheckCircle2 className="w-8 h-8 text-success" />
         </div>
-        <h1 className="text-2xl font-bold text-gray-900">Thanh toán thành công!</h1>
-        <p className="text-gray-500">
+        <h1 className="text-2xl font-bold text-fg">Thanh toán thành công!</h1>
+        <p className="text-fg-muted">
           Hóa đơn của bạn đã được thanh toán.
-          {orderCode && <> Mã đơn: <span className="font-medium text-gray-700">{orderCode}</span></>}
+          {orderCode && <> Mã đơn: <span className="font-medium text-fg">{orderCode}</span></>}
         </p>
         {amount && (
-          <p className="text-lg font-semibold text-green-600">
+          <p className="text-lg font-semibold text-success">
             {(Number(amount) / 100).toLocaleString('vi-VN')} ₫
           </p>
         )}
-        <p className="text-sm text-gray-400">Tự động chuyển hướng sau 4 giây…</p>
+        <p className="text-sm text-fg-subtle">Tự động chuyển hướng sau 4 giây...</p>
         <button
           onClick={() => navigate(user ? '/tenant/invoices' : '/login', { replace: true })}
-          className="w-full mt-2 bg-indigo-600 text-white rounded-lg py-2.5 text-sm font-medium hover:bg-indigo-700 transition-colors"
+          className="w-full mt-2 bg-accent text-accent-fg rounded-xl py-2.5 text-sm font-medium hover:bg-accent-hover transition-colors"
         >
           Xem hóa đơn
         </button>

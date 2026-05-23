@@ -24,7 +24,7 @@ export default function Header({ title }: HeaderProps) {
     '/tech/notifications'
 
   return (
-    <header className="border-b border-border/80 bg-surface/92 px-6 py-3.5 backdrop-blur-sm shrink-0 lg:px-8">
+    <header className="border-b border-border/80 bg-surface/92 px-6 py-3.5 backdrop-blur-sm shrink-0 lg:px-8 animate-fade-in">
       <div className="flex items-center justify-between gap-4">
         <div className="min-w-0">
           <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-fg-subtle">{roleLabel}</p>

@@ -23,37 +23,37 @@ export default function TenantDashboard() {
     <Layout title="Dashboard">
       <div className="space-y-6">
         <div>
-          <h3 className="text-lg font-medium text-gray-900 mb-4">Hóa đơn</h3>
+          <h3 className="text-lg font-medium text-fg mb-4">Hóa đơn</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Card><CardContent className="p-6">
-              <p className="text-sm text-gray-500">Tổng hóa đơn</p>
-              <p className="text-2xl font-bold">{invoices?.length ?? 0}</p>
+              <p className="text-sm text-fg-muted">Tổng hóa đơn</p>
+              <p className="text-2xl font-bold text-fg">{invoices?.length ?? 0}</p>
             </CardContent></Card>
             <Card><CardContent className="p-6">
-              <p className="text-sm text-gray-500">Chờ thanh toán</p>
-              <p className="text-2xl font-bold text-orange-600">{pending.length}</p>
+              <p className="text-sm text-fg-muted">Chờ thanh toán</p>
+              <p className="text-2xl font-bold text-warning">{pending.length}</p>
             </CardContent></Card>
             <Card><CardContent className="p-6">
-              <p className="text-sm text-gray-500">Quá hạn</p>
-              <p className="text-2xl font-bold text-red-600">{overdue.length}</p>
+              <p className="text-sm text-fg-muted">Quá hạn</p>
+              <p className="text-2xl font-bold text-error">{overdue.length}</p>
             </CardContent></Card>
           </div>
         </div>
 
         <div>
-          <h3 className="text-lg font-medium text-gray-900 mb-4">Yêu cầu bảo trì</h3>
+          <h3 className="text-lg font-medium text-fg mb-4">Yêu cầu bảo trì</h3>
           <Card>
-            <div className="divide-y">
+            <div className="divide-y divide-border/60">
               {maintenance?.map(req => (
                 <div key={req.id} className="p-4 flex justify-between items-center">
                   <div>
-                    <p className="font-medium">{req.title}</p>
-                    <p className="text-sm text-gray-500">{req.room?.roomNumber}</p>
+                    <p className="font-medium text-fg">{req.title}</p>
+                    <p className="text-sm text-fg-muted">{req.room?.roomNumber}</p>
                   </div>
                   <Badge status={req.status} />
                 </div>
               ))}
-              {maintenance?.length === 0 && <p className="p-4 text-center text-gray-400">Chưa có yêu cầu bảo trì</p>}
+              {maintenance?.length === 0 && <p className="p-4 text-center text-fg-subtle">Chưa có yêu cầu bảo trì</p>}
             </div>
           </Card>
         </div>

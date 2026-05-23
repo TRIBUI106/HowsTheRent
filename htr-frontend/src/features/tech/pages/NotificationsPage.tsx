@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import api from '@/lib/api'
 import Layout from '@/components/Layout'
+import { ListSkeleton } from '@/components/ui/feedback'
 import { formatDate } from '@/lib/utils'
 import type { Notification } from '@/types'
 import { CheckCheck } from 'lucide-react'
@@ -33,7 +34,7 @@ export default function TechNotificationsPage() {
             <button
               onClick={() => markAllMutation.mutate()}
               disabled={markAllMutation.isPending}
-              className="flex items-center gap-1.5 text-sm text-indigo-600 hover:text-indigo-800 disabled:opacity-50"
+              className="flex items-center gap-1.5 text-sm text-accent hover:text-accent-hover disabled:opacity-50 transition-colors"
             >
               <CheckCheck size={15} />
               Đánh dấu tất cả đã đọc ({unreadCount})
@@ -42,31 +43,29 @@ export default function TechNotificationsPage() {
         )}
 
         {isLoading ? (
-          <div className="flex h-32 items-center justify-center">
-            <div className="animate-spin h-6 w-6 border-2 border-blue-600 border-t-transparent rounded-full" />
-          </div>
+          <ListSkeleton items={5} />
         ) : (
           <>
             {notifications?.map(n => (
               <div
                 key={n.id}
                 onClick={() => { if (!n.read) markOneMutation.mutate(n.id) }}
-                className={`p-4 rounded-lg border cursor-pointer transition-colors ${
-                  n.read ? 'bg-white hover:bg-gray-50' : 'bg-blue-50 border-blue-200 hover:bg-blue-100'
+                className={`p-4 rounded-xl border cursor-pointer transition-colors ${
+                  n.read ? 'bg-surface border-border/80 hover:bg-sidebar/50' : 'bg-accent-surface border-accent/20 hover:bg-accent-surface/80'
                 }`}
               >
                 <div className="flex justify-between items-start">
                   <div className="flex items-center gap-2">
-                    {!n.read && <span className="w-2 h-2 bg-blue-500 rounded-full shrink-0" />}
-                    <p className="font-medium text-gray-900">{n.title}</p>
+                    {!n.read && <span className="w-2 h-2 bg-accent rounded-full shrink-0" />}
+                    <p className="font-medium text-fg">{n.title}</p>
                   </div>
-                  <span className="text-xs text-gray-400 shrink-0 ml-3">{formatDate(n.createdAt)}</span>
+                  <span className="text-xs text-fg-subtle shrink-0 ml-3">{formatDate(n.createdAt)}</span>
                 </div>
-                <p className="text-sm text-gray-600 mt-1 ml-4">{n.body}</p>
+                <p className="text-sm text-fg-muted mt-1 ml-4">{n.body}</p>
               </div>
             ))}
             {notifications?.length === 0 && (
-              <p className="text-center text-gray-400 py-8">Không có thông báo</p>
+              <p className="text-center text-fg-subtle py-8">Không có thông báo</p>
             )}
           </>
         )}

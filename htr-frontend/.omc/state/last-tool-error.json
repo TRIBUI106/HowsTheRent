@@ -1,7 +1,7 @@
 {
-  "tool_name": "Bash",
-  "tool_input_preview": "{\"command\":\"Get-ChildItem -Path \\\"D:\\\\Code\\\\HowsTheRent\\\\htr-frontend\\\\src\\\" -Recurse -File | Select-Object FullName | Sort-Object FullName\",\"description\":\"List all source files in htr-frontend/src\"}",
-  "error": "Exit code 127\n/usr/bin/bash: line 5: Get-ChildItem: command not found\n/usr/bin/bash: line 5: Select-Object: command not found\n/usr/bin/bash: line 5: Sort-Object: command not found",
-  "timestamp": "2026-05-21T11:26:48.694Z",
+  "tool_name": "PowerShell",
+  "tool_input_preview": "{\"command\":\"cd D:\\\\Code\\\\HowsTheRent\\\\htr-frontend; npx tsc --noEmit --pretty 2>&1 | Select-Object -First 30\",\"timeout\":30000,\"description\":\"Type-check the frontend\"}",
+  "error": "Exit code 1\n\u001b[41m                                                                               \u001b[0m\r\n\u001b[41m\u001b[37m                This is not the tsc command you are looking for                \u001b[0m\r\n\u001b[41m                                                                               \u001b[0m\r\n\r\nTo get access to the TypeScript compiler, \u001b[34mtsc\u001b[0m, from the command line either:\r\n\r\n- Use \u001b[1mnpm install typescript\u001b[0m to first add TypeScript to your project \u001b[1mbefore\u001b[0m using npx\r\n- Use \u001b[1myarn\u001b[0m ...",
+  "timestamp": "2026-05-23T06:59:27.501Z",
   "retry_count": 1
 }

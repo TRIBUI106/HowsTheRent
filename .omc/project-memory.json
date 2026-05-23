@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "lastScanned": 1779354767322,
+  "lastScanned": 1779516045797,
   "projectRoot": "D:\\Code\\HowsTheRent",
   "techStack": {
     "languages": [],
@@ -38,7 +38,7 @@
       "path": "docs",
       "purpose": "Documentation",
       "fileCount": 1,
-      "lastAccessed": 1779354767294,
+      "lastAccessed": 1779516045738,
       "keyFiles": [
         "DEPLOYMENT.md"
       ]
@@ -47,7 +47,7 @@
       "path": "htr-backend",
       "purpose": null,
       "fileCount": 7,
-      "lastAccessed": 1779354767294,
+      "lastAccessed": 1779516045740,
       "keyFiles": [
         "Dockerfile",
         "mvnw",
@@ -59,8 +59,8 @@
     "htr-frontend": {
       "path": "htr-frontend",
       "purpose": null,
-      "fileCount": 13,
-      "lastAccessed": 1779354767295,
+      "fileCount": 12,
+      "lastAccessed": 1779516045741,
       "keyFiles": [
         "bun.lock",
         "Dockerfile",
@@ -69,30 +69,44 @@
         "nginx.conf"
       ]
     },
-    "htr-frontend\\dist": {
-      "path": "htr-frontend\\dist",
-      "purpose": "Distribution/build output",
-      "fileCount": 3,
-      "lastAccessed": 1779354767296,
-      "keyFiles": [
-        "favicon.svg",
-        "icons.svg",
-        "index.html"
-      ]
+    "postman": {
+      "path": "postman",
+      "purpose": null,
+      "fileCount": 0,
+      "lastAccessed": 1779516045741,
+      "keyFiles": []
+    },
+    "test-results": {
+      "path": "test-results",
+      "purpose": null,
+      "fileCount": 1,
+      "lastAccessed": 1779516045742,
+      "keyFiles": []
     },
     "htr-frontend\\node_modules": {
       "path": "htr-frontend\\node_modules",
       "purpose": "Dependencies",
-      "fileCount": 1,
-      "lastAccessed": 1779354767297,
+      "fileCount": 0,
+      "lastAccessed": 1779516045752,
       "keyFiles": []
+    },
+    "htr-frontend\\public": {
+      "path": "htr-frontend\\public",
+      "purpose": "Public files",
+      "fileCount": 3,
+      "lastAccessed": 1779516045767,
+      "keyFiles": [
+        "favicon.svg",
+        "icons.svg",
+        "logo-htr.png"
+      ]
     }
   },
   "hotPaths": [
     {
       "path": "htr-frontend\\src\\App.tsx",
-      "accessCount": 42,
-      "lastAccessed": 1779417024014,
+      "accessCount": 43,
+      "lastAccessed": 1779520447272,
       "type": "file"
     },
     {
@@ -121,8 +135,8 @@
     },
     {
       "path": "htr-frontend\\src\\components\\Layout.tsx",
-      "accessCount": 14,
-      "lastAccessed": 1779361415687,
+      "accessCount": 15,
+      "lastAccessed": 1779520428935,
       "type": "file"
     },
     {

@@ -1,7 +1,0 @@
-{
-  "tool_name": "PowerShell",
-  "tool_input_preview": "{\"command\":\"$env:PW_TEST_HTML_REPORT_OPEN='never'; npm --prefix \\\"D:\\\\Code\\\\HowsTheRent\\\\htr-frontend\\\" exec -- playwright test .tmp-property-room-smoke.spec.mjs --reporter=json\",\"timeout\":120000,\"des...",
-  "error": "Exit code 1\nnpm warn Unknown cli config \"--reporter\". This will stop working in the next major version of npm.\n\nRunning 1 test using 1 worker\n\n  ✘  1 htr-frontend\\.tmp-property-room-smoke.spec.mjs:3:1 › property delete and room create use cookie auth (1.6s)\n\n\n  1) htr-frontend\\.tmp-property-room-smoke.spec.mjs:3:1 › property delete and room create use cookie auth \n\n    Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\n    Expect...",
-  "timestamp": "2026-05-22T03:08:36.745Z",
-  "retry_count": 1
-}

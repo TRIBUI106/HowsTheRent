@@ -4,7 +4,7 @@ import Layout from '@/components/Layout'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Spinner } from '@/components/ui/feedback'
+import { TableSkeleton } from '@/components/ui/feedback'
 import { Table, TableRow, TableCell } from '@/components/ui/table'
 import { userApi } from '@/api'
 import type { User } from '@/types'
@@ -63,7 +63,7 @@ export default function UsersPage() {
         </div>
 
         {isLoading ? (
-          <div className="flex h-32 items-center justify-center"><Spinner /></div>
+          <TableSkeleton rows={6} columns={6} />
         ) : (
           <Card>
             <Table headers={['Họ tên', 'Email', 'Điện thoại', 'Vai trò', 'Trạng thái', '']}>

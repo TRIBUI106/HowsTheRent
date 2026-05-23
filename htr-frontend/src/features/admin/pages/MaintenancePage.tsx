@@ -5,6 +5,7 @@ import Layout from '@/components/Layout'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableRow, TableCell } from '@/components/ui/table'
+import { TableSkeleton } from '@/components/ui/feedback'
 import { formatDate } from '@/lib/utils'
 import type { MaintenanceRequest, User } from '@/types'
 
@@ -37,9 +38,7 @@ export default function AdminMaintenancePage() {
   return (
     <Layout title="Bảo trì">
       {isLoading ? (
-        <div className="flex h-32 items-center justify-center">
-          <div className="animate-spin h-6 w-6 border-2 border-blue-600 border-t-transparent rounded-full" />
-        </div>
+        <TableSkeleton rows={5} columns={7} />
       ) : (
         <Card>
           <Table headers={['Tiêu đề', 'Phòng', 'Người thuê', 'Kỹ thuật viên', 'Trạng thái', 'Ngày tạo', '']}>
@@ -48,7 +47,7 @@ export default function AdminMaintenancePage() {
                 <TableCell className="font-medium">{req.title}</TableCell>
                 <TableCell>{req.room?.roomNumber}</TableCell>
                 <TableCell>{req.tenant?.fullName}</TableCell>
-                <TableCell>{req.assignedTo?.fullName ?? <span className="text-gray-400">—</span>}</TableCell>
+                <TableCell>{req.assignedTo?.fullName ?? <span className="text-fg-subtle">—</span>}</TableCell>
                 <TableCell><Badge status={req.status} /></TableCell>
                 <TableCell>{formatDate(req.createdAt)}</TableCell>
                 <TableCell>
@@ -56,7 +55,7 @@ export default function AdminMaintenancePage() {
                     assigningId === req.id ? (
                       <div className="flex items-center gap-2">
                         <select
-                          className="text-sm border rounded px-2 py-1"
+                          className="text-sm border border-border/80 rounded-lg px-2 py-1 bg-surface text-fg focus:outline-none focus:ring-2 focus:ring-accent"
                           value={selectedTech[req.id] ?? ''}
                           onChange={e => setSelectedTech(prev => ({ ...prev, [req.id]: e.target.value }))}
                         >
@@ -71,7 +70,7 @@ export default function AdminMaintenancePage() {
                             if (techId) assignMutation.mutate({ id: req.id, techId })
                           }}
                           disabled={!selectedTech[req.id] || assignMutation.isPending}
-                          className="text-xs bg-accent text-accent-fg px-2 py-1 rounded hover:bg-accent-hover disabled:opacity-50 transition-colors"
+                          className="text-xs bg-accent text-accent-fg px-2 py-1 rounded-lg hover:bg-accent-hover disabled:opacity-50 transition-colors"
                         >
                           Xác nhận
                         </button>

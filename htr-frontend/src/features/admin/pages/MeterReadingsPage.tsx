@@ -4,7 +4,7 @@ import Layout from '@/components/Layout'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Spinner } from '@/components/ui/feedback'
+import { CardsSkeleton } from '@/components/ui/feedback'
 import api from '@/lib/api'
 import type { Room } from '@/types'
 
@@ -73,9 +73,9 @@ export default function MeterReadingsPage() {
     try {
       const [y, m] = selectedMonth.split('-').map(Number)
       const { data } = await api.post(`/invoices/generate?year=${y}&month=${m}`)
-      setGenResult(data.message ?? 'Invoices generated')
+      setGenResult(data.message ?? 'Đã tạo hóa đơn')
     } catch (e: any) {
-      setGenResult('Error: ' + (e?.response?.data?.message ?? e.message))
+      setGenResult('Lỗi: ' + (e?.response?.data?.message ?? e.message))
     } finally {
       setGenerating(false)
     }
@@ -85,17 +85,17 @@ export default function MeterReadingsPage() {
 
   return (
     <Layout>
-      <div className="p-6 space-y-6">
+      <div className="space-y-6">
         <div className="flex items-center justify-between flex-wrap gap-4">
-          <h1 className="text-2xl font-bold text-gray-900">Chỉ số điện nước</h1>
+          <h1 className="text-2xl font-bold text-fg">Chỉ số điện nước</h1>
           <div className="flex items-center gap-3">
             <div>
-              <label className="block text-xs text-gray-500 mb-1">Tháng</label>
+              <label className="block text-xs text-fg-muted mb-1">Tháng</label>
               <input
                 type="month"
                 value={selectedMonth}
                 onChange={e => { setSelectedMonth(e.target.value); setSuccessRooms(new Set()) }}
-                className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="border border-border/80 rounded-xl px-3 py-2 text-sm bg-surface text-fg focus:outline-none focus:ring-2 focus:ring-accent"
               />
             </div>
             <div className="pt-5">
@@ -104,39 +104,39 @@ export default function MeterReadingsPage() {
                 onClick={generateInvoices}
                 disabled={generating}
               >
-                {generating ? 'Đang tạo…' : 'Tạo hóa đơn tháng này'}
+                {generating ? 'Đang tạo...' : 'Tạo hóa đơn tháng này'}
               </Button>
             </div>
           </div>
         </div>
 
         {genResult && (
-          <div className={`rounded-lg px-4 py-3 text-sm ${genResult.startsWith('Error') ? 'bg-red-50 text-red-700' : 'bg-green-50 text-green-700'}`}>
+          <div className={`rounded-xl px-4 py-3 text-sm ${genResult.startsWith('Lỗi') ? 'bg-error-surface text-error' : 'bg-success-surface text-success'}`}>
             {genResult}
           </div>
         )}
 
-        {isLoading ? <Spinner /> : (
+        {isLoading ? <CardsSkeleton count={6} /> : (
           <>
-            <p className="text-sm text-gray-500">{rentedRooms.length} phòng đang thuê</p>
+            <p className="text-sm text-fg-muted">{rentedRooms.length} phòng đang thuê</p>
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
               {rentedRooms.map(room => {
                 const f = getForm(room.id)
                 const done = successRooms.has(room.id)
                 return (
-                  <Card key={room.id} className={`p-4 ${done ? 'border-green-400 bg-green-50' : ''}`}>
+                  <Card key={room.id} className={`p-4 ${done ? 'border-success/40 bg-success-surface' : ''}`}>
                     <div className="flex items-center justify-between mb-3">
                       <div>
-                        <p className="font-semibold text-gray-900">{room.roomNumber}</p>
-                        <p className="text-xs text-gray-500">{room.property?.name}</p>
+                        <p className="font-semibold text-fg">{room.roomNumber}</p>
+                        <p className="text-xs text-fg-muted">{room.property?.name}</p>
                       </div>
-                      {done && <span className="text-green-600 text-sm font-medium">✓ Đã lưu</span>}
+                      {done && <span className="text-success text-sm font-medium">&#10003; Đã lưu</span>}
                     </div>
                     {!done && (
                       <div className="space-y-3">
                         <div className="grid grid-cols-2 gap-2">
                           <div>
-                            <label className="block text-xs text-gray-500 mb-1">Điện cũ (kWh)</label>
+                            <label className="block text-xs text-fg-muted mb-1">Điện cũ (kWh)</label>
                             <Input
                               type="number"
                               placeholder="0"
@@ -145,7 +145,7 @@ export default function MeterReadingsPage() {
                             />
                           </div>
                           <div>
-                            <label className="block text-xs text-gray-500 mb-1">Điện mới (kWh)</label>
+                            <label className="block text-xs text-fg-muted mb-1">Điện mới (kWh)</label>
                             <Input
                               type="number"
                               placeholder="0"
@@ -156,7 +156,7 @@ export default function MeterReadingsPage() {
                         </div>
                         <div className="grid grid-cols-2 gap-2">
                           <div>
-                            <label className="block text-xs text-gray-500 mb-1">Nước cũ (m³)</label>
+                            <label className="block text-xs text-fg-muted mb-1">Nước cũ (m³)</label>
                             <Input
                               type="number"
                               placeholder="—"
@@ -165,7 +165,7 @@ export default function MeterReadingsPage() {
                             />
                           </div>
                           <div>
-                            <label className="block text-xs text-gray-500 mb-1">Nước mới (m³)</label>
+                            <label className="block text-xs text-fg-muted mb-1">Nước mới (m³)</label>
                             <Input
                               type="number"
                               placeholder="—"
@@ -189,7 +189,7 @@ export default function MeterReadingsPage() {
                 )
               })}
               {rentedRooms.length === 0 && (
-                <div className="col-span-3 py-16 text-center text-gray-400">Không có phòng đang thuê</div>
+                <div className="col-span-3 py-16 text-center text-fg-subtle">Không có phòng đang thuê</div>
               )}
             </div>
           </>

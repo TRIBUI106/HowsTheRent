@@ -4,7 +4,7 @@ import Layout from '@/components/Layout'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Spinner } from '@/components/ui/feedback'
+import { CardsSkeleton } from '@/components/ui/feedback'
 import api from '@/lib/api'
 
 interface Property {
@@ -76,34 +76,33 @@ export default function FeeConfigPage() {
     vehicleMutation.mutate({ ...vehicleConfig, ...vehicleForm, propertyId: selectedProp })
   }
 
-  if (propsLoading) return <Layout><Spinner /></Layout>
+  if (propsLoading) return <Layout><CardsSkeleton count={2} /></Layout>
 
   return (
     <Layout>
-      <div className="p-6 space-y-6">
-        <h1 className="text-2xl font-bold text-gray-900">Fee & Vehicle Config</h1>
+      <div className="space-y-6">
+        <h1 className="text-2xl font-bold text-fg">Cấu hình phí & xe</h1>
 
         <div className="max-w-xs">
-          <label className="block text-sm font-medium text-gray-700 mb-1">Property</label>
+          <label className="block text-sm font-medium text-fg mb-1">Toà nhà</label>
           <select
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full border border-border/80 rounded-xl px-3 py-2 text-sm bg-surface text-fg focus:outline-none focus:ring-2 focus:ring-accent"
             value={selectedProp}
             onChange={e => { setSelectedProp(e.target.value); setFeeForm({}); setVehicleForm({}) }}
           >
-            <option value="">Select a property…</option>
+            <option value="">Chọn toà nhà...</option>
             {properties?.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
           </select>
         </div>
 
         {selectedProp && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Fee Config */}
             <Card className="p-6">
-              <h2 className="text-lg font-semibold text-gray-800 mb-4">Fee Configuration</h2>
-              {feeLoading ? <Spinner /> : (
+              <h2 className="text-lg font-semibold text-fg mb-4">Cấu hình phí</h2>
+              {feeLoading ? <CardsSkeleton count={1} /> : (
                 <form onSubmit={handleFeeSubmit} className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Default Rent (₫)</label>
+                    <label className="block text-sm font-medium text-fg mb-1">Tiền phòng mặc định (₫)</label>
                     <Input
                       type="number"
                       defaultValue={feeConfig?.rentDefault}
@@ -111,7 +110,7 @@ export default function FeeConfigPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Electricity Price (₫/kWh)</label>
+                    <label className="block text-sm font-medium text-fg mb-1">Giá điện (₫/kWh)</label>
                     <Input
                       type="number"
                       defaultValue={feeConfig?.elecPrice}
@@ -119,18 +118,18 @@ export default function FeeConfigPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Water Mode</label>
+                    <label className="block text-sm font-medium text-fg mb-1">Chế độ nước</label>
                     <select
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                      className="w-full border border-border/80 rounded-xl px-3 py-2 text-sm bg-surface text-fg focus:outline-none focus:ring-2 focus:ring-accent"
                       defaultValue={feeConfig?.waterMode}
                       onChange={e => setFeeForm(f => ({ ...f, waterMode: e.target.value as 'CUBIC' | 'PERSON' }))}
                     >
-                      <option value="CUBIC">By cubic meter</option>
-                      <option value="PERSON">Per person</option>
+                      <option value="CUBIC">Theo khối (m³)</option>
+                      <option value="PERSON">Theo đầu người</option>
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Water Price (₫)</label>
+                    <label className="block text-sm font-medium text-fg mb-1">Giá nước (₫)</label>
                     <Input
                       type="number"
                       defaultValue={feeConfig?.waterPrice}
@@ -138,7 +137,7 @@ export default function FeeConfigPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Service Fee (₫/month)</label>
+                    <label className="block text-sm font-medium text-fg mb-1">Phí dịch vụ (₫/tháng)</label>
                     <Input
                       type="number"
                       defaultValue={feeConfig?.serviceFee}
@@ -146,21 +145,20 @@ export default function FeeConfigPage() {
                     />
                   </div>
                   <Button type="submit" disabled={feeMutation.isPending}>
-                    {feeMutation.isPending ? 'Saving…' : 'Save Fee Config'}
+                    {feeMutation.isPending ? 'Đang lưu...' : 'Lưu cấu hình phí'}
                   </Button>
-                  {feeMutation.isSuccess && <p className="text-sm text-green-600">Saved successfully</p>}
-                  {feeMutation.isError && <p className="text-sm text-red-600">Failed to save</p>}
+                  {feeMutation.isSuccess && <p className="text-sm text-success">Đã lưu thành công</p>}
+                  {feeMutation.isError && <p className="text-sm text-error">Lưu thất bại</p>}
                 </form>
               )}
             </Card>
 
-            {/* Vehicle Config */}
             <Card className="p-6">
-              <h2 className="text-lg font-semibold text-gray-800 mb-4">Vehicle Parking Rates</h2>
-              {vehicleLoading ? <Spinner /> : (
+              <h2 className="text-lg font-semibold text-fg mb-4">Phí giữ xe</h2>
+              {vehicleLoading ? <CardsSkeleton count={1} /> : (
                 <form onSubmit={handleVehicleSubmit} className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Motorbike (₫/month)</label>
+                    <label className="block text-sm font-medium text-fg mb-1">Xe máy (₫/tháng)</label>
                     <Input
                       type="number"
                       defaultValue={vehicleConfig?.motorbikePrice}
@@ -168,7 +166,7 @@ export default function FeeConfigPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Car (₫/month)</label>
+                    <label className="block text-sm font-medium text-fg mb-1">Ô tô (₫/tháng)</label>
                     <Input
                       type="number"
                       defaultValue={vehicleConfig?.carPrice}
@@ -176,7 +174,7 @@ export default function FeeConfigPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Bicycle (₫/month)</label>
+                    <label className="block text-sm font-medium text-fg mb-1">Xe đạp (₫/tháng)</label>
                     <Input
                       type="number"
                       defaultValue={vehicleConfig?.bicyclePrice}
@@ -184,10 +182,10 @@ export default function FeeConfigPage() {
                     />
                   </div>
                   <Button type="submit" disabled={vehicleMutation.isPending}>
-                    {vehicleMutation.isPending ? 'Saving…' : 'Save Vehicle Config'}
+                    {vehicleMutation.isPending ? 'Đang lưu...' : 'Lưu phí giữ xe'}
                   </Button>
-                  {vehicleMutation.isSuccess && <p className="text-sm text-green-600">Saved successfully</p>}
-                  {vehicleMutation.isError && <p className="text-sm text-red-600">Failed to save</p>}
+                  {vehicleMutation.isSuccess && <p className="text-sm text-success">Đã lưu thành công</p>}
+                  {vehicleMutation.isError && <p className="text-sm text-error">Lưu thất bại</p>}
                 </form>
               )}
             </Card>
@@ -195,7 +193,7 @@ export default function FeeConfigPage() {
         )}
 
         {!selectedProp && (
-          <div className="text-center py-16 text-gray-400">Select a property to configure fees</div>
+          <div className="text-center py-16 text-fg-subtle">Chọn toà nhà để cấu hình phí</div>
         )}
       </div>
     </Layout>

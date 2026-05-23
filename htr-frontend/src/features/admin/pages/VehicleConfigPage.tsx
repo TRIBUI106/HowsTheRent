@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
+import { CardsSkeleton } from '@/components/ui/feedback'
 import { formatCurrency } from '@/lib/utils'
 import type { Property, VehicleConfig } from '@/types'
 
@@ -26,7 +27,6 @@ export default function VehicleConfigPage() {
     enabled: !!selectedPropertyId,
   })
 
-  // Sync form when editing starts
   const formDefaults = {
     motorbikePrice: vehicleConfig?.motorbikePrice ?? 0,
     carPrice: vehicleConfig?.carPrice ?? 0,
@@ -52,7 +52,7 @@ export default function VehicleConfigPage() {
 
   return (
     <Layout title="Cấu hình xe">
-      <div className="p-6 max-w-2xl">
+      <div className="max-w-2xl">
         <Card className="mb-6">
           <CardHeader>Chọn tài sản</CardHeader>
           <CardContent>
@@ -82,9 +82,7 @@ export default function VehicleConfigPage() {
             </CardHeader>
             <CardContent>
               {loadingConfig ? (
-                <div className="flex h-24 items-center justify-center">
-                  <div className="animate-spin h-5 w-5 border-2 border-indigo-600 border-t-transparent rounded-full" />
-                </div>
+                <CardsSkeleton count={1} />
               ) : editing ? (
                 <form
                   onSubmit={e => { e.preventDefault(); save.mutate() }}
@@ -122,9 +120,9 @@ export default function VehicleConfigPage() {
                     { label: 'Ô tô', value: vehicleConfig?.carPrice },
                     { label: 'Xe đạp', value: vehicleConfig?.bicyclePrice },
                   ].map(item => (
-                    <div key={item.label} className="flex justify-between items-center py-2 border-b last:border-0">
-                      <span className="text-sm text-gray-600">{item.label}</span>
-                      <span className="font-medium text-gray-900">{formatCurrency(item.value ?? 0)} / xe / tháng</span>
+                    <div key={item.label} className="flex justify-between items-center py-2 border-b border-border/60 last:border-0">
+                      <span className="text-sm text-fg-muted">{item.label}</span>
+                      <span className="font-medium text-fg">{formatCurrency(item.value ?? 0)} / xe / tháng</span>
                     </div>
                   ))}
                 </div>

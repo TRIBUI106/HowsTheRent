@@ -15,7 +15,7 @@ export function Dialog({ open, onClose, title, children, className }: DialogProp
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-fg/40 backdrop-blur-[2px]" onClick={onClose} />
-      <div className={cn('relative bg-surface rounded-xl shadow-xl border border-border w-full max-w-lg mx-4 p-6', className)}>
+      <div className={cn('relative bg-surface rounded-2xl shadow-xl border border-border w-full max-w-lg mx-4 p-6 animate-scale-in', className)}>
         <div className="flex items-center justify-between mb-5">
           {title && <h2 className="text-base font-semibold text-fg">{title}</h2>}
           <button
