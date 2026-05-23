@@ -48,38 +48,38 @@ services:
       timeout: 5s
       retries: 3
 
-  backend:
-    build:
-      context: ./htr-backend
-      dockerfile: Dockerfile
-    container_name: htr-backend
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-      minio:
-        condition: service_healthy
-    environment:
-      DB_URL: jdbc:postgresql://postgres:5432/htr
-      DB_USER: htr
-      DB_PASSWORD: secret
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-      JWT_SECRET: ${JWT_SECRET:-changeThisToASecureRandomStringAtLeast256BitsLong!!}
-      MAIL_HOST: ${MAIL_HOST:-smtp.gmail.com}
-      MAIL_PORT: ${MAIL_PORT:-587}
-      MAIL_USERNAME: ${MAIL_USERNAME}
-      MAIL_PASSWORD: ${MAIL_PASSWORD}
-      MINIO_URL: http://minio:9000
-      MINIO_ACCESS_KEY: minioadmin
-      MINIO_SECRET_KEY: minioadmin
-      MINIO_BUCKET: htr
-      PAYOS_CLIENT_ID: ${PAYOS_CLIENT_ID}
-      PAYOS_API_KEY: ${PAYOS_API_KEY}
-      PAYOS_CHECKSUM_KEY: ${PAYOS_CHECKSUM_KEY}
-    ports:
-      - "8080:8080"
+  # backend:
+  #   build:
+  #     context: ./htr-backend
+  #     dockerfile: Dockerfile
+  #   container_name: htr-backend
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #     redis:
+  #       condition: service_healthy
+  #     minio:
+  #       condition: service_healthy
+  #   environment:
+  #     DB_URL: jdbc:postgresql://postgres:5432/htr
+  #     DB_USER: htr
+  #     DB_PASSWORD: secret
+  #     REDIS_HOST: redis
+  #     REDIS_PORT: 6379
+  #     JWT_SECRET: ${JWT_SECRET:-changeThisToASecureRandomStringAtLeast256BitsLong!!}
+  #     MAIL_HOST: ${MAIL_HOST:-smtp.gmail.com}
+  #     MAIL_PORT: ${MAIL_PORT:-587}
+  #     MAIL_USERNAME: ${MAIL_USERNAME}
+  #     MAIL_PASSWORD: ${MAIL_PASSWORD}
+  #     MINIO_URL: http://minio:9000
+  #     MINIO_ACCESS_KEY: minioadmin
+  #     MINIO_SECRET_KEY: minioadmin
+  #     MINIO_BUCKET: htr
+  #     PAYOS_CLIENT_ID: ${PAYOS_CLIENT_ID}
+  #     PAYOS_API_KEY: ${PAYOS_API_KEY}
+  #     PAYOS_CHECKSUM_KEY: ${PAYOS_CHECKSUM_KEY}
+  #   ports:
+  #     - "8080:8080"
 
 volumes:
   postgres_data:
