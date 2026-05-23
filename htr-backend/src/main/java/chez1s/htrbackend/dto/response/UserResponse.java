@@ -15,9 +15,10 @@ public class UserResponse {
     private String phone;
     private String role;
     private String avatarUrl;
+    private boolean active;
 
     public static UserResponse from(User u) {
         return new UserResponse(u.getId(), u.getFullName(), u.getEmail(),
-                u.getPhone(), u.getRole().name(), u.getAvatarUrl());
+                u.getPhone(), u.getRole().name(), u.getAvatarUrl(), u.isActive());
     }
 }

@@ -112,7 +112,7 @@ export default function PropertiesPage() {
                     <h3 className="font-semibold text-fg">{p.name}</h3>
                     <p className="text-sm text-fg-muted mt-1">{p.address}</p>
                   </div>
-                  <Badge status={p.type} />
+                  {/* <Badge status={p.type} /> */}
                 </div>
                 <div className="mt-4 grid grid-cols-2 gap-3 rounded-xl border border-border bg-sidebar p-3 text-xs">
                   <div>

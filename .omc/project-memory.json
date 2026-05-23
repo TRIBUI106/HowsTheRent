@@ -129,8 +129,8 @@
     },
     {
       "path": "htr-frontend\\src\\types\\index.ts",
-      "accessCount": 15,
-      "lastAccessed": 1779418507950,
+      "accessCount": 16,
+      "lastAccessed": 1779522793677,
       "type": "file"
     },
     {
@@ -206,6 +206,12 @@
       "type": "file"
     },
     {
+      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\dto\\response\\UserResponse.java",
+      "accessCount": 5,
+      "lastAccessed": 1779522951090,
+      "type": "file"
+    },
+    {
       "path": "htr-frontend\\src\\api\\propertyApi.ts",
       "accessCount": 4,
       "lastAccessed": 1779379451024,
@@ -227,12 +233,6 @@
       "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\domain\\entity\\MaintenanceRequest.java",
       "accessCount": 3,
       "lastAccessed": 1778312820983,
-      "type": "file"
-    },
-    {
-      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\dto\\response\\UserResponse.java",
-      "accessCount": 3,
-      "lastAccessed": 1779377461046,
       "type": "file"
     },
     {

@@ -1,0 +1,5 @@
+{"t":0,"agent":"system","event":"skill_invoked","skill_name":"superpowers:systematic-debugging"}
+{"t":0,"agent":"system","event":"skill_invoked","skill_name":"superpowers:brainstorming"}
+{"t":0,"agent":"system","event":"skill_invoked","skill_name":"superpowers:test-driven-development"}
+{"t":0,"agent":"system","event":"skill_invoked","skill_name":"superpowers:writing-plans"}
+{"t":0,"agent":"a0a32fe","agent_type":"unknown","event":"agent_stop","success":true}

@@ -25,6 +25,7 @@ export function statusColor(status: string): string {
     IN_PROGRESS: 'bg-badge-blue       text-badge-blue-text',
     DONE:        'bg-badge-green      text-badge-green-text',
     ACTIVE:      'bg-badge-green      text-badge-green-text',
+    INACTIVE:    'bg-badge-neutral    text-badge-neutral-text',
     TERMINATED:  'bg-badge-neutral    text-badge-neutral-text',
     EXPIRED:     'bg-badge-neutral    text-badge-neutral-text',
   }
@@ -43,6 +44,7 @@ export function statusLabel(status: string): string {
     IN_PROGRESS: 'Đang xử lý',
     DONE: 'Hoàn thành',
     ACTIVE: 'Hoạt động',
+    INACTIVE: 'Không hoạt động',
     TERMINATED: 'Đã kết thúc',
     EXPIRED: 'Hết hạn',
   }

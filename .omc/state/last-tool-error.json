@@ -1,0 +1,7 @@
+{
+  "tool_name": "PowerShell",
+  "tool_input_preview": "{\"command\":\"rtk mvn -f \\\"D:\\\\Code\\\\HowsTheRent\\\\htr-backend\\\\pom.xml\\\" -Dtest=UserResponseTest test\",\"timeout\":120000,\"description\":\"Run UserResponse DTO test\",\"run_in_background\":false,\"dangerouslyDi...",
+  "error": "Exit code 1\nPicked up JAVA_TOOL_OPTIONS: -Dstdout.encoding=UTF-8 -Dstderr.encoding=UTF-8\n[INFO] Scanning for projects...\r\n[INFO] \r\n[INFO] -------------------------< chez1s:htr-backend >-------------------------\r\n[INFO] Building htr-backend 0.0.1-SNAPSHOT\r\n[INFO]   from pom.xml\r\n[INFO] --------------------------------[ jar ]---------------------------------\r\n[INFO] \r\n[INFO] --- resources:3.3.1:resources (default-resources) @ htr-backend ---\r\n[INFO] Copying 1 resource from src\\main\\resources to ta...",
+  "timestamp": "2026-05-23T07:55:30.098Z",
+  "retry_count": 1
+}
