@@ -1,5 +1,6 @@
 import axios from 'axios'
 import type { InternalAxiosRequestConfig } from 'axios'
+import { useAuthStore } from '@/stores/authStore'
 
 const baseURL = import.meta.env.DEV
   ? '/api'
@@ -12,9 +13,24 @@ const api = axios.create({
 })
 
 let refreshing: Promise<void> | null = null
+let sessionExpired = false
+
+function expireSession() {
+  if (sessionExpired) return
+  sessionExpired = true
+  useAuthStore.getState().clearAuth()
+  if (window.location.pathname !== '/login') {
+    window.location.href = '/login'
+  }
+}
 
 api.interceptors.response.use(
-  (res) => res,
+  (res) => {
+    if (res.config.url === '/auth/login') {
+      sessionExpired = false
+    }
+    return res
+  },
   async (error) => {
     const original = error.config as InternalAxiosRequestConfig & { _retry?: boolean }
 
@@ -22,7 +38,8 @@ api.interceptors.response.use(
       error.response?.status === 401 &&
       !original._retry &&
       original.url !== '/auth/login' &&
-      original.url !== '/auth/refresh'
+      original.url !== '/auth/refresh' &&
+      !sessionExpired
     ) {
       original._retry = true
 
@@ -31,6 +48,10 @@ api.interceptors.response.use(
           refreshing = axios
             .post(`${baseURL}/auth/refresh`, {}, { withCredentials: true })
             .then(() => undefined)
+            .catch((refreshError) => {
+              expireSession()
+              throw refreshError
+            })
             .finally(() => {
               refreshing = null
             })
@@ -39,8 +60,6 @@ api.interceptors.response.use(
         await refreshing
         return api(original)
       } catch {
-        localStorage.removeItem('user')
-        window.location.href = '/login'
         return Promise.reject(error)
       }
     }

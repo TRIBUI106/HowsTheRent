@@ -23,6 +23,7 @@ public class PropertyService {
     private final VehicleConfigRepository vehicleConfigRepository;
     private final RoomRepository roomRepository;
     private final UserRepository userRepository;
+    private final PropertyTypeService propertyTypeService;
 
     public List<Property> listByOwner(UUID ownerId) {
         return propertyRepository.findByOwnerId(ownerId);
@@ -45,7 +46,7 @@ public class PropertyService {
                 .owner(owner)
                 .name(req.getName())
                 .address(req.getAddress())
-                .type(req.getType())
+                .type(propertyTypeService.getActiveById(req.getPropertyTypeId()))
                 .description(req.getDescription())
                 .build();
         property = propertyRepository.save(property);
@@ -78,7 +79,7 @@ public class PropertyService {
         Property property = getById(id);
         property.setName(req.getName());
         property.setAddress(req.getAddress());
-        property.setType(req.getType());
+        property.setType(propertyTypeService.getActiveById(req.getPropertyTypeId()));
         property.setDescription(req.getDescription());
         return propertyRepository.save(property);
     }

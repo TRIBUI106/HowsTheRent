@@ -9,12 +9,14 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface PropertyRepository extends JpaRepository<Property, UUID> {
-    @EntityGraph(attributePaths = "owner")
+    @EntityGraph(attributePaths = {"owner", "type"})
     List<Property> findByOwnerId(UUID ownerId);
 
-    @EntityGraph(attributePaths = "owner")
+    @EntityGraph(attributePaths = {"owner", "type"})
     List<Property> findAll();
 
-    @EntityGraph(attributePaths = "owner")
+    @EntityGraph(attributePaths = {"owner", "type"})
     Optional<Property> findById(UUID id);
+
+    boolean existsByTypeId(UUID typeId);
 }

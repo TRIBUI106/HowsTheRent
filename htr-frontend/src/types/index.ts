@@ -20,12 +20,23 @@ export interface AuthResponse {
   user: User
 }
 
+export interface PropertyType {
+  id: string
+  code: string
+  name: string
+  description?: string
+  active: boolean
+}
+
 export interface Property {
   id: string
-  owner: User
+  ownerId: string
+  ownerName: string
   name: string
   address: string
-  type: 'BOARDING_HOUSE' | 'CONDO'
+  propertyTypeId: string
+  propertyTypeCode: string
+  propertyTypeName: string
   description?: string
   createdAt: string
   updatedAt: string

@@ -1,4 +1,6 @@
+import { useEffect, useState } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
+import { authApi } from '@/api/authApi'
 import { useAuthStore } from '@/stores/authStore'
 import LandingPage from '@/pages/LandingPage'
 import LoginPage from '@/features/auth/pages/LoginPage'
@@ -12,7 +14,33 @@ import tenantRoutes from '@/router/tenantRoutes'
 import techRoutes from '@/router/techRoutes'
 
 export default function App() {
-  const { user } = useAuthStore()
+  const { user, setUser, clearAuth } = useAuthStore()
+  const [checkingSession, setCheckingSession] = useState(!!user)
+
+  useEffect(() => {
+    if (!user) return
+
+    let active = true
+
+    authApi.me()
+      .then(currentUser => {
+        if (active) setUser(currentUser)
+      })
+      .catch(() => {
+        if (active) clearAuth()
+      })
+      .finally(() => {
+        if (active) setCheckingSession(false)
+      })
+
+    return () => {
+      active = false
+    }
+  }, [user?.id, clearAuth, setUser])
+
+  if (checkingSession) {
+    return null
+  }
 
   if (!user) {
     return (

@@ -1,5 +1,6 @@
 export * from './authApi'
 export * from './propertyApi'
+export * from './propertyTypeApi'
 export * from './roomApi'
 export * from './contractApi'
 export * from './meterReadingApi'

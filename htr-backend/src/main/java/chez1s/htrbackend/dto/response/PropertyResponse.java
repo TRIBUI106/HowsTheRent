@@ -11,7 +11,9 @@ public record PropertyResponse(
         String ownerName,
         String name,
         String address,
-        String type,
+        UUID propertyTypeId,
+        String propertyTypeCode,
+        String propertyTypeName,
         String description,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
@@ -23,7 +25,9 @@ public record PropertyResponse(
                 p.getOwner().getFullName(),
                 p.getName(),
                 p.getAddress(),
-                p.getType().name(),
+                p.getType().getId(),
+                p.getType().getCode(),
+                p.getType().getName(),
                 p.getDescription(),
                 p.getCreatedAt(),
                 p.getUpdatedAt()

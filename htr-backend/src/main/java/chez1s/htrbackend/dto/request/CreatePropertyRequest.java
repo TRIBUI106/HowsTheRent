@@ -1,9 +1,10 @@
 package chez1s.htrbackend.dto.request;
 
-import chez1s.htrbackend.domain.enums.PropertyType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+
+import java.util.UUID;
 
 @Data
 public class CreatePropertyRequest {
@@ -12,6 +13,6 @@ public class CreatePropertyRequest {
     @NotBlank
     private String address;
     @NotNull
-    private PropertyType type;
+    private UUID propertyTypeId;
     private String description;
 }

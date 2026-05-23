@@ -7,14 +7,12 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Dialog } from '@/components/ui/dialog'
+import { propertyTypeApi } from '@/api'
 import { formatDate } from '@/lib/utils'
-import type { Property } from '@/types'
+import type { Property, PropertyType } from '@/types'
 
-const emptyForm = { name: '', address: '', type: 'BOARDING_HOUSE', description: '' }
-const propertyTypeLabels: Record<Property['type'], string> = {
-  BOARDING_HOUSE: 'Nhà trọ',
-  CONDO: 'Chung cư',
-}
+const emptyForm = { name: '', address: '', propertyTypeId: '', description: '' }
+const emptyTypeForm = { code: '', name: '', description: '' }
 
 export default function PropertiesPage() {
   const qc = useQueryClient()
@@ -22,11 +20,21 @@ export default function PropertiesPage() {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [deletingProperty, setDeletingProperty] = useState<Property | null>(null)
   const [form, setForm] = useState(emptyForm)
+  const [showTypeForm, setShowTypeForm] = useState(false)
+  const [editingTypeId, setEditingTypeId] = useState<string | null>(null)
+  const [typeForm, setTypeForm] = useState(emptyTypeForm)
 
   const { data: properties, isLoading } = useQuery<Property[]>({
     queryKey: ['properties'],
     queryFn: () => api.get('/properties/mine').then(r => r.data),
   })
+
+  const { data: propertyTypes = [] } = useQuery<PropertyType[]>({
+    queryKey: ['property-types'],
+    queryFn: () => propertyTypeApi.list(),
+  })
+
+  const activePropertyTypes = propertyTypes.filter(t => t.active)
 
   const resetForm = () => {
     setShowForm(false)
@@ -34,9 +42,25 @@ export default function PropertiesPage() {
     setForm(emptyForm)
   }
 
+  const resetTypeForm = () => {
+    setShowTypeForm(false)
+    setEditingTypeId(null)
+    setTypeForm(emptyTypeForm)
+  }
+
   const save = useMutation({
     mutationFn: (d: typeof form) => editingId ? api.put(`/properties/${editingId}`, d) : api.post('/properties', d),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['properties'] }); resetForm() },
+  })
+
+  const saveType = useMutation({
+    mutationFn: (d: typeof typeForm) => editingTypeId ? propertyTypeApi.update(editingTypeId, d) : propertyTypeApi.create(d),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['property-types'] }); resetTypeForm() },
+  })
+
+  const toggleTypeActive = useMutation({
+    mutationFn: ({ id, active }: { id: string; active: boolean }) => propertyTypeApi.updateActive(id, active),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['property-types'] }),
   })
 
   const remove = useMutation({
@@ -50,7 +74,7 @@ export default function PropertiesPage() {
   function startCreate() {
     if (showForm && !editingId) return resetForm()
     setEditingId(null)
-    setForm(emptyForm)
+    setForm({ ...emptyForm, propertyTypeId: activePropertyTypes[0]?.id ?? '' })
     setShowForm(true)
   }
 
@@ -59,10 +83,23 @@ export default function PropertiesPage() {
     setForm({
       name: property.name,
       address: property.address,
-      type: property.type,
+      propertyTypeId: property.propertyTypeId,
       description: property.description || '',
     })
     setShowForm(true)
+  }
+
+  function startCreateType() {
+    if (showTypeForm && !editingTypeId) return resetTypeForm()
+    setEditingTypeId(null)
+    setTypeForm(emptyTypeForm)
+    setShowTypeForm(true)
+  }
+
+  function startEditType(type: PropertyType) {
+    setEditingTypeId(type.id)
+    setTypeForm({ code: type.code, name: type.name, description: type.description || '' })
+    setShowTypeForm(true)
   }
 
   return (
@@ -71,6 +108,56 @@ export default function PropertiesPage() {
         <p className="text-sm text-fg-muted">Quản lý tài sản</p>
         <Button onClick={startCreate}>{showForm && !editingId ? 'Đóng' : '+ Thêm tài sản'}</Button>
       </div>
+
+      <Card className="mb-6">
+        <CardHeader>
+          <div className="flex items-center justify-between gap-3">
+            <span>Loại tài sản</span>
+            <Button size="sm" onClick={startCreateType}>{showTypeForm && !editingTypeId ? 'Đóng' : '+ Thêm loại'}</Button>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {showTypeForm && (
+            <form onSubmit={(e) => { e.preventDefault(); saveType.mutate(typeForm) }} className="grid grid-cols-1 md:grid-cols-4 gap-3">
+              <Input label="Mã" value={typeForm.code} onChange={e => setTypeForm({ ...typeForm, code: e.target.value })} required />
+              <Input label="Tên loại" value={typeForm.name} onChange={e => setTypeForm({ ...typeForm, name: e.target.value })} required />
+              <Input label="Mô tả" value={typeForm.description} onChange={e => setTypeForm({ ...typeForm, description: e.target.value })} />
+              <div className="flex items-end gap-2">
+                <Button type="submit" loading={saveType.isPending}>{editingTypeId ? 'Lưu' : 'Tạo'}</Button>
+                <Button type="button" variant="secondary" onClick={resetTypeForm}>Huỷ</Button>
+              </div>
+            </form>
+          )}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            {propertyTypes.map(type => (
+              <div key={type.id} className="rounded-xl border border-border bg-sidebar p-3">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="font-medium text-fg">{type.name}</p>
+                    <p className="text-xs text-fg-subtle mt-1">{type.code}</p>
+                  </div>
+                  <Badge status={type.active ? 'ACTIVE' : 'INACTIVE'} />
+                </div>
+                {type.description && <p className="text-sm text-fg-muted mt-2">{type.description}</p>}
+                <div className="mt-3 flex gap-2">
+                  <Button type="button" variant="secondary" size="sm" onClick={() => startEditType(type)}>Sửa</Button>
+                  <Button
+                    type="button"
+                    variant={type.active ? 'outline' : 'primary'}
+                    size="sm"
+                    onClick={() => toggleTypeActive.mutate({ id: type.id, active: !type.active })}
+                    disabled={toggleTypeActive.isPending}
+                  >
+                    {type.active ? 'Vô hiệu hoá' : 'Kích hoạt'}
+                  </Button>
+                </div>
+              </div>
+            ))}
+            {propertyTypes.length === 0 && <p className="text-sm text-fg-subtle">Chưa có loại tài sản</p>}
+          </div>
+        </CardContent>
+      </Card>
 
       {showForm && (
         <Card className="mb-6">
@@ -81,14 +168,14 @@ export default function PropertiesPage() {
               <Input label="Địa chỉ" value={form.address} onChange={e => setForm({ ...form, address: e.target.value })} required />
               <div className="space-y-1">
                 <label className="block text-sm font-medium text-fg">Loại</label>
-                <select className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-fg" value={form.type} onChange={e => setForm({ ...form, type: e.target.value })}>
-                  <option value="BOARDING_HOUSE">Nhà trọ</option>
-                  <option value="CONDO">Chung cư</option>
+                <select className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-fg" value={form.propertyTypeId} onChange={e => setForm({ ...form, propertyTypeId: e.target.value })} required>
+                  <option value="" disabled>Chọn loại tài sản</option>
+                  {activePropertyTypes.map(type => <option key={type.id} value={type.id}>{type.name}</option>)}
                 </select>
               </div>
               <Input label="Mô tả" value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} />
               <div className="md:col-span-2 flex gap-2">
-                <Button type="submit" loading={save.isPending}>{save.isPending ? 'Đang lưu...' : editingId ? 'Lưu thay đổi' : 'Tạo tài sản'}</Button>
+                <Button type="submit" loading={save.isPending} disabled={!form.propertyTypeId}>{save.isPending ? 'Đang lưu...' : editingId ? 'Lưu thay đổi' : 'Tạo tài sản'}</Button>
                 <Button type="button" variant="secondary" onClick={resetForm}>Huỷ</Button>
               </div>
             </form>
@@ -112,12 +199,11 @@ export default function PropertiesPage() {
                     <h3 className="font-semibold text-fg">{p.name}</h3>
                     <p className="text-sm text-fg-muted mt-1">{p.address}</p>
                   </div>
-                  {/* <Badge status={p.type} /> */}
                 </div>
                 <div className="mt-4 grid grid-cols-2 gap-3 rounded-xl border border-border bg-sidebar p-3 text-xs">
                   <div>
                     <p className="text-fg-subtle">Loại</p>
-                    <p className="mt-1 font-medium text-fg">{propertyTypeLabels[p.type]}</p>
+                    <p className="mt-1 font-medium text-fg">{p.propertyTypeName}</p>
                   </div>
                   <div>
                     <p className="text-fg-subtle">Trạng thái</p>
