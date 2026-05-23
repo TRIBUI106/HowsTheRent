@@ -105,8 +105,8 @@
   "hotPaths": [
     {
       "path": "htr-frontend\\src\\App.tsx",
-      "accessCount": 50,
-      "lastAccessed": 1779528254462,
+      "accessCount": 53,
+      "lastAccessed": 1779529563759,
       "type": "file"
     },
     {
@@ -123,8 +123,8 @@
     },
     {
       "path": "htr-frontend\\src\\lib\\api.ts",
-      "accessCount": 19,
-      "lastAccessed": 1779528459375,
+      "accessCount": 26,
+      "lastAccessed": 1779530352290,
       "type": "file"
     },
     {
@@ -152,15 +152,15 @@
       "type": "file"
     },
     {
-      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\controller\\NotificationController.java",
-      "accessCount": 12,
-      "lastAccessed": 1779378192448,
+      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\controller\\PropertyController.java",
+      "accessCount": 13,
+      "lastAccessed": 1779529062456,
       "type": "file"
     },
     {
-      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\controller\\PropertyController.java",
+      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\controller\\NotificationController.java",
       "accessCount": 12,
-      "lastAccessed": 1779523480409,
+      "lastAccessed": 1779378192448,
       "type": "file"
     },
     {
@@ -170,15 +170,27 @@
       "type": "file"
     },
     {
-      "path": "htr-frontend\\src\\api\\propertyApi.ts",
-      "accessCount": 8,
-      "lastAccessed": 1779524787292,
+      "path": "htr-frontend\\src\\api\\authApi.ts",
+      "accessCount": 10,
+      "lastAccessed": 1779529575895,
       "type": "file"
     },
     {
-      "path": "htr-frontend\\src\\api\\authApi.ts",
+      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend",
+      "accessCount": 9,
+      "lastAccessed": 1779529519354,
+      "type": "directory"
+    },
+    {
+      "path": "htr-frontend\\src\\api\\propertyApi.ts",
+      "accessCount": 9,
+      "lastAccessed": 1779529539875,
+      "type": "file"
+    },
+    {
+      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\controller\\RoomController.java",
       "accessCount": 8,
-      "lastAccessed": 1779527115090,
+      "lastAccessed": 1779529062546,
       "type": "file"
     },
     {
@@ -194,16 +206,10 @@
       "type": "file"
     },
     {
-      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\controller\\RoomController.java",
+      "path": "htr-frontend\\src\\api\\roomApi.ts",
       "accessCount": 7,
-      "lastAccessed": 1779525940563,
+      "lastAccessed": 1779529700776,
       "type": "file"
-    },
-    {
-      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend",
-      "accessCount": 7,
-      "lastAccessed": 1779526721614,
-      "type": "directory"
     },
     {
       "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\domain\\entity\\BaseEntity.java",
@@ -299,12 +305,6 @@
       "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\domain\\entity\\Invoice.java",
       "accessCount": 2,
       "lastAccessed": 1779419770765,
-      "type": "file"
-    },
-    {
-      "path": "htr-frontend\\src\\api\\roomApi.ts",
-      "accessCount": 2,
-      "lastAccessed": 1779525940398,
       "type": "file"
     },
     {

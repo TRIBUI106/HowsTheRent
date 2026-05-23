@@ -11,10 +11,10 @@ export const roomApi = {
     propertyId: string,
     data: {
       roomNumber: string;
-      floor?: number;
-      areaM2?: number;
+      floor?: number | null;
+      areaM2?: number | null;
       maxPeople: number;
-      rentOverride?: number;
+      rentOverride?: number | null;
     },
   ) =>
     api.post<Room>(`/properties/${propertyId}/rooms`, data).then((r) => r.data),
@@ -23,10 +23,10 @@ export const roomApi = {
     id: string,
     data: Partial<{
       roomNumber: string;
-      floor: number;
-      areaM2: number;
+      floor: number | null;
+      areaM2: number | null;
       maxPeople: number;
-      rentOverride: number;
+      rentOverride: number | null;
     }>,
   ) =>
     api
@@ -38,4 +38,6 @@ export const roomApi = {
         params: { status },
       })
       .then((r) => r.data),
+  remove: (propertyId: string, id: string) =>
+    api.delete(`/properties/${propertyId}/rooms/${id}`),
 };

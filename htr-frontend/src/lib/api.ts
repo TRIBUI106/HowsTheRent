@@ -68,4 +68,8 @@ api.interceptors.response.use(
   },
 )
 
+export function isUnauthorizedError(error: unknown) {
+  return axios.isAxiosError(error) && error.response?.status === 401
+}
+
 export default api

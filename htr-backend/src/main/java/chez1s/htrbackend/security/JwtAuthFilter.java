@@ -26,12 +26,15 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
-        String token = extractFromCookie(request);
+        String token = extractValidTokenFromCookie(request);
         if (token == null) {
             token = extractFromHeader(request);
+            if (token != null && !tokenProvider.validateToken(token)) {
+                token = null;
+            }
         }
 
-        if (token != null && tokenProvider.validateToken(token)) {
+        if (token != null) {
             UUID userId = tokenProvider.getUserId(token);
             String role = tokenProvider.getRole(token);
             var auth = new UsernamePasswordAuthenticationToken(
@@ -44,14 +47,14 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
-    private String extractFromCookie(HttpServletRequest request) {
+    private String extractValidTokenFromCookie(HttpServletRequest request) {
         Cookie[] cookies = request.getCookies();
         if (cookies == null) {
             return null;
         }
 
         for (Cookie cookie : cookies) {
-            if ("accessToken".equals(cookie.getName())) {
+            if ("accessToken".equals(cookie.getName()) && tokenProvider.validateToken(cookie.getValue())) {
                 return cookie.getValue();
             }
         }

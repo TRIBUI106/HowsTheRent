@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState, useEffect } from 'react'
-import api from '@/lib/api'
+import { propertyApi, roomApi } from '@/api'
+import { useAuthStore } from '@/stores/authStore'
 import Layout from '@/components/Layout'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -15,6 +16,7 @@ const emptyForm = { roomNumber: '', floor: '', areaM2: '', maxPeople: '', rentOv
 
 export default function RoomsPage() {
   const qc = useQueryClient()
+  const user = useAuthStore(state => state.user)
   const [selectedProperty, setSelectedProperty] = useState<string>('')
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -23,7 +25,8 @@ export default function RoomsPage() {
 
   const { data: properties } = useQuery<Property[]>({
     queryKey: ['properties'],
-    queryFn: () => api.get('/properties/mine').then(r => r.data),
+    queryFn: propertyApi.listMine,
+    enabled: !!user,
   })
 
   useEffect(() => {
@@ -32,8 +35,8 @@ export default function RoomsPage() {
 
   const { data: rooms, isLoading } = useQuery<Room[]>({
     queryKey: ['rooms', selectedProperty],
-    queryFn: () => api.get(`/properties/${selectedProperty}/rooms`).then(r => r.data),
-    enabled: !!selectedProperty,
+    queryFn: () => roomApi.listByProperty(selectedProperty),
+    enabled: !!user && !!selectedProperty,
   })
 
   const resetForm = () => {
@@ -51,21 +54,21 @@ export default function RoomsPage() {
         maxPeople: Number(form.maxPeople),
         rentOverride: form.rentOverride ? Number(form.rentOverride) : null,
       }
-      const response = editingId
-        ? await api.put(`/properties/${selectedProperty}/rooms/${editingId}`, payload)
-        : await api.post(`/properties/${selectedProperty}/rooms`, payload)
+      const room = editingId
+        ? await roomApi.update(selectedProperty, editingId, payload)
+        : await roomApi.create(selectedProperty, payload)
 
-      if (editingId && form.status !== response.data.status) {
-        await api.patch(`/properties/${selectedProperty}/rooms/${editingId}/status`, null, { params: { status: form.status } })
+      if (editingId && form.status !== room.status) {
+        await roomApi.updateStatus(selectedProperty, editingId, form.status)
       }
 
-      return response
+      return room
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['rooms'] }); resetForm() },
   })
 
   const remove = useMutation({
-    mutationFn: (id: string) => api.delete(`/properties/${selectedProperty}/rooms/${id}`),
+    mutationFn: (id: string) => roomApi.remove(selectedProperty, id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['rooms'] })
       setDeletingRoom(null)

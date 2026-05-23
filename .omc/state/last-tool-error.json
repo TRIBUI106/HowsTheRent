@@ -1,7 +1,7 @@
 {
   "tool_name": "PowerShell",
-  "tool_input_preview": "{\"command\":\"rtk npm --prefix \\\"D:\\\\Code\\\\HowsTheRent\\\\htr-frontend\\\" run lint -- \\\"src/App.tsx\\\" \\\"src/api/authApi.ts\\\"\",\"timeout\":600000,\"description\":\"Lint modified files through npm script\",\"run_in...",
-  "error": "Exit code 1\n[rtk] /!\\ No hook installed — run `rtk init -g` for automatic token savings\n> eslint . src/App.tsx src/api/authApi.ts\nD:\\Code\\HowsTheRent\\htr-frontend\\src\\api\\dashboardApi.ts\n  6:28  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any\nD:\\Code\\HowsTheRent\\htr-frontend\\src\\features\\admin\\pages\\ContractsPage.tsx\n  84:18  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any\n  97:18  error  Unexpected any. Specify a different ...",
-  "timestamp": "2026-05-23T09:23:49.142Z",
-  "retry_count": 3
+  "tool_input_preview": "{\"command\":\"rtk mvn -f \\\"D:\\\\Code\\\\HowsTheRent\\\\htr-backend\\\\pom.xml\\\" \\\"-Dtest=JwtAuthFilterTest\\\" test\",\"timeout\":600000,\"description\":\"Run JwtAuthFilter duplicate cookie test\",\"run_in_background\":f...",
+  "error": "Exit code 1\nPicked up JAVA_TOOL_OPTIONS: -Dstdout.encoding=UTF-8 -Dstderr.encoding=UTF-8\n[INFO] Scanning for projects...\r\n[INFO] \r\n[INFO] -------------------------< chez1s:htr-backend >-------------------------\r\n[INFO] Building htr-backend 0.0.1-SNAPSHOT\r\n[INFO]   from pom.xml\r\n[INFO] --------------------------------[ jar ]---------------------------------\r\n[INFO] \r\n[INFO] --- resources:3.3.1:resources (default-resources) @ htr-backend ---\r\n[INFO] Copying 1 resource from src\\main\\resources to ta...",
+  "timestamp": "2026-05-23T09:51:35.579Z",
+  "retry_count": 1
 }
