@@ -29,6 +29,11 @@ public class RoomService {
                 .orElseThrow(() -> new ResourceNotFoundException("Room", id));
     }
 
+    public Room getById(UUID propertyId, UUID id) {
+        return roomRepository.findByIdAndPropertyId(id, propertyId)
+                .orElseThrow(() -> new ResourceNotFoundException("Room", id));
+    }
+
     @Transactional
     public Room create(UUID propertyId, CreateRoomRequest req) {
         Property property = propertyService.getById(propertyId);
@@ -45,13 +50,20 @@ public class RoomService {
     }
 
     @Transactional
-    public Room update(UUID id, CreateRoomRequest req) {
-        Room room = getById(id);
+    public Room update(UUID propertyId, UUID id, CreateRoomRequest req) {
+        Room room = getById(propertyId, id);
         room.setRoomNumber(req.getRoomNumber());
         room.setFloor(req.getFloor());
         room.setAreaM2(req.getAreaM2());
         room.setMaxPeople(req.getMaxPeople());
         room.setRentOverride(req.getRentOverride());
+        return roomRepository.save(room);
+    }
+
+    @Transactional
+    public Room updateStatus(UUID propertyId, UUID id, RoomStatus status) {
+        Room room = getById(propertyId, id);
+        room.setStatus(status);
         return roomRepository.save(room);
     }
 
@@ -63,8 +75,8 @@ public class RoomService {
     }
 
     @Transactional
-    public void delete(UUID id) {
-        Room room = getById(id);
+    public void delete(UUID propertyId, UUID id) {
+        Room room = getById(propertyId, id);
         roomRepository.delete(room);
     }
 

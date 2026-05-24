@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState, useEffect } from 'react'
-import { propertyApi, roomApi } from '@/api'
+import { propertyApi, roomApi, userApi } from '@/api'
 import { useAuthStore } from '@/stores/authStore'
 import Layout from '@/components/Layout'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
@@ -23,10 +23,21 @@ export default function RoomsPage() {
   const [deletingRoom, setDeletingRoom] = useState<Room | null>(null)
   const [form, setForm] = useState(emptyForm)
 
+  const { data: sessionUser } = useQuery({
+    queryKey: ['auth-session'],
+    queryFn: userApi.me,
+    enabled: !!user,
+    retry: false,
+    staleTime: 0,
+    gcTime: 0,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
+  })
+
   const { data: properties } = useQuery<Property[]>({
     queryKey: ['properties'],
     queryFn: propertyApi.list,
-    enabled: !!user,
+    enabled: !!user && !!sessionUser && sessionUser.role === 'ADMIN',
   })
 
   useEffect(() => {
@@ -36,7 +47,7 @@ export default function RoomsPage() {
   const { data: rooms, isLoading } = useQuery<Room[]>({
     queryKey: ['rooms', selectedProperty],
     queryFn: () => roomApi.listByProperty(selectedProperty),
-    enabled: !!user && !!selectedProperty,
+    enabled: !!user && !!sessionUser && sessionUser.role === 'ADMIN' && !!selectedProperty,
   })
 
   const resetForm = () => {
@@ -64,13 +75,13 @@ export default function RoomsPage() {
 
       return room
     },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['rooms'] }); resetForm() },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['rooms', selectedProperty] }); resetForm() },
   })
 
   const remove = useMutation({
     mutationFn: (id: string) => roomApi.remove(selectedProperty, id),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['rooms'] })
+      qc.invalidateQueries({ queryKey: ['rooms', selectedProperty] })
       setDeletingRoom(null)
     },
   })

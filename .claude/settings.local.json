@@ -66,7 +66,17 @@
       "PowerShell(npx --package typescript tsc --noEmit)",
       "PowerShell(rtk mvn *)",
       "PowerShell(rtk npm *)",
-      "PowerShell(rtk npx *)"
+      "PowerShell(rtk npx *)",
+      "Bash(./mvnw *)",
+      "Bash(dir htr-backend *)",
+      "Bash(dir htr-backend\\\\mvnw*)",
+      "Bash(.\\\\htr-backend\\\\mvnw.cmd -q -DskipTests compile)",
+      "PowerShell(& \"D:\\\\Code\\\\HowsTheRent\\\\htr-backend\\\\mvnw.cmd\" -q -DskipTests -f \"D:\\\\Code\\\\HowsTheRent\\\\htr-backend\\\\pom.xml\" compile)",
+      "Bash(D:\\\\Code\\\\HowsTheRent\\\\htr-backend\\\\mvnw.cmd *)",
+      "PowerShell(try { \\(Invoke-WebRequest -Uri \"http://localhost:5173/api/auth/login\" -Method Post -ContentType \"application/json\" -Body '{\"email\":\"admin@example.com\",\"password\":\"Admin123!\"}' -ErrorAction Stop\\).StatusCode } catch { if \\($_.Exception.Response\\) { [int]$_.Exception.Response.StatusCode } else { $_.Exception.Message } })",
+      "Bash(python *)",
+      "Bash(mvn *)",
+      "mcp__plugin_oh-my-claudecode_t__state_list_active"
     ]
   }
 }

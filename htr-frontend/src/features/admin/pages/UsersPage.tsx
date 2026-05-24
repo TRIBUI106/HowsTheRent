@@ -126,7 +126,7 @@ export default function UsersPage() {
           <TableSkeleton rows={6} columns={7} />
         ) : (
           <Card>
-            <Table headers={['Họ tên', 'Email', 'Điện thoại', 'Vai trò', 'Trạng thái', '', '']}>
+            <Table headers={['Họ tên', 'Email', 'Điện thoại', 'Vai trò', 'Trạng thái', 'Sửa', 'Kích hoạt']}>
               {filtered.map(u => (
                 <TableRow key={u.id}>
                   <TableCell className="font-medium text-fg">{u.fullName}</TableCell>

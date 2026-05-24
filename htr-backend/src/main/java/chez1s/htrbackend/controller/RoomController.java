@@ -26,6 +26,7 @@ public class RoomController {
     private final StorageService storageService;
 
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<RoomResponse>> listByProperty(@PathVariable UUID propertyId) {
         return ResponseEntity.ok(roomService.listByProperty(propertyId).stream().map(RoomResponse::from).toList());
     }
@@ -34,8 +35,9 @@ public class RoomController {
     // Exposed as GET /api/rooms via a separate mapping
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<RoomResponse> getById(@PathVariable UUID propertyId, @PathVariable UUID id) {
-        return ResponseEntity.ok(RoomResponse.from(roomService.getById(id)));
+        return ResponseEntity.ok(RoomResponse.from(roomService.getById(propertyId, id)));
     }
 
     @PostMapping
@@ -49,20 +51,20 @@ public class RoomController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<RoomResponse> update(@PathVariable UUID propertyId, @PathVariable UUID id,
                                                @Valid @RequestBody CreateRoomRequest req) {
-        return ResponseEntity.ok(RoomResponse.from(roomService.update(id, req)));
+        return ResponseEntity.ok(RoomResponse.from(roomService.update(propertyId, id, req)));
     }
 
     @PatchMapping("/{id}/status")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<RoomResponse> updateStatus(@PathVariable UUID propertyId, @PathVariable UUID id,
                                                      @RequestParam RoomStatus status) {
-        return ResponseEntity.ok(RoomResponse.from(roomService.updateStatus(id, status)));
+        return ResponseEntity.ok(RoomResponse.from(roomService.updateStatus(propertyId, id, status)));
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable UUID propertyId, @PathVariable UUID id) {
-        roomService.delete(id);
+        roomService.delete(propertyId, id);
         return ResponseEntity.noContent().build();
     }
 

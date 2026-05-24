@@ -10,7 +10,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface RoomRepository extends JpaRepository<Room, UUID> {
-    @EntityGraph(attributePaths = "property")
+    @EntityGraph(attributePaths = {"property", "images"})
     List<Room> findByPropertyId(UUID propertyId);
 
     @EntityGraph(attributePaths = "property")
@@ -19,8 +19,11 @@ public interface RoomRepository extends JpaRepository<Room, UUID> {
     @EntityGraph(attributePaths = "property")
     List<Room> findAll();
 
-    @EntityGraph(attributePaths = "property")
+    @EntityGraph(attributePaths = {"property", "images"})
     Optional<Room> findById(UUID id);
+
+    @EntityGraph(attributePaths = {"property", "images"})
+    Optional<Room> findByIdAndPropertyId(UUID id, UUID propertyId);
 
     long countByPropertyIdAndStatus(UUID propertyId, RoomStatus status);
     void deleteByPropertyId(UUID propertyId);
