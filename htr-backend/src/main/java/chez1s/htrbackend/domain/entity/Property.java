@@ -27,8 +27,8 @@ public class Property extends BaseEntity {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String address;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "property_type_id")
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "type", nullable = false)
     private PropertyType type;
 
     @Column(columnDefinition = "TEXT")

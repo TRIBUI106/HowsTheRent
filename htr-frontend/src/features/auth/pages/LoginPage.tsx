@@ -27,9 +27,10 @@ export default function LoginPage() {
     setError('')
     setLoading(true)
     try {
-      const { data } = await api.post('/auth/login', { email, password })
-      setUser(data.user)
-      const role = data.user.role.toLowerCase()
+      await api.post('/auth/login', { email, password })
+      const { data } = await api.get('/users/me')
+      setUser(data)
+      const role = data.role.toLowerCase()
       navigate(role === 'admin' ? '/admin' : role === 'tenant' ? '/tenant' : '/tech')
     } catch (err: any) {
       setError(err.response?.data?.message || 'Email hoặc mật khẩu không đúng')

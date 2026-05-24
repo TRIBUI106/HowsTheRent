@@ -22,11 +22,12 @@ export default function PropertiesPage() {
   const [form, setForm] = useState(emptyForm)
   const [showTypeForm, setShowTypeForm] = useState(false)
   const [editingTypeId, setEditingTypeId] = useState<string | null>(null)
+  const [deletingType, setDeletingType] = useState<PropertyType | null>(null)
   const [typeForm, setTypeForm] = useState(emptyTypeForm)
 
   const { data: properties, isLoading } = useQuery<Property[]>({
     queryKey: ['properties'],
-    queryFn: () => api.get('/properties/mine').then(r => r.data),
+    queryFn: () => api.get('/properties').then(r => r.data),
   })
 
   const { data: propertyTypes = [] } = useQuery<PropertyType[]>({
@@ -61,6 +62,14 @@ export default function PropertiesPage() {
   const toggleTypeActive = useMutation({
     mutationFn: ({ id, active }: { id: string; active: boolean }) => propertyTypeApi.updateActive(id, active),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['property-types'] }),
+  })
+
+  const removeType = useMutation({
+    mutationFn: (id: string) => propertyTypeApi.remove(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['property-types'] })
+      setDeletingType(null)
+    },
   })
 
   const remove = useMutation({
@@ -140,7 +149,7 @@ export default function PropertiesPage() {
                   <Badge status={type.active ? 'ACTIVE' : 'INACTIVE'} />
                 </div>
                 {type.description && <p className="text-sm text-fg-muted mt-2">{type.description}</p>}
-                <div className="mt-3 flex gap-2">
+                <div className="mt-3 flex gap-2 flex-wrap">
                   <Button type="button" variant="secondary" size="sm" onClick={() => startEditType(type)}>Sửa</Button>
                   <Button
                     type="button"
@@ -150,6 +159,9 @@ export default function PropertiesPage() {
                     disabled={toggleTypeActive.isPending}
                   >
                     {type.active ? 'Vô hiệu hoá' : 'Kích hoạt'}
+                  </Button>
+                  <Button type="button" variant="danger" size="sm" onClick={() => setDeletingType(type)}>
+                    Xoá
                   </Button>
                 </div>
               </div>
@@ -230,6 +242,20 @@ export default function PropertiesPage() {
           <div className="flex justify-end gap-2">
             <Button type="button" variant="secondary" onClick={() => setDeletingProperty(null)}>Huỷ</Button>
             <Button type="button" variant="danger" loading={remove.isPending} onClick={() => deletingProperty && remove.mutate(deletingProperty.id)}>
+              Xác nhận xoá
+            </Button>
+          </div>
+        </div>
+      </Dialog>
+
+      <Dialog open={!!deletingType} onClose={() => setDeletingType(null)} title="Xoá loại tài sản?">
+        <div className="space-y-5">
+          <p className="text-sm leading-6 text-fg-muted">
+            Bạn sắp xoá loại tài sản <span className="font-semibold text-fg">{deletingType?.name}</span>. Hành động này không thể hoàn tác.
+          </p>
+          <div className="flex justify-end gap-2">
+            <Button type="button" variant="secondary" onClick={() => setDeletingType(null)}>Huỷ</Button>
+            <Button type="button" variant="danger" loading={removeType.isPending} onClick={() => deletingType && removeType.mutate(deletingType.id)}>
               Xác nhận xoá
             </Button>
           </div>

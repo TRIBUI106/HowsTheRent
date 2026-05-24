@@ -25,7 +25,7 @@ export default function RoomsPage() {
 
   const { data: properties } = useQuery<Property[]>({
     queryKey: ['properties'],
-    queryFn: propertyApi.listMine,
+    queryFn: propertyApi.list,
     enabled: !!user,
   })
 

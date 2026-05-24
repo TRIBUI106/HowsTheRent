@@ -19,10 +19,10 @@ public class PropertyTypeMigration implements CommandLineRunner {
     public void run(String... args) {
         entityManager.createNativeQuery("""
                 update properties p
-                set property_type_id = pt.id
+                set type = pt.id
                 from property_types pt
-                where p.property_type_id is null
-                  and pt.code = coalesce(p.type, 'BOARDING_HOUSE')
+                where p.type is null
+                  and pt.code = 'BOARDING_HOUSE'
                 """).executeUpdate();
     }
 }
