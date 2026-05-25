@@ -42,7 +42,7 @@
     "runtime": null
   },
   "build": {
-    "buildCommand": "npx tsc --noEmit",
+    "buildCommand": "cd D:/Code/HowsTheRent/htr-frontend && npx tsc --noEmit 2>&1 | head -20",
     "testCommand": null,
     "lintCommand": "npm run lint",
     "devCommand": "npm run dev",
@@ -212,15 +212,15 @@
       "type": "file"
     },
     {
-      "path": "src\\pages\\admin\\MaintenancePage.tsx",
-      "accessCount": 3,
-      "lastAccessed": 1779363047626,
+      "path": "src\\components\\layout\\Layout.tsx",
+      "accessCount": 4,
+      "lastAccessed": 1779715035989,
       "type": "file"
     },
     {
-      "path": "src\\components\\layout\\Layout.tsx",
+      "path": "src\\pages\\admin\\MaintenancePage.tsx",
       "accessCount": 3,
-      "lastAccessed": 1779365195726,
+      "lastAccessed": 1779363047626,
       "type": "file"
     },
     {
@@ -407,6 +407,12 @@
       "path": "src\\features\\tenant\\pages\\NotificationsPage.tsx",
       "accessCount": 2,
       "lastAccessed": 1779521692368,
+      "type": "file"
+    },
+    {
+      "path": "src\\components\\ui\\dialog.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1779715087247,
       "type": "file"
     },
     {

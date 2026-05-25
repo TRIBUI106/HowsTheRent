@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
+import axios from 'axios'
 import api from '@/lib/api'
 import Layout from '@/components/Layout'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
@@ -9,7 +10,16 @@ import { Badge } from '@/components/ui/badge'
 import { Dialog } from '@/components/ui/dialog'
 import { propertyTypeApi } from '@/api'
 import { formatDate } from '@/lib/utils'
+import { showToast } from '@/lib/toast'
 import type { Property, PropertyType } from '@/types'
+
+function extractErrorMessage(error: unknown, fallback: string): string {
+  if (axios.isAxiosError(error)) {
+    const msg = error.response?.data?.message
+    if (typeof msg === 'string' && msg.trim()) return msg
+  }
+  return fallback
+}
 
 const emptyForm = { name: '', address: '', propertyTypeId: '', description: '' }
 const emptyTypeForm = { code: '', name: '', description: '' }
@@ -52,16 +62,19 @@ export default function PropertiesPage() {
   const save = useMutation({
     mutationFn: (d: typeof form) => editingId ? api.put(`/properties/${editingId}`, d) : api.post('/properties', d),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['properties'] }); resetForm() },
+    onError: (error) => showToast({ message: extractErrorMessage(error, 'Lưu tài sản thất bại'), type: 'error' }),
   })
 
   const saveType = useMutation({
     mutationFn: (d: typeof typeForm) => editingTypeId ? propertyTypeApi.update(editingTypeId, d) : propertyTypeApi.create(d),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['property-types'] }); resetTypeForm() },
+    onError: (error) => showToast({ message: extractErrorMessage(error, 'Lưu loại tài sản thất bại'), type: 'error' }),
   })
 
   const toggleTypeActive = useMutation({
     mutationFn: ({ id, active }: { id: string; active: boolean }) => propertyTypeApi.updateActive(id, active),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['property-types'] }),
+    onError: (error) => showToast({ message: extractErrorMessage(error, 'Cập nhật trạng thái thất bại'), type: 'error' }),
   })
 
   const removeType = useMutation({
@@ -70,6 +83,7 @@ export default function PropertiesPage() {
       qc.invalidateQueries({ queryKey: ['property-types'] })
       setDeletingType(null)
     },
+    onError: (error) => showToast({ message: extractErrorMessage(error, 'Xoá loại tài sản thất bại'), type: 'error' }),
   })
 
   const remove = useMutation({
@@ -78,6 +92,7 @@ export default function PropertiesPage() {
       qc.invalidateQueries({ queryKey: ['properties'] })
       setDeletingProperty(null)
     },
+    onError: (error) => showToast({ message: extractErrorMessage(error, 'Xoá tài sản thất bại'), type: 'error' }),
   })
 
   function startCreate() {

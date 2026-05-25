@@ -1,7 +1,0 @@
-{
-  "tool_name": "Bash",
-  "tool_input_preview": "{\"command\":\"./mvnw -q -DskipTests compile\",\"timeout\":600000,\"description\":\"Compile backend module to verify room repository changes\",\"run_in_background\":false,\"dangerouslyDisableSandbox\":false}",
-  "error": "Exit code 127\n/usr/bin/bash: line 3: ./mvnw: No such file or directory",
-  "timestamp": "2026-05-24T19:24:10.909Z",
-  "retry_count": 1
-}

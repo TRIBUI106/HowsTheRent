@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "lastScanned": 1779620539857,
+  "lastScanned": 1779713697910,
   "projectRoot": "D:\\Code\\HowsTheRent",
   "techStack": {
     "languages": [],
@@ -38,7 +38,7 @@
       "path": "docs",
       "purpose": "Documentation",
       "fileCount": 1,
-      "lastAccessed": 1779620539836,
+      "lastAccessed": 1779713697873,
       "keyFiles": [
         "DEPLOYMENT.md"
       ]
@@ -47,7 +47,7 @@
       "path": "htr-backend",
       "purpose": null,
       "fileCount": 7,
-      "lastAccessed": 1779620539837,
+      "lastAccessed": 1779713697873,
       "keyFiles": [
         "Dockerfile",
         "mvnw",
@@ -60,7 +60,7 @@
       "path": "htr-frontend",
       "purpose": null,
       "fileCount": 12,
-      "lastAccessed": 1779620539837,
+      "lastAccessed": 1779713697874,
       "keyFiles": [
         "bun.lock",
         "Dockerfile",
@@ -73,21 +73,21 @@
       "path": "postman",
       "purpose": null,
       "fileCount": 0,
-      "lastAccessed": 1779620539838,
+      "lastAccessed": 1779713697875,
       "keyFiles": []
     },
     "test-results": {
       "path": "test-results",
       "purpose": null,
       "fileCount": 1,
-      "lastAccessed": 1779620539838,
+      "lastAccessed": 1779713697876,
       "keyFiles": []
     },
     "htr-frontend\\dist": {
       "path": "htr-frontend\\dist",
       "purpose": "Distribution/build output",
       "fileCount": 4,
-      "lastAccessed": 1779620539839,
+      "lastAccessed": 1779713697877,
       "keyFiles": [
         "favicon.svg",
         "icons.svg",
@@ -98,14 +98,14 @@
       "path": "htr-frontend\\node_modules",
       "purpose": "Dependencies",
       "fileCount": 1,
-      "lastAccessed": 1779620539840,
+      "lastAccessed": 1779713697878,
       "keyFiles": []
     },
     "postman\\mocks": {
       "path": "postman\\mocks",
       "purpose": "Mock data",
       "fileCount": 0,
-      "lastAccessed": 1779620539840,
+      "lastAccessed": 1779713697879,
       "keyFiles": []
     }
   },
@@ -124,8 +124,8 @@
     },
     {
       "path": "htr-frontend\\src\\lib\\api.ts",
-      "accessCount": 38,
-      "lastAccessed": 1779648457219,
+      "accessCount": 39,
+      "lastAccessed": 1779714367504,
       "type": "file"
     },
     {
