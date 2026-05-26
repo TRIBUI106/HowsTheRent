@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { propertyApi, roomApi, userApi } from '@/api'
 import { useAuthStore } from '@/stores/authStore'
 import Layout from '@/components/Layout'
@@ -16,6 +17,7 @@ const emptyForm = { roomNumber: '', floor: '', areaM2: '', maxPeople: '', rentOv
 
 export default function RoomsPage() {
   const qc = useQueryClient()
+  const navigate = useNavigate()
   const user = useAuthStore(state => state.user)
   const [selectedProperty, setSelectedProperty] = useState<string>('')
   const [showForm, setShowForm] = useState(false)
@@ -154,7 +156,7 @@ export default function RoomsPage() {
         </div>
       ) : (
         <Card>
-          <Table headers={['Số phòng', 'Tầng', 'Diện tích', 'Tối đa', 'Giá', 'Trạng thái', 'Thao tác']}>
+          <Table headers={['Số phòng', 'Tầng', 'Diện tích', 'Tối đa', 'Giá', 'Trạng thái', 'Thao tác']} >
             {rooms?.map(room => (
               <TableRow key={room.id}>
                 <TableCell>{room.roomNumber}</TableCell>
@@ -165,6 +167,7 @@ export default function RoomsPage() {
                 <TableCell><Badge status={room.status} /></TableCell>
                 <TableCell>
                   <div className="flex gap-2">
+                    <Button type="button" variant="secondary" size="sm" onClick={() => navigate(`/admin/rooms/${selectedProperty}/${room.id}`)}>Xem</Button>
                     <Button type="button" variant="secondary" size="sm" onClick={() => startEdit(room)}>Sửa</Button>
                     <Button type="button" variant="danger" size="sm" onClick={() => setDeletingRoom(room)}>Xoá</Button>
                   </div>

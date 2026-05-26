@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.UUID;
 
 public interface MaintenanceRequestRepository extends JpaRepository<MaintenanceRequest, UUID> {
+    List<MaintenanceRequest> findByRoomIdOrderByCreatedAtDesc(UUID roomId);
     Page<MaintenanceRequest> findByTenantId(UUID tenantId, Pageable pageable);
     List<MaintenanceRequest> findByTenantIdOrderByCreatedAtDesc(UUID tenantId);
     Page<MaintenanceRequest> findByAssignedToId(UUID technicianId, Pageable pageable);

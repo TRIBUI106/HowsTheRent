@@ -12,6 +12,7 @@ import UsersPage from '@/features/admin/pages/UsersPage'
 import MeterReadingsPage from '@/features/admin/pages/MeterReadingsPage'
 import VehicleConfigPage from '@/features/admin/pages/VehicleConfigPage'
 import AuditLogPage from '@/features/admin/pages/AuditLogPage'
+import RoomDetailPage from '@/features/admin/pages/RoomDetailPage'
 
 const ADMIN = ['ADMIN']
 
@@ -19,6 +20,7 @@ const adminRoutes = [
   <Route key="/admin" path="/admin" element={<RequireRole roles={ADMIN}><AdminDashboard /></RequireRole>} />,
   <Route key="/admin/properties" path="/admin/properties" element={<RequireRole roles={ADMIN}><PropertiesPage /></RequireRole>} />,
   <Route key="/admin/rooms" path="/admin/rooms" element={<RequireRole roles={ADMIN}><RoomsPage /></RequireRole>} />,
+  <Route key="/admin/rooms/:propertyId/:roomId" path="/admin/rooms/:propertyId/:roomId" element={<RequireRole roles={ADMIN}><RoomDetailPage /></RequireRole>} />,
   <Route key="/admin/contracts" path="/admin/contracts" element={<RequireRole roles={ADMIN}><ContractsPage /></RequireRole>} />,
   <Route key="/admin/invoices" path="/admin/invoices" element={<RequireRole roles={ADMIN}><AdminInvoicesPage /></RequireRole>} />,
   <Route key="/admin/maintenance" path="/admin/maintenance" element={<RequireRole roles={ADMIN}><AdminMaintenancePage /></RequireRole>} />,

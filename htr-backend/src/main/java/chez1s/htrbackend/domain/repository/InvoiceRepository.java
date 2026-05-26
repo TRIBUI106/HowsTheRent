@@ -15,6 +15,7 @@ import java.util.UUID;
 
 public interface InvoiceRepository extends JpaRepository<Invoice, UUID> {
     boolean existsByRoomIdAndInvoiceMonth(UUID roomId, LocalDate invoiceMonth);
+    List<Invoice> findByRoomIdOrderByInvoiceMonthDesc(UUID roomId);
     Page<Invoice> findByContractTenantId(UUID tenantId, Pageable pageable);
     List<Invoice> findByContractTenantIdOrderByInvoiceMonthDesc(UUID tenantId);
     List<Invoice> findByStatusAndDueDateBefore(InvoiceStatus status, LocalDate date);

@@ -173,6 +173,22 @@ export interface Dashboard {
   inProgressMaintenance: number
 }
 
+export interface RoomTimelineEntry {
+  type: 'CONTRACT_MOVE_IN' | 'CONTRACT_MOVE_OUT' | 'INVOICE' | 'MAINTENANCE' | 'METER_READING' | 'NOTE'
+  date: string
+  title: string
+  description: string
+  metadata: Record<string, unknown>
+}
+
+export interface RoomNote {
+  id: string
+  authorName: string
+  authorEmail: string
+  content: string
+  createdAt: string
+}
+
 export interface AuditLog {
   id: string
   action: string
