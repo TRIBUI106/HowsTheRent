@@ -97,8 +97,8 @@ export default function FeeConfigPage() {
 
         {selectedProp && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card className="p-6">
-              <h2 className="text-lg font-semibold text-fg mb-4">Cấu hình phí</h2>
+            <Card key={`fee-${selectedProp}`} className="p-6">
+              <h2 className="text-lg font-semibold text-fg mb-4">Cấu hình phí ({properties?.find(p => p.id === selectedProp)?.name})</h2>
               {feeLoading ? <CardsSkeleton count={1} /> : (
                 <form onSubmit={handleFeeSubmit} className="space-y-4">
                   <div>
@@ -153,7 +153,7 @@ export default function FeeConfigPage() {
               )}
             </Card>
 
-            <Card className="p-6">
+            <Card key={`vehicle-${selectedProp}`} className="p-6">
               <h2 className="text-lg font-semibold text-fg mb-4">Phí giữ xe</h2>
               {vehicleLoading ? <CardsSkeleton count={1} /> : (
                 <form onSubmit={handleVehicleSubmit} className="space-y-4">
