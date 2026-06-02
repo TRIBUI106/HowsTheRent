@@ -34,12 +34,9 @@ Toàn quyền quản lý hệ thống.
 | Invoices | Tạo và quản lý hóa đơn hàng tháng |
 | Meter Readings | Nhập chỉ số điện nước |
 | Fee Config | Cấu hình giá phòng, điện, nước, dịch vụ theo tòa nhà |
-| Vehicle Config | Cấu hình phí giữ xe (xe máy, ô tô, xe đạp) theo tòa nhà |
 | Maintenance | Xem và giao việc bảo trì cho kỹ thuật viên |
 | Notifications | Thông báo hệ thống |
 | Audit Log | Lịch sử toàn bộ hành động |
-
-> **Fee Config** và **Vehicle Config** là hai bảng riêng trong DB nhưng cùng mục đích: cấu hình giá theo từng tòa nhà.
 
 ### TENANT — Người thuê
 Chỉ xem thông tin liên quan đến bản thân.
