@@ -42,13 +42,13 @@ public class BillingService {
                 .setScale(2, RoundingMode.HALF_UP);
     }
 
-    public BigDecimal calcVehicle(VehicleRecord record, VehicleConfig vehicleConfig) {
-        if (record == null || vehicleConfig == null) {
+    public BigDecimal calcVehicle(VehicleRecord record, FeeConfig feeConfig) {
+        if (record == null || feeConfig == null) {
             return BigDecimal.ZERO;
         }
-        BigDecimal moto = BigDecimal.valueOf(record.getMotorbikeCount()).multiply(vehicleConfig.getMotorbikePrice());
-        BigDecimal car = BigDecimal.valueOf(record.getCarCount()).multiply(vehicleConfig.getCarPrice());
-        BigDecimal bicycle = BigDecimal.valueOf(record.getBicycleCount()).multiply(vehicleConfig.getBicyclePrice());
+        BigDecimal moto = BigDecimal.valueOf(record.getMotorbikeCount()).multiply(feeConfig.getMotorbikePrice());
+        BigDecimal car = BigDecimal.valueOf(record.getCarCount()).multiply(feeConfig.getCarPrice());
+        BigDecimal bicycle = BigDecimal.valueOf(record.getBicycleCount()).multiply(feeConfig.getBicyclePrice());
         return moto.add(car).add(bicycle).setScale(2, RoundingMode.HALF_UP);
     }
 

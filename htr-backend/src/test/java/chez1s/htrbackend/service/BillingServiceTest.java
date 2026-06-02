@@ -147,7 +147,14 @@ class BillingServiceTest {
 
     @Test
     void calcVehicle_mixed() {
-        VehicleConfig vc = VehicleConfig.builder()
+        FeeConfig fc = FeeConfig.builder()
+                .rentDefault(BigDecimal.ZERO)
+                .elecPrice(BigDecimal.ZERO)
+                .waterMode(WaterMode.PERSON)
+                .waterPrice(BigDecimal.ZERO)
+                .serviceFee(BigDecimal.ZERO)
+                .vehicleProRata(false)
+                .serviceProRata(false)
                 .motorbikePrice(new BigDecimal("100000"))
                 .carPrice(new BigDecimal("300000"))
                 .bicyclePrice(new BigDecimal("20000"))
@@ -156,7 +163,7 @@ class BillingServiceTest {
         vr.setMotorbikeCount(2);
         vr.setCarCount(1);
         vr.setBicycleCount(1);
-        BigDecimal result = billingService.calcVehicle(vr, vc);
+        BigDecimal result = billingService.calcVehicle(vr, fc);
         // 2*100000 + 300000 + 20000 = 520000
         assertThat(result).isEqualByComparingTo(new BigDecimal("520000.00"));
     }

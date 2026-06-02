@@ -30,7 +30,6 @@ class InvoiceIdempotencyTest {
     @Mock InvoiceRepository invoiceRepository;
     @Mock ContractRepository contractRepository;
     @Mock FeeConfigRepository feeConfigRepository;
-    @Mock VehicleConfigRepository vehicleConfigRepository;
     @Mock MeterReadingRepository meterReadingRepository;
     @Mock VehicleRecordRepository vehicleRecordRepository;
     @Mock BillingService billingService;
@@ -81,6 +80,9 @@ class InvoiceIdempotencyTest {
                 .serviceFee(new BigDecimal("50000"))
                 .vehicleProRata(false)
                 .serviceProRata(false)
+                .motorbikePrice(BigDecimal.ZERO)
+                .carPrice(BigDecimal.ZERO)
+                .bicyclePrice(BigDecimal.ZERO)
                 .build();
 
         reading = new MeterReading();
@@ -127,7 +129,6 @@ class InvoiceIdempotencyTest {
         when(invoiceRepository.existsByRoomIdAndInvoiceMonth(any(), any())).thenReturn(false);
         when(feeConfigRepository.findByPropertyId(propertyId)).thenReturn(Optional.of(feeConfig));
         when(meterReadingRepository.findByRoomIdAndReadingMonth(any(), any())).thenReturn(Optional.of(reading));
-        when(vehicleConfigRepository.findByPropertyId(any())).thenReturn(Optional.empty());
         when(vehicleRecordRepository.findByRoomIdAndRecordMonth(any(), any())).thenReturn(Optional.empty());
         when(billingService.calcRent(any(), any(), any())).thenReturn(new BigDecimal("3000000"));
         when(billingService.calcElec(any(), any())).thenReturn(new BigDecimal("350000"));

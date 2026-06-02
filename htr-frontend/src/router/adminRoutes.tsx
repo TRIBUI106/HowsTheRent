@@ -10,7 +10,6 @@ import AdminNotificationsPage from '@/features/admin/pages/NotificationsPage'
 import FeeConfigPage from '@/features/admin/pages/FeeConfigPage'
 import UsersPage from '@/features/admin/pages/UsersPage'
 import MeterReadingsPage from '@/features/admin/pages/MeterReadingsPage'
-import VehicleConfigPage from '@/features/admin/pages/VehicleConfigPage'
 import AuditLogPage from '@/features/admin/pages/AuditLogPage'
 import RoomDetailPage from '@/features/admin/pages/RoomDetailPage'
 
@@ -28,7 +27,6 @@ const adminRoutes = [
   <Route key="/admin/fee-config" path="/admin/fee-config" element={<RequireRole roles={ADMIN}><FeeConfigPage /></RequireRole>} />,
   <Route key="/admin/users" path="/admin/users" element={<RequireRole roles={ADMIN}><UsersPage /></RequireRole>} />,
   <Route key="/admin/meter-readings" path="/admin/meter-readings" element={<RequireRole roles={ADMIN}><MeterReadingsPage /></RequireRole>} />,
-  <Route key="/admin/vehicle-config" path="/admin/vehicle-config" element={<RequireRole roles={ADMIN}><VehicleConfigPage /></RequireRole>} />,
   <Route key="/admin/audit-log" path="/admin/audit-log" element={<RequireRole roles={ADMIN}><AuditLogPage /></RequireRole>} />,
 ]
 

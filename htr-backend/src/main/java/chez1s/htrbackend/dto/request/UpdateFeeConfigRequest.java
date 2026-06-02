@@ -21,4 +21,10 @@ public class UpdateFeeConfigRequest {
     private BigDecimal serviceFee;
     private boolean vehicleProRata;
     private boolean serviceProRata;
+    @NotNull @PositiveOrZero
+    private BigDecimal motorbikePrice;
+    @NotNull @PositiveOrZero
+    private BigDecimal carPrice;
+    @NotNull @PositiveOrZero
+    private BigDecimal bicyclePrice;
 }

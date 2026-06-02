@@ -68,11 +68,6 @@ export interface FeeConfig {
   serviceFee: number
   vehicleProRata: boolean
   serviceProRata: boolean
-}
-
-export interface VehicleConfig {
-  id: string
-  property: Property
   motorbikePrice: number
   carPrice: number
   bicyclePrice: number

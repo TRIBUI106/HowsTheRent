@@ -16,6 +16,9 @@ public record FeeConfigResponse(
         BigDecimal serviceFee,
         boolean vehicleProRata,
         boolean serviceProRata,
+        BigDecimal motorbikePrice,
+        BigDecimal carPrice,
+        BigDecimal bicyclePrice,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {
@@ -30,6 +33,9 @@ public record FeeConfigResponse(
                 f.getServiceFee(),
                 f.isVehicleProRata(),
                 f.isServiceProRata(),
+                f.getMotorbikePrice(),
+                f.getCarPrice(),
+                f.getBicyclePrice(),
                 f.getCreatedAt(),
                 f.getUpdatedAt()
         );

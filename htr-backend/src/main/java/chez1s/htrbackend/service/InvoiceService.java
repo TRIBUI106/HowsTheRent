@@ -30,7 +30,6 @@ public class InvoiceService {
     private final InvoiceRepository invoiceRepository;
     private final ContractRepository contractRepository;
     private final FeeConfigRepository feeConfigRepository;
-    private final VehicleConfigRepository vehicleConfigRepository;
     private final MeterReadingRepository meterReadingRepository;
     private final VehicleRecordRepository vehicleRecordRepository;
     private final BillingService billingService;
@@ -79,14 +78,13 @@ public class InvoiceService {
             return null;
         }
 
-        VehicleConfig vehicleConfig = vehicleConfigRepository.findByPropertyId(propertyId).orElse(null);
         VehicleRecord vehicleRecord = vehicleRecordRepository
                 .findByRoomIdAndRecordMonth(roomId, monthDate).orElse(null);
 
         BigDecimal rent = billingService.calcRent(contract, targetMonth, feeConfig);
         BigDecimal elec = billingService.calcElec(reading, feeConfig);
         BigDecimal water = billingService.calcWater(reading, feeConfig, contract.getRoom().getMaxPeople());
-        BigDecimal vehicle = billingService.calcVehicle(vehicleRecord, vehicleConfig);
+        BigDecimal vehicle = billingService.calcVehicle(vehicleRecord, feeConfig);
         BigDecimal service = billingService.calcService(feeConfig);
         BigDecimal total = rent.add(elec).add(water).add(vehicle).add(service);
 

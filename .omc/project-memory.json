@@ -9,7 +9,7 @@
     "runtime": null
   },
   "build": {
-    "buildCommand": null,
+    "buildCommand": "cd /d/Code/HowsTheRent/htr-frontend && npx tsc --noEmit 2>&1",
     "testCommand": null,
     "lintCommand": null,
     "devCommand": null,
@@ -136,14 +136,14 @@
     },
     {
       "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\controller\\PropertyController.java",
-      "accessCount": 22,
-      "lastAccessed": 1780398635675,
+      "accessCount": 26,
+      "lastAccessed": 1780398980107,
       "type": "file"
     },
     {
       "path": "htr-frontend\\src\\types\\index.ts",
-      "accessCount": 20,
-      "lastAccessed": 1780392010897,
+      "accessCount": 22,
+      "lastAccessed": 1780398916229,
       "type": "file"
     },
     {
@@ -177,6 +177,12 @@
       "type": "file"
     },
     {
+      "path": "htr-frontend\\src\\api\\propertyApi.ts",
+      "accessCount": 13,
+      "lastAccessed": 1780398932971,
+      "type": "file"
+    },
+    {
       "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\controller\\NotificationController.java",
       "accessCount": 12,
       "lastAccessed": 1779378192448,
@@ -192,12 +198,6 @@
       "path": "htr-frontend\\src\\api\\authApi.ts",
       "accessCount": 11,
       "lastAccessed": 1779621875249,
-      "type": "file"
-    },
-    {
-      "path": "htr-frontend\\src\\api\\propertyApi.ts",
-      "accessCount": 11,
-      "lastAccessed": 1779646084784,
       "type": "file"
     },
     {
@@ -267,6 +267,24 @@
       "type": "file"
     },
     {
+      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\domain\\entity\\FeeConfig.java",
+      "accessCount": 4,
+      "lastAccessed": 1780398906333,
+      "type": "file"
+    },
+    {
+      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\dto\\request\\UpdateFeeConfigRequest.java",
+      "accessCount": 4,
+      "lastAccessed": 1780398908100,
+      "type": "file"
+    },
+    {
+      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\dto\\response\\FeeConfigResponse.java",
+      "accessCount": 4,
+      "lastAccessed": 1780398913805,
+      "type": "file"
+    },
+    {
       "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\domain\\entity\\MaintenanceRequest.java",
       "accessCount": 3,
       "lastAccessed": 1778312820983,
@@ -291,6 +309,24 @@
       "type": "file"
     },
     {
+      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\domain\\entity\\VehicleConfig.java",
+      "accessCount": 3,
+      "lastAccessed": 1780398807071,
+      "type": "file"
+    },
+    {
+      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\dto\\request\\UpdateVehicleConfigRequest.java",
+      "accessCount": 3,
+      "lastAccessed": 1780398808402,
+      "type": "file"
+    },
+    {
+      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\dto\\response\\VehicleConfigResponse.java",
+      "accessCount": 3,
+      "lastAccessed": 1780398809409,
+      "type": "file"
+    },
+    {
       "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\dto\\request\\LoginRequest.java",
       "accessCount": 2,
       "lastAccessed": 1779356123206,
@@ -312,42 +348,6 @@
       "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\domain\\entity\\Invoice.java",
       "accessCount": 2,
       "lastAccessed": 1779419770765,
-      "type": "file"
-    },
-    {
-      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\domain\\entity\\FeeConfig.java",
-      "accessCount": 2,
-      "lastAccessed": 1780398635075,
-      "type": "file"
-    },
-    {
-      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\domain\\entity\\VehicleConfig.java",
-      "accessCount": 2,
-      "lastAccessed": 1780398635503,
-      "type": "file"
-    },
-    {
-      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\dto\\request\\UpdateFeeConfigRequest.java",
-      "accessCount": 2,
-      "lastAccessed": 1780398638666,
-      "type": "file"
-    },
-    {
-      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\dto\\request\\UpdateVehicleConfigRequest.java",
-      "accessCount": 2,
-      "lastAccessed": 1780398638933,
-      "type": "file"
-    },
-    {
-      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\dto\\response\\FeeConfigResponse.java",
-      "accessCount": 2,
-      "lastAccessed": 1780398639111,
-      "type": "file"
-    },
-    {
-      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\dto\\response\\VehicleConfigResponse.java",
-      "accessCount": 2,
-      "lastAccessed": 1780398639235,
       "type": "file"
     },
     {

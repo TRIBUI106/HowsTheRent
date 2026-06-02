@@ -20,11 +20,6 @@ interface FeeConfig {
   waterMode: 'CUBIC' | 'PERSON'
   waterPrice: number
   serviceFee: number
-}
-
-interface VehicleConfig {
-  id?: string
-  propertyId: string
   motorbikePrice: number
   carPrice: number
   bicyclePrice: number
@@ -45,14 +40,7 @@ export default function FeeConfigPage() {
     enabled: !!selectedProp,
   })
 
-  const { data: vehicleConfig, isLoading: vehicleLoading } = useQuery<VehicleConfig>({
-    queryKey: ['vehicle-config', selectedProp],
-    queryFn: () => api.get(`/properties/${selectedProp}/vehicle-config`).then(r => r.data),
-    enabled: !!selectedProp,
-  })
-
   const [feeForm, setFeeForm] = useState<Partial<FeeConfig>>({})
-  const [vehicleForm, setVehicleForm] = useState<Partial<VehicleConfig>>({})
 
   const feeMutation = useMutation({
     mutationFn: (data: Partial<FeeConfig>) =>
@@ -60,20 +48,9 @@ export default function FeeConfigPage() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['fee-config', selectedProp] }),
   })
 
-  const vehicleMutation = useMutation({
-    mutationFn: (data: Partial<VehicleConfig>) =>
-      api.put(`/properties/${selectedProp}/vehicle-config`, data),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['vehicle-config', selectedProp] }),
-  })
-
   const handleFeeSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     feeMutation.mutate({ ...feeConfig, ...feeForm, propertyId: selectedProp })
-  }
-
-  const handleVehicleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    vehicleMutation.mutate({ ...vehicleConfig, ...vehicleForm, propertyId: selectedProp })
   }
 
   if (propsLoading) return <Layout><CardsSkeleton count={2} /></Layout>
@@ -88,7 +65,7 @@ export default function FeeConfigPage() {
           <select
             className="w-full border border-border/80 rounded-xl px-3 py-2 text-sm bg-surface text-fg focus:outline-none focus:ring-2 focus:ring-accent"
             value={selectedProp}
-            onChange={e => { setSelectedProp(e.target.value); setFeeForm({}); setVehicleForm({}) }}
+            onChange={e => { setSelectedProp(e.target.value); setFeeForm({}) }}
           >
             <option value="">Chọn toà nhà...</option>
             {properties?.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
@@ -155,37 +132,37 @@ export default function FeeConfigPage() {
 
             <Card key={`vehicle-${selectedProp}`} className="p-6">
               <h2 className="text-lg font-semibold text-fg mb-4">Phí giữ xe</h2>
-              {vehicleLoading ? <CardsSkeleton count={1} /> : (
-                <form onSubmit={handleVehicleSubmit} className="space-y-4">
+              {feeLoading ? <CardsSkeleton count={1} /> : (
+                <form onSubmit={handleFeeSubmit} className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-fg mb-1">Xe máy (₫/tháng)</label>
                     <Input
                       type="number"
-                      defaultValue={vehicleConfig?.motorbikePrice}
-                      onChange={e => setVehicleForm(f => ({ ...f, motorbikePrice: +e.target.value }))}
+                      defaultValue={feeConfig?.motorbikePrice}
+                      onChange={e => setFeeForm(f => ({ ...f, motorbikePrice: +e.target.value }))}
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-fg mb-1">Ô tô (₫/tháng)</label>
                     <Input
                       type="number"
-                      defaultValue={vehicleConfig?.carPrice}
-                      onChange={e => setVehicleForm(f => ({ ...f, carPrice: +e.target.value }))}
+                      defaultValue={feeConfig?.carPrice}
+                      onChange={e => setFeeForm(f => ({ ...f, carPrice: +e.target.value }))}
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-fg mb-1">Xe đạp (₫/tháng)</label>
                     <Input
                       type="number"
-                      defaultValue={vehicleConfig?.bicyclePrice}
-                      onChange={e => setVehicleForm(f => ({ ...f, bicyclePrice: +e.target.value }))}
+                      defaultValue={feeConfig?.bicyclePrice}
+                      onChange={e => setFeeForm(f => ({ ...f, bicyclePrice: +e.target.value }))}
                     />
                   </div>
-                  <Button type="submit" disabled={vehicleMutation.isPending}>
-                    {vehicleMutation.isPending ? 'Đang lưu...' : 'Lưu phí giữ xe'}
+                  <Button type="submit" disabled={feeMutation.isPending}>
+                    {feeMutation.isPending ? 'Đang lưu...' : 'Lưu phí giữ xe'}
                   </Button>
-                  {vehicleMutation.isSuccess && <p className="text-sm text-success">Đã lưu thành công</p>}
-                  {vehicleMutation.isError && <p className="text-sm text-error">Lưu thất bại</p>}
+                  {feeMutation.isSuccess && <p className="text-sm text-success">Đã lưu thành công</p>}
+                  {feeMutation.isError && <p className="text-sm text-error">Lưu thất bại</p>}
                 </form>
               )}
             </Card>

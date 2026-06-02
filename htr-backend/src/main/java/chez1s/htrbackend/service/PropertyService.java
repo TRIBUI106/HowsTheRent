@@ -4,7 +4,6 @@ import chez1s.htrbackend.domain.entity.*;
 import chez1s.htrbackend.domain.repository.*;
 import chez1s.htrbackend.dto.request.CreatePropertyRequest;
 import chez1s.htrbackend.dto.request.UpdateFeeConfigRequest;
-import chez1s.htrbackend.dto.request.UpdateVehicleConfigRequest;
 import chez1s.htrbackend.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -20,7 +19,6 @@ public class PropertyService {
 
     private final PropertyRepository propertyRepository;
     private final FeeConfigRepository feeConfigRepository;
-    private final VehicleConfigRepository vehicleConfigRepository;
     private final RoomRepository roomRepository;
     private final UserRepository userRepository;
     private final PropertyTypeService propertyTypeService;
@@ -60,16 +58,11 @@ public class PropertyService {
                 .serviceFee(BigDecimal.ZERO)
                 .vehicleProRata(false)
                 .serviceProRata(false)
-                .build();
-        feeConfigRepository.save(feeConfig);
-
-        VehicleConfig vehicleConfig = VehicleConfig.builder()
-                .property(property)
                 .motorbikePrice(BigDecimal.ZERO)
                 .carPrice(BigDecimal.ZERO)
                 .bicyclePrice(BigDecimal.ZERO)
                 .build();
-        vehicleConfigRepository.save(vehicleConfig);
+        feeConfig = feeConfigRepository.save(feeConfig);
 
         return property;
     }
@@ -89,7 +82,6 @@ public class PropertyService {
         getById(id);
         roomRepository.deleteByPropertyId(id);
         feeConfigRepository.deleteByPropertyId(id);
-        vehicleConfigRepository.deleteByPropertyId(id);
         propertyRepository.deleteById(id);
     }
 
@@ -108,20 +100,9 @@ public class PropertyService {
         config.setServiceFee(req.getServiceFee());
         config.setVehicleProRata(req.isVehicleProRata());
         config.setServiceProRata(req.isServiceProRata());
-        return feeConfigRepository.save(config);
-    }
-
-    public VehicleConfig getVehicleConfig(UUID propertyId) {
-        return vehicleConfigRepository.findByPropertyId(propertyId)
-                .orElseThrow(() -> new ResourceNotFoundException("VehicleConfig", propertyId));
-    }
-
-    @Transactional
-    public VehicleConfig updateVehicleConfig(UUID propertyId, UpdateVehicleConfigRequest req) {
-        VehicleConfig config = getVehicleConfig(propertyId);
         config.setMotorbikePrice(req.getMotorbikePrice());
         config.setCarPrice(req.getCarPrice());
         config.setBicyclePrice(req.getBicyclePrice());
-        return vehicleConfigRepository.save(config);
+        return feeConfigRepository.save(config);
     }
 }

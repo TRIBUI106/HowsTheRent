@@ -1,5 +1,5 @@
 import api from "@/lib/api";
-import type { Property, FeeConfig, VehicleConfig } from "@/types";
+import type { Property, FeeConfig } from "@/types";
 
 export const propertyApi = {
   list: () => api.get<Property[]>("/properties").then((r) => r.data),
@@ -26,16 +26,5 @@ export const propertyApi = {
   updateFeeConfig: (id: string, data: Partial<FeeConfig>) =>
     api
       .put<FeeConfig>(`/properties/${id}/fee-config`, data)
-      .then((r) => r.data),
-  getVehicleConfig: (id: string) =>
-    api
-      .get<VehicleConfig>(`/properties/${id}/vehicle-config`)
-      .then((r) => r.data),
-  updateVehicleConfig: (
-    id: string,
-    data: { motorbikePrice: number; carPrice: number; bicyclePrice: number },
-  ) =>
-    api
-      .put<VehicleConfig>(`/properties/${id}/vehicle-config`, data)
       .then((r) => r.data),
 };

@@ -44,4 +44,13 @@ public class FeeConfig extends BaseEntity {
 
     @Column(name = "service_pro_rata", nullable = false)
     private boolean serviceProRata;
+
+    @Column(name = "motorbike_price", nullable = false, precision = 15, scale = 2)
+    private BigDecimal motorbikePrice;
+
+    @Column(name = "car_price", nullable = false, precision = 15, scale = 2)
+    private BigDecimal carPrice;
+
+    @Column(name = "bicycle_price", nullable = false, precision = 15, scale = 2)
+    private BigDecimal bicyclePrice;
 }

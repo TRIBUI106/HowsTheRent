@@ -2,10 +2,8 @@ package chez1s.htrbackend.controller;
 
 import chez1s.htrbackend.dto.request.CreatePropertyRequest;
 import chez1s.htrbackend.dto.request.UpdateFeeConfigRequest;
-import chez1s.htrbackend.dto.request.UpdateVehicleConfigRequest;
 import chez1s.htrbackend.dto.response.FeeConfigResponse;
 import chez1s.htrbackend.dto.response.PropertyResponse;
-import chez1s.htrbackend.dto.response.VehicleConfigResponse;
 import chez1s.htrbackend.service.PropertyService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -78,16 +76,4 @@ public class PropertyController {
         return ResponseEntity.ok(FeeConfigResponse.from(propertyService.updateFeeConfig(id, req)));
     }
 
-    @GetMapping("/{id}/vehicle-config")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<VehicleConfigResponse> getVehicleConfig(@PathVariable UUID id) {
-        return ResponseEntity.ok(VehicleConfigResponse.from(propertyService.getVehicleConfig(id)));
-    }
-
-    @PutMapping("/{id}/vehicle-config")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<VehicleConfigResponse> updateVehicleConfig(@PathVariable UUID id,
-                                                                     @Valid @RequestBody UpdateVehicleConfigRequest req) {
-        return ResponseEntity.ok(VehicleConfigResponse.from(propertyService.updateVehicleConfig(id, req)));
-    }
 }

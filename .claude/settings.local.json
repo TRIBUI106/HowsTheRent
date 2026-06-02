@@ -77,7 +77,8 @@
       "Bash(python *)",
       "Bash(mvn *)",
       "mcp__plugin_oh-my-claudecode_t__state_list_active",
-      "PowerShell(git *)"
+      "PowerShell(git *)",
+      "Bash(Remove-Item \"D:\\\\Code\\\\HowsTheRent\\\\htr-frontend\\\\src\\\\features\\\\admin\\\\pages\\\\VehicleConfigPage.tsx\" -Force)"
     ]
   }
 }
