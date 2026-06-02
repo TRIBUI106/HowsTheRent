@@ -76,7 +76,8 @@
       "PowerShell(try { \\(Invoke-WebRequest -Uri \"http://localhost:5173/api/auth/login\" -Method Post -ContentType \"application/json\" -Body '{\"email\":\"admin@example.com\",\"password\":\"Admin123!\"}' -ErrorAction Stop\\).StatusCode } catch { if \\($_.Exception.Response\\) { [int]$_.Exception.Response.StatusCode } else { $_.Exception.Message } })",
       "Bash(python *)",
       "Bash(mvn *)",
-      "mcp__plugin_oh-my-claudecode_t__state_list_active"
+      "mcp__plugin_oh-my-claudecode_t__state_list_active",
+      "PowerShell(git *)"
     ]
   }
 }
