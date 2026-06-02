@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "lastScanned": 1779713697910,
+  "lastScanned": 1780387407326,
   "projectRoot": "D:\\Code\\HowsTheRent",
   "techStack": {
     "languages": [],
@@ -38,7 +38,7 @@
       "path": "docs",
       "purpose": "Documentation",
       "fileCount": 1,
-      "lastAccessed": 1779713697873,
+      "lastAccessed": 1780387407263,
       "keyFiles": [
         "DEPLOYMENT.md"
       ]
@@ -47,7 +47,7 @@
       "path": "htr-backend",
       "purpose": null,
       "fileCount": 7,
-      "lastAccessed": 1779713697873,
+      "lastAccessed": 1780387407264,
       "keyFiles": [
         "Dockerfile",
         "mvnw",
@@ -60,7 +60,7 @@
       "path": "htr-frontend",
       "purpose": null,
       "fileCount": 12,
-      "lastAccessed": 1779713697874,
+      "lastAccessed": 1780387407264,
       "keyFiles": [
         "bun.lock",
         "Dockerfile",
@@ -73,21 +73,21 @@
       "path": "postman",
       "purpose": null,
       "fileCount": 0,
-      "lastAccessed": 1779713697875,
+      "lastAccessed": 1780387407264,
       "keyFiles": []
     },
     "test-results": {
       "path": "test-results",
       "purpose": null,
       "fileCount": 1,
-      "lastAccessed": 1779713697876,
+      "lastAccessed": 1780387407264,
       "keyFiles": []
     },
     "htr-frontend\\dist": {
       "path": "htr-frontend\\dist",
       "purpose": "Distribution/build output",
       "fileCount": 4,
-      "lastAccessed": 1779713697877,
+      "lastAccessed": 1780387407265,
       "keyFiles": [
         "favicon.svg",
         "icons.svg",
@@ -98,22 +98,22 @@
       "path": "htr-frontend\\node_modules",
       "purpose": "Dependencies",
       "fileCount": 1,
-      "lastAccessed": 1779713697878,
+      "lastAccessed": 1780387407266,
       "keyFiles": []
     },
     "postman\\mocks": {
       "path": "postman\\mocks",
       "purpose": "Mock data",
       "fileCount": 0,
-      "lastAccessed": 1779713697879,
+      "lastAccessed": 1780387407266,
       "keyFiles": []
     }
   },
   "hotPaths": [
     {
       "path": "htr-frontend\\src\\App.tsx",
-      "accessCount": 54,
-      "lastAccessed": 1779648470205,
+      "accessCount": 55,
+      "lastAccessed": 1780392005244,
       "type": "file"
     },
     {
@@ -142,8 +142,8 @@
     },
     {
       "path": "htr-frontend\\src\\types\\index.ts",
-      "accessCount": 19,
-      "lastAccessed": 1779621875345,
+      "accessCount": 20,
+      "lastAccessed": 1780392010897,
       "type": "file"
     },
     {
@@ -171,6 +171,12 @@
       "type": "file"
     },
     {
+      "path": "htr-frontend\\src\\stores\\authStore.ts",
+      "accessCount": 13,
+      "lastAccessed": 1780392008588,
+      "type": "file"
+    },
+    {
       "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\controller\\NotificationController.java",
       "accessCount": 12,
       "lastAccessed": 1779378192448,
@@ -181,12 +187,6 @@
       "accessCount": 12,
       "lastAccessed": 1779530562412,
       "type": "directory"
-    },
-    {
-      "path": "htr-frontend\\src\\stores\\authStore.ts",
-      "accessCount": 12,
-      "lastAccessed": 1779648457214,
-      "type": "file"
     },
     {
       "path": "htr-frontend\\src\\api\\authApi.ts",
