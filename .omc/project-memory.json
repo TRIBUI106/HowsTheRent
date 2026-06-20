@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "lastScanned": 1780387407326,
+  "lastScanned": 1780572276346,
   "projectRoot": "D:\\Code\\HowsTheRent",
   "techStack": {
     "languages": [],
@@ -9,7 +9,7 @@
     "runtime": null
   },
   "build": {
-    "buildCommand": "cd /d/Code/HowsTheRent/htr-frontend && npx tsc --noEmit 2>&1",
+    "buildCommand": null,
     "testCommand": null,
     "lintCommand": null,
     "devCommand": null,
@@ -38,7 +38,7 @@
       "path": "docs",
       "purpose": "Documentation",
       "fileCount": 1,
-      "lastAccessed": 1780387407263,
+      "lastAccessed": 1780572276333,
       "keyFiles": [
         "DEPLOYMENT.md"
       ]
@@ -47,7 +47,7 @@
       "path": "htr-backend",
       "purpose": null,
       "fileCount": 7,
-      "lastAccessed": 1780387407264,
+      "lastAccessed": 1780572276333,
       "keyFiles": [
         "Dockerfile",
         "mvnw",
@@ -60,7 +60,7 @@
       "path": "htr-frontend",
       "purpose": null,
       "fileCount": 12,
-      "lastAccessed": 1780387407264,
+      "lastAccessed": 1780572276333,
       "keyFiles": [
         "bun.lock",
         "Dockerfile",
@@ -73,21 +73,21 @@
       "path": "postman",
       "purpose": null,
       "fileCount": 0,
-      "lastAccessed": 1780387407264,
+      "lastAccessed": 1780572276334,
       "keyFiles": []
     },
     "test-results": {
       "path": "test-results",
       "purpose": null,
       "fileCount": 1,
-      "lastAccessed": 1780387407264,
+      "lastAccessed": 1780572276334,
       "keyFiles": []
     },
     "htr-frontend\\dist": {
       "path": "htr-frontend\\dist",
       "purpose": "Distribution/build output",
       "fileCount": 4,
-      "lastAccessed": 1780387407265,
+      "lastAccessed": 1780572276335,
       "keyFiles": [
         "favicon.svg",
         "icons.svg",
@@ -98,318 +98,17 @@
       "path": "htr-frontend\\node_modules",
       "purpose": "Dependencies",
       "fileCount": 1,
-      "lastAccessed": 1780387407266,
+      "lastAccessed": 1780572276336,
       "keyFiles": []
     },
     "postman\\mocks": {
       "path": "postman\\mocks",
       "purpose": "Mock data",
       "fileCount": 0,
-      "lastAccessed": 1780387407266,
+      "lastAccessed": 1780572276336,
       "keyFiles": []
     }
   },
-  "hotPaths": [
-    {
-      "path": "htr-frontend\\src\\App.tsx",
-      "accessCount": 55,
-      "lastAccessed": 1780392005244,
-      "type": "file"
-    },
-    {
-      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\controller\\MaintenanceController.java",
-      "accessCount": 40,
-      "lastAccessed": 1779621069312,
-      "type": "file"
-    },
-    {
-      "path": "htr-frontend\\src\\lib\\api.ts",
-      "accessCount": 39,
-      "lastAccessed": 1779714367504,
-      "type": "file"
-    },
-    {
-      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\controller\\ContractController.java",
-      "accessCount": 27,
-      "lastAccessed": 1779378158501,
-      "type": "file"
-    },
-    {
-      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\controller\\PropertyController.java",
-      "accessCount": 26,
-      "lastAccessed": 1780398980107,
-      "type": "file"
-    },
-    {
-      "path": "htr-frontend\\src\\types\\index.ts",
-      "accessCount": 22,
-      "lastAccessed": 1780398916229,
-      "type": "file"
-    },
-    {
-      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\controller\\RoomController.java",
-      "accessCount": 19,
-      "lastAccessed": 1779648904361,
-      "type": "file"
-    },
-    {
-      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\controller\\DashboardController.java",
-      "accessCount": 17,
-      "lastAccessed": 1779378164272,
-      "type": "file"
-    },
-    {
-      "path": "htr-frontend\\src\\components\\Layout.tsx",
-      "accessCount": 16,
-      "lastAccessed": 1779531517604,
-      "type": "file"
-    },
-    {
-      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\controller\\InvoiceController.java",
-      "accessCount": 13,
-      "lastAccessed": 1779378198082,
-      "type": "file"
-    },
-    {
-      "path": "htr-frontend\\src\\stores\\authStore.ts",
-      "accessCount": 13,
-      "lastAccessed": 1780392008588,
-      "type": "file"
-    },
-    {
-      "path": "htr-frontend\\src\\api\\propertyApi.ts",
-      "accessCount": 13,
-      "lastAccessed": 1780398932971,
-      "type": "file"
-    },
-    {
-      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\controller\\NotificationController.java",
-      "accessCount": 12,
-      "lastAccessed": 1779378192448,
-      "type": "file"
-    },
-    {
-      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend",
-      "accessCount": 12,
-      "lastAccessed": 1779530562412,
-      "type": "directory"
-    },
-    {
-      "path": "htr-frontend\\src\\api\\authApi.ts",
-      "accessCount": 11,
-      "lastAccessed": 1779621875249,
-      "type": "file"
-    },
-    {
-      "path": "htr-frontend\\src\\api\\roomApi.ts",
-      "accessCount": 10,
-      "lastAccessed": 1779648904414,
-      "type": "file"
-    },
-    {
-      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\dto\\request\\CreateMaintenanceRequest.java",
-      "accessCount": 7,
-      "lastAccessed": 1778313603814,
-      "type": "file"
-    },
-    {
-      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\controller\\MeterReadingController.java",
-      "accessCount": 7,
-      "lastAccessed": 1779378186601,
-      "type": "file"
-    },
-    {
-      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\domain\\entity\\Property.java",
-      "accessCount": 7,
-      "lastAccessed": 1779627186366,
-      "type": "file"
-    },
-    {
-      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\domain\\entity\\BaseEntity.java",
-      "accessCount": 6,
-      "lastAccessed": 1779356124093,
-      "type": "file"
-    },
-    {
-      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\dto\\response\\UserResponse.java",
-      "accessCount": 5,
-      "lastAccessed": 1779522951090,
-      "type": "file"
-    },
-    {
-      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\dto\\request\\CreatePropertyRequest.java",
-      "accessCount": 5,
-      "lastAccessed": 1779524203941,
-      "type": "file"
-    },
-    {
-      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\dto\\response\\PropertyResponse.java",
-      "accessCount": 5,
-      "lastAccessed": 1779524237400,
-      "type": "file"
-    },
-    {
-      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\dto\\response\\AuthResponse.java",
-      "accessCount": 4,
-      "lastAccessed": 1779379500635,
-      "type": "file"
-    },
-    {
-      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\domain\\entity\\Contract.java",
-      "accessCount": 4,
-      "lastAccessed": 1779419770784,
-      "type": "file"
-    },
-    {
-      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\dto\\request\\CreateRoomRequest.java",
-      "accessCount": 4,
-      "lastAccessed": 1779636195352,
-      "type": "file"
-    },
-    {
-      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\domain\\entity\\FeeConfig.java",
-      "accessCount": 4,
-      "lastAccessed": 1780398906333,
-      "type": "file"
-    },
-    {
-      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\dto\\request\\UpdateFeeConfigRequest.java",
-      "accessCount": 4,
-      "lastAccessed": 1780398908100,
-      "type": "file"
-    },
-    {
-      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\dto\\response\\FeeConfigResponse.java",
-      "accessCount": 4,
-      "lastAccessed": 1780398913805,
-      "type": "file"
-    },
-    {
-      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\domain\\entity\\MaintenanceRequest.java",
-      "accessCount": 3,
-      "lastAccessed": 1778312820983,
-      "type": "file"
-    },
-    {
-      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\dto\\request\\RefreshRequest.java",
-      "accessCount": 3,
-      "lastAccessed": 1779380780040,
-      "type": "file"
-    },
-    {
-      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\domain\\entity\\Room.java",
-      "accessCount": 3,
-      "lastAccessed": 1779649960094,
-      "type": "file"
-    },
-    {
-      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\dto\\response\\RoomResponse.java",
-      "accessCount": 3,
-      "lastAccessed": 1779649960151,
-      "type": "file"
-    },
-    {
-      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\domain\\entity\\VehicleConfig.java",
-      "accessCount": 3,
-      "lastAccessed": 1780398807071,
-      "type": "file"
-    },
-    {
-      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\dto\\request\\UpdateVehicleConfigRequest.java",
-      "accessCount": 3,
-      "lastAccessed": 1780398808402,
-      "type": "file"
-    },
-    {
-      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\dto\\response\\VehicleConfigResponse.java",
-      "accessCount": 3,
-      "lastAccessed": 1780398809409,
-      "type": "file"
-    },
-    {
-      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\dto\\request\\LoginRequest.java",
-      "accessCount": 2,
-      "lastAccessed": 1779356123206,
-      "type": "file"
-    },
-    {
-      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\controller\\PaymentController.java",
-      "accessCount": 2,
-      "lastAccessed": 1779356259277,
-      "type": "file"
-    },
-    {
-      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\domain\\entity\\MeterReading.java",
-      "accessCount": 2,
-      "lastAccessed": 1779419770720,
-      "type": "file"
-    },
-    {
-      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\domain\\entity\\Invoice.java",
-      "accessCount": 2,
-      "lastAccessed": 1779419770765,
-      "type": "file"
-    },
-    {
-      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\service\\PayOSService.java",
-      "accessCount": 1,
-      "lastAccessed": 1778306648853,
-      "type": "file"
-    },
-    {
-      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\dto\\request\\CreateContractRequest.java",
-      "accessCount": 1,
-      "lastAccessed": 1778306775344,
-      "type": "file"
-    },
-    {
-      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\dto\\request\\CreateMeterReadingRequest.java",
-      "accessCount": 1,
-      "lastAccessed": 1778306776154,
-      "type": "file"
-    },
-    {
-      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\dto\\request\\UpdateVehicleRecordRequest.java",
-      "accessCount": 1,
-      "lastAccessed": 1778306780971,
-      "type": "file"
-    },
-    {
-      "path": "htr-frontend\\src\\pages\\admin\\PropertiesPage.tsx",
-      "accessCount": 1,
-      "lastAccessed": 1778306853588,
-      "type": "file"
-    },
-    {
-      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\domain\\entity\\VehicleRecord.java",
-      "accessCount": 1,
-      "lastAccessed": 1778306957673,
-      "type": "file"
-    },
-    {
-      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\domain\\entity\\Notification.java",
-      "accessCount": 1,
-      "lastAccessed": 1778306958960,
-      "type": "file"
-    },
-    {
-      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\dto\\response\\ContractResponse.java",
-      "accessCount": 1,
-      "lastAccessed": 1778306985487,
-      "type": "file"
-    },
-    {
-      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\dto\\response\\InvoiceResponse.java",
-      "accessCount": 1,
-      "lastAccessed": 1778306990753,
-      "type": "file"
-    },
-    {
-      "path": "htr-backend\\src\\main\\java\\chez1s\\htrbackend\\dto\\response\\MeterReadingResponse.java",
-      "accessCount": 1,
-      "lastAccessed": 1778307000628,
-      "type": "file"
-    }
-  ],
+  "hotPaths": [],
   "userDirectives": []
 }
