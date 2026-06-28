@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
+import axios from 'axios'
 import api from '@/lib/api'
 import { useAuthStore } from '@/stores/authStore'
 import { Button } from '@/components/ui/button'
@@ -13,6 +14,21 @@ const systemHighlights = [
   { icon: Wrench, label: 'Ghi nhận bảo trì và vận hành' },
   { icon: BarChart3, label: 'Tổng quan dữ liệu theo thời gian thực' },
 ]
+
+function getLoginErrorMessage(error: unknown) {
+  if (axios.isAxiosError(error)) {
+    const message = error.response?.data?.message
+    if (typeof message === 'string' && message.trim()) {
+      return message
+    }
+
+    if (error.response?.status === 400 || error.response?.status === 401) {
+      return 'Email hoặc mật khẩu không đúng'
+    }
+  }
+
+  return 'Hệ thống đang gặp sự cố. Vui lòng thử lại sau.'
+}
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -33,7 +49,7 @@ export default function LoginPage() {
       const role = data.role.toLowerCase()
       navigate(role === 'admin' ? '/admin' : role === 'tenant' ? '/tenant' : '/tech')
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Email hoặc mật khẩu không đúng')
+      setError(getLoginErrorMessage(err))
     } finally {
       setLoading(false)
     }
