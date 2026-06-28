@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import axios from 'axios'
-import api from '@/lib/api'
+import { authApi } from '@/api'
 import { useAuthStore } from '@/stores/authStore'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -43,10 +43,9 @@ export default function LoginPage() {
     setError('')
     setLoading(true)
     try {
-      await api.post('/auth/login', { email, password })
-      const { data } = await api.get('/users/me')
-      setUser(data)
-      const role = data.role.toLowerCase()
+      const { user } = await authApi.login(email, password)
+      setUser(user)
+      const role = user.role.toLowerCase()
       navigate(role === 'admin' ? '/admin' : role === 'tenant' ? '/tenant' : '/tech')
     } catch (err: any) {
       setError(getLoginErrorMessage(err))

@@ -1,6 +1,5 @@
 import { useAuthStore } from '@/stores/authStore'
-import { authApi } from '@/api/authApi'
-import { userApi } from '@/api/userApi'
+import { authApi } from '@/api'
 import { useNavigate } from 'react-router-dom'
 
 export function useAuth() {
@@ -8,10 +7,9 @@ export function useAuth() {
   const navigate = useNavigate()
 
   const login = async (email: string, password: string) => {
-    await authApi.login(email, password)
-    const me = await userApi.me()
-    setUser(me)
-    const role = me.role
+    const { user } = await authApi.login(email, password)
+    setUser(user)
+    const role = user.role
     navigate(role === 'ADMIN' ? '/admin' : role === 'TENANT' ? '/tenant' : '/tech', { replace: true })
   }
 

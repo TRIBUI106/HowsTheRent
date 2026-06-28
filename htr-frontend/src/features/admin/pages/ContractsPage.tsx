@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { TableSkeleton } from '@/components/ui/feedback'
 import api from '@/lib/api'
+import { userApi } from '@/api'
 import type { Room, User } from '@/types'
 import { Download } from 'lucide-react'
 
@@ -59,9 +60,7 @@ export default function ContractsPage() {
 
   const { data: tenants } = useQuery<User[]>({
     queryKey: ['tenants'],
-    queryFn: () => api.get('/users').then(r =>
-      (r.data as User[]).filter(u => u.role === 'TENANT' && u.active)
-    ),
+    queryFn: () => userApi.listAll().then(users => users.filter(u => u.role === 'TENANT' && u.active)),
     enabled: showCreate,
   })
 
