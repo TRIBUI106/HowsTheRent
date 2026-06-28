@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import api from '@/lib/api'
+import { notificationApi } from '@/api'
 import Layout from '@/components/Layout'
 import { ListSkeleton } from '@/components/ui/feedback'
 import { formatDate } from '@/lib/utils'
@@ -11,7 +12,7 @@ export default function TechNotificationsPage() {
 
   const { data: notifications, isLoading } = useQuery<Notification[]>({
     queryKey: ['notifications'],
-    queryFn: () => api.get('/notifications').then(r => r.data),
+    queryFn: () => notificationApi.list(),
   })
 
   const markOneMutation = useMutation({
