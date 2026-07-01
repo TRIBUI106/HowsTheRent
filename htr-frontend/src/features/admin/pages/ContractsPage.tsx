@@ -60,9 +60,9 @@ export default function ContractsPage() {
     queryFn: () => api.get('/contracts').then(r => r.data),
   })
 
-  const { data: emptyRooms } = useQuery<Room[]>({
+  const { data: emptyRooms, isLoading: emptyRoomsLoading, error: emptyRoomsError } = useQuery<Room[]>({
     queryKey: ['rooms-empty'],
-    queryFn: () => api.get<Room[]>('/rooms').then(r => r.data.filter(room => room.status === 'EMPTY')),
+    queryFn: () => api.get<Room[]>('/rooms/empty').then(r => r.data),
     enabled: showCreate,
   })
 
@@ -170,7 +170,15 @@ export default function ContractsPage() {
                     value={form.roomId}
                     onChange={e => setForm(current => ({ ...current, roomId: e.target.value }))}
                   >
-                    <option value="">Chọn phòng trống...</option>
+                    <option value="">
+                      {emptyRoomsLoading
+                        ? 'Đang tải phòng trống...'
+                        : emptyRoomsError
+                          ? 'Không tải được phòng trống'
+                          : emptyRooms?.length === 0
+                            ? 'Không có phòng trống'
+                            : 'Chọn phòng trống...'}
+                    </option>
                     {emptyRooms?.map(room => (
                       <option key={room.id} value={room.id}>
                         {room.roomNumber} - {getRoomPropertyName(room)}

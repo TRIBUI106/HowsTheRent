@@ -13,10 +13,16 @@ public interface RoomRepository extends JpaRepository<Room, UUID> {
     @EntityGraph(attributePaths = {"property", "images"})
     List<Room> findByPropertyId(UUID propertyId);
 
-    @EntityGraph(attributePaths = "property")
+    @EntityGraph(attributePaths = {"property", "images"})
     List<Room> findByStatus(RoomStatus status);
 
-    @EntityGraph(attributePaths = "property")
+    @EntityGraph(attributePaths = {"property", "images"})
+    List<Room> findByPropertyOwnerIdAndStatus(UUID ownerId, RoomStatus status);
+
+    @EntityGraph(attributePaths = {"property", "images"})
+    List<Room> findByPropertyOwnerId(UUID ownerId);
+
+    @EntityGraph(attributePaths = {"property", "images"})
     List<Room> findAll();
 
     @EntityGraph(attributePaths = {"property", "images"})

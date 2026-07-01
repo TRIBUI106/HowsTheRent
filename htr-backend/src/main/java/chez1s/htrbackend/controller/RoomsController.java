@@ -6,9 +6,11 @@ import chez1s.htrbackend.dto.response.RoomResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/rooms")
@@ -19,13 +21,22 @@ public class RoomsController {
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<RoomResponse>> listAll() {
-        return ResponseEntity.ok(roomRepository.findAll().stream().map(RoomResponse::from).toList());
+    public ResponseEntity<List<RoomResponse>> listAll(Authentication auth) {
+        UUID ownerId = (UUID) auth.getPrincipal();
+        return ResponseEntity.ok(roomRepository.findByPropertyOwnerId(ownerId).stream().map(RoomResponse::from).toList());
+    }
+
+    @GetMapping("/empty")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<RoomResponse>> listEmpty(Authentication auth) {
+        UUID ownerId = (UUID) auth.getPrincipal();
+        return ResponseEntity.ok(roomRepository.findByPropertyOwnerIdAndStatus(ownerId, RoomStatus.EMPTY).stream().map(RoomResponse::from).toList());
     }
 
     @GetMapping("/rented")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<RoomResponse>> listRented() {
-        return ResponseEntity.ok(roomRepository.findByStatus(RoomStatus.RENTED).stream().map(RoomResponse::from).toList());
+    public ResponseEntity<List<RoomResponse>> listRented(Authentication auth) {
+        UUID ownerId = (UUID) auth.getPrincipal();
+        return ResponseEntity.ok(roomRepository.findByPropertyOwnerIdAndStatus(ownerId, RoomStatus.RENTED).stream().map(RoomResponse::from).toList());
     }
 }
