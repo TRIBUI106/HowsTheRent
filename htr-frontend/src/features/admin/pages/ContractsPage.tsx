@@ -89,7 +89,7 @@ export default function ContractsPage() {
       setRenewForm({ newEndDate: '', newDepositAmount: '' })
       setRenewError('')
     },
-    onError: (e: any) => setRenewError(e?.response?.data?.message ?? 'Loi'),
+    onError: (e: any) => setRenewError(e?.response?.data?.message ?? 'Lỗi'),
   })
 
   const createMutation = useMutation({
@@ -102,14 +102,14 @@ export default function ContractsPage() {
       setFormError(null)
     },
     onError: (e: any) => {
-      setFormError(e?.response?.data?.message ?? 'Khong the tao hop dong')
+      setFormError(e?.response?.data?.message ?? 'Không thể tạo hợp đồng')
     },
   })
 
   function handleCreate(e: React.FormEvent) {
     e.preventDefault()
     if (!form.roomId || !form.tenantId || !form.moveInDate || !form.depositAmount) {
-      setFormError('Vui long dien day du cac truong bat buoc')
+      setFormError('Vui lòng điền đầy đủ các trường bắt buộc')
       return
     }
 
@@ -123,13 +123,13 @@ export default function ContractsPage() {
   }
 
   if (isLoading) return <Layout><TableSkeleton rows={6} columns={8} /></Layout>
-  if (error) return <Layout><div className="text-error">Khong the tai danh sach hop dong</div></Layout>
+  if (error) return <Layout><div className="text-error">Không thể tải danh sách hợp đồng</div></Layout>
 
   return (
     <Layout>
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-fg">Hop dong</h1>
+          <h1 className="text-2xl font-bold text-fg">Hợp đồng</h1>
           <div className="flex gap-2">
             <Button
               variant="outline"
@@ -150,7 +150,7 @@ export default function ContractsPage() {
               <Download size={14} className="mr-1" /> Excel
             </Button>
             <Button variant="primary" onClick={() => { setShowCreate(true); setForm(emptyForm()); setFormError(null) }}>
-              + Tao hop dong
+              + Tạo hợp đồng
             </Button>
           </div>
         </div>
@@ -158,17 +158,17 @@ export default function ContractsPage() {
         {showCreate && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
             <Card className="mx-4 w-full max-w-lg p-6 animate-scale-in">
-              <h2 className="mb-4 text-lg font-semibold text-fg">Tao hop dong moi</h2>
+              <h2 className="mb-4 text-lg font-semibold text-fg">Tạo hợp đồng mới</h2>
               <form onSubmit={handleCreate} className="space-y-4">
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-fg">Phong <span className="text-error">*</span></label>
+                  <label className="mb-1 block text-sm font-medium text-fg">Phòng <span className="text-error">*</span></label>
                   <select
                     required
                     className="w-full rounded-xl border border-border/80 bg-surface px-3 py-2 text-sm text-fg focus:outline-none focus:ring-2 focus:ring-accent"
                     value={form.roomId}
                     onChange={e => setForm(current => ({ ...current, roomId: e.target.value }))}
                   >
-                    <option value="">Chon phong trong...</option>
+                    <option value="">Chọn phòng trống...</option>
                     {emptyRooms?.map(room => (
                       <option key={room.id} value={room.id}>
                         {room.roomNumber} - {getRoomPropertyName(room)}
@@ -178,14 +178,14 @@ export default function ContractsPage() {
                 </div>
 
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-fg">Khach thue <span className="text-error">*</span></label>
+                  <label className="mb-1 block text-sm font-medium text-fg">Khách thuê <span className="text-error">*</span></label>
                   <select
                     required
                     className="w-full rounded-xl border border-border/80 bg-surface px-3 py-2 text-sm text-fg focus:outline-none focus:ring-2 focus:ring-accent"
                     value={form.tenantId}
                     onChange={e => setForm(current => ({ ...current, tenantId: e.target.value }))}
                   >
-                    <option value="">Chon khach thue...</option>
+                    <option value="">Chọn khách thuê...</option>
                     {tenants?.map(tenant => (
                       <option key={tenant.id} value={tenant.id}>
                         {tenant.fullName} - {tenant.email}
@@ -195,7 +195,7 @@ export default function ContractsPage() {
                 </div>
 
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-fg">Ngay vao <span className="text-error">*</span></label>
+                  <label className="mb-1 block text-sm font-medium text-fg">Ngày vào <span className="text-error">*</span></label>
                   <Input
                     type="date"
                     required
@@ -205,7 +205,7 @@ export default function ContractsPage() {
                 </div>
 
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-fg">Tien dat coc (VND) <span className="text-error">*</span></label>
+                  <label className="mb-1 block text-sm font-medium text-fg">Tiền đặt cọc (VND) <span className="text-error">*</span></label>
                   <Input
                     type="number"
                     required
@@ -217,11 +217,11 @@ export default function ContractsPage() {
                 </div>
 
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-fg">Ghi chu</label>
+                  <label className="mb-1 block text-sm font-medium text-fg">Ghi chú</label>
                   <textarea
                     rows={2}
                     className="w-full resize-none rounded-xl border border-border/80 bg-surface px-3 py-2 text-sm text-fg focus:outline-none focus:ring-2 focus:ring-accent"
-                    placeholder="Tuy chon"
+                    placeholder="Tùy chọn"
                     value={form.notes}
                     onChange={e => setForm(current => ({ ...current, notes: e.target.value }))}
                   />
@@ -231,10 +231,10 @@ export default function ContractsPage() {
 
                 <div className="flex gap-3 pt-2">
                   <Button type="button" variant="outline" className="flex-1" onClick={() => { setShowCreate(false); setFormError(null) }}>
-                    Huy
+                    Hủy
                   </Button>
                   <Button type="submit" variant="primary" className="flex-1" disabled={createMutation.isPending}>
-                    {createMutation.isPending ? 'Dang tao...' : 'Tao hop dong'}
+                    {createMutation.isPending ? 'Đang tạo...' : 'Tạo hợp đồng'}
                   </Button>
                 </div>
               </form>
@@ -247,7 +247,7 @@ export default function ContractsPage() {
             <table className="min-w-full divide-y divide-border/60">
               <thead className="bg-sidebar/50">
                 <tr>
-                  {['Phong', 'Toa nha', 'Khach thue', 'Ngay vao', 'Ngay ra', 'Dat coc', 'Trang thai', 'Thao tac'].map(header => (
+                  {['Phòng', 'Tòa nhà', 'Khách thuê', 'Ngày vào', 'Ngày ra', 'Đặt cọc', 'Trạng thái', 'Thao tác'].map(header => (
                     <th key={header} className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-fg-muted">{header}</th>
                   ))}
                 </tr>
@@ -277,9 +277,9 @@ export default function ContractsPage() {
                               onClick={() => terminateMutation.mutate(contract.id)}
                               disabled={terminateMutation.isPending}
                             >
-                              Xac nhan
+                              Xác nhận
                             </Button>
-                            <Button size="sm" variant="outline" onClick={() => setTerminating(null)}>Huy</Button>
+                            <Button size="sm" variant="outline" onClick={() => setTerminating(null)}>Hủy</Button>
                           </div>
                         ) : renewing === contract.id ? (
                           <div className="flex flex-col gap-2">
@@ -292,7 +292,7 @@ export default function ContractsPage() {
                               />
                               <input
                                 type="number"
-                                placeholder="Dat coc moi"
+                                placeholder="Đặt cọc mới"
                                 value={renewForm.newDepositAmount}
                                 onChange={e => setRenewForm(current => ({ ...current, newDepositAmount: e.target.value }))}
                                 className="w-24 rounded-lg border border-border/80 bg-surface px-2 py-1 text-xs text-fg"
@@ -305,7 +305,7 @@ export default function ContractsPage() {
                                 variant="primary"
                                 onClick={() => {
                                   if (!renewForm.newEndDate) {
-                                    setRenewError('Can chon ngay ket thuc')
+                                    setRenewError('Cần chọn ngày kết thúc')
                                     return
                                   }
 
@@ -320,18 +320,18 @@ export default function ContractsPage() {
                                 }}
                                 disabled={renewMutation.isPending}
                               >
-                                Xac nhan
+                                Xác nhận
                               </Button>
-                              <Button size="sm" variant="outline" onClick={() => { setRenewing(null); setRenewError('') }}>Huy</Button>
+                              <Button size="sm" variant="outline" onClick={() => { setRenewing(null); setRenewError('') }}>Hủy</Button>
                             </div>
                           </div>
                         ) : (
                           <div className="flex gap-2">
                             <Button size="sm" variant="outline" onClick={() => setTerminating(contract.id)}>
-                              Cham dut
+                              Chấm dứt
                             </Button>
                             <Button size="sm" variant="outline" onClick={() => { setRenewing(contract.id); setRenewError('') }}>
-                              Gia han
+                              Gia hạn
                             </Button>
                           </div>
                         )
@@ -341,7 +341,7 @@ export default function ContractsPage() {
                 ))}
                 {contracts.length === 0 && (
                   <tr>
-                    <td colSpan={8} className="px-4 py-8 text-center text-fg-subtle">Chua co hop dong</td>
+                    <td colSpan={8} className="px-4 py-8 text-center text-fg-subtle">Chưa có hợp đồng</td>
                   </tr>
                 )}
               </tbody>

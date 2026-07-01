@@ -35,10 +35,10 @@ public class ExportController {
         var propertyIds = properties.stream().map(p -> p.getId()).toList();
 
         try (Workbook wb = new XSSFWorkbook()) {
-            Sheet sheet = wb.createSheet("Hoa don");
+            Sheet sheet = wb.createSheet("Hóa đơn");
             CellStyle headerStyle = createHeaderStyle(wb);
             Row header = sheet.createRow(0);
-            String[] headers = {"Ma HD", "Thang", "Phong", "Toa nha", "Tong tien", "Trang thai", "Han", "Thanh toan luc"};
+            String[] headers = {"Mã HĐ", "Tháng", "Phòng", "Tòa nhà", "Tổng tiền", "Trạng thái", "Hạn", "Thanh toán lúc"};
             for (int i = 0; i < headers.length; i++) {
                 Cell cell = header.createCell(i);
                 cell.setCellValue(headers[i]);
@@ -75,10 +75,10 @@ public class ExportController {
         var propertyIds = properties.stream().map(p -> p.getId()).toList();
 
         try (Workbook wb = new XSSFWorkbook()) {
-            Sheet sheet = wb.createSheet("Hop dong");
+            Sheet sheet = wb.createSheet("Hợp đồng");
             CellStyle headerStyle = createHeaderStyle(wb);
             Row header = sheet.createRow(0);
-            String[] headers = {"Ma HD", "Phong", "Toa nha", "Khach thue", "Ngay vao", "Ngay ra", "Tien dat coc", "Trang thai"};
+            String[] headers = {"Mã HĐ", "Phòng", "Tòa nhà", "Khách thuê", "Ngày vào", "Ngày ra", "Tiền đặt cọc", "Trạng thái"};
             for (int i = 0; i < headers.length; i++) {
                 Cell cell = header.createCell(i);
                 cell.setCellValue(headers[i]);

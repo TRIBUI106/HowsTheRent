@@ -45,7 +45,7 @@ export default function TenantMaintenancePage() {
       setPreviewUrls([])
       setError('')
     },
-    onError: (e: any) => setError(e?.response?.data?.message ?? 'Loi khi tao yeu cau'),
+    onError: (e: any) => setError(e?.response?.data?.message ?? 'Lỗi khi tạo yêu cầu'),
   })
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -66,7 +66,7 @@ export default function TenantMaintenancePage() {
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!title.trim()) {
-      setError('Tieu de khong duoc de trong')
+      setError('Tiêu đề không được để trống')
       return
     }
     setError('')
@@ -74,12 +74,12 @@ export default function TenantMaintenancePage() {
   }
 
   return (
-    <Layout title="Bao tri">
+    <Layout title="Bảo trì">
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-fg">Yeu cau bao tri</h1>
+          <h1 className="text-2xl font-bold text-fg">Yêu cầu bảo trì</h1>
           <Button variant="primary" onClick={() => { setShowCreate(true); setError('') }}>
-            + Tao yeu cau
+            + Tạo yêu cầu
           </Button>
         </div>
 
@@ -87,42 +87,42 @@ export default function TenantMaintenancePage() {
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
             <Card className="mx-4 w-full max-w-md p-6 animate-scale-in">
               <div className="mb-4 flex items-center justify-between">
-                <h2 className="text-lg font-semibold text-fg">Tao yeu cau bao tri</h2>
+                <h2 className="text-lg font-semibold text-fg">Tạo yêu cầu bảo trì</h2>
                 <button onClick={() => setShowCreate(false)} className="text-fg-subtle transition-colors hover:text-fg">
                   <X size={18} />
                 </button>
               </div>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-fg">Tieu de <span className="text-error">*</span></label>
+                  <label className="mb-1 block text-sm font-medium text-fg">Tiêu đề <span className="text-error">*</span></label>
                   <input
                     type="text"
                     value={title}
                     onChange={e => setTitle(e.target.value)}
                     required
                     className="w-full rounded-xl border border-border/80 bg-surface px-3 py-2 text-sm text-fg focus:outline-none focus:ring-2 focus:ring-accent"
-                    placeholder="VD: Bom nuoc bi ro"
+                    placeholder="VD: Bơm nước bị rò"
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-fg">Mo ta</label>
+                  <label className="mb-1 block text-sm font-medium text-fg">Mô tả</label>
                   <textarea
                     rows={3}
                     value={description}
                     onChange={e => setDescription(e.target.value)}
                     className="w-full resize-none rounded-xl border border-border/80 bg-surface px-3 py-2 text-sm text-fg focus:outline-none focus:ring-2 focus:ring-accent"
-                    placeholder="Mo ta chi tiet van de..."
+                    placeholder="Mô tả chi tiết vấn đề..."
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-fg">Hinh anh</label>
+                  <label className="mb-1 block text-sm font-medium text-fg">Hình ảnh</label>
                   <input ref={fileRef} type="file" accept="image/*" multiple onChange={handleFileChange} className="hidden" />
                   <button
                     type="button"
                     onClick={() => fileRef.current?.click()}
                     className="flex items-center gap-2 rounded-xl border border-border/80 px-4 py-2 text-sm text-fg-muted transition-colors hover:bg-sidebar"
                   >
-                    <Camera size={16} /> Chon hinh anh
+                    <Camera size={16} /> Chọn hình ảnh
                   </button>
                   {previewUrls.length > 0 && (
                     <div className="mt-2 flex flex-wrap gap-2">
@@ -143,11 +143,11 @@ export default function TenantMaintenancePage() {
                 </div>
                 {error && <p className="text-sm text-error">{error}</p>}
                 <div className="flex gap-3 pt-2">
-                  <Button type="button" variant="outline" className="flex-1" onClick={() => setShowCreate(false)}>
-                    Huy
+                    <Button type="button" variant="outline" className="flex-1" onClick={() => setShowCreate(false)}>
+                    Hủy
                   </Button>
                   <Button type="submit" variant="primary" className="flex-1" disabled={createMutation.isPending}>
-                    {createMutation.isPending ? 'Dang gui...' : 'Gui yeu cau'}
+                    {createMutation.isPending ? 'Đang gửi...' : 'Gửi yêu cầu'}
                   </Button>
                 </div>
               </form>
@@ -177,11 +177,11 @@ export default function TenantMaintenancePage() {
                     </div>
                     <Badge status={req.status} />
                   </div>
-                  <p className="mt-3 text-xs text-fg-subtle">Ngay tao: {formatDate(req.createdAt)}</p>
+                  <p className="mt-3 text-xs text-fg-subtle">Ngày tạo: {formatDate(req.createdAt)}</p>
                 </CardContent>
               </Card>
             ))}
-            {requests.length === 0 && <p className="py-8 text-center text-fg-subtle">Chua co yeu cau bao tri</p>}
+            {requests.length === 0 && <p className="py-8 text-center text-fg-subtle">Chưa có yêu cầu bảo trì</p>}
           </div>
         )}
       </div>

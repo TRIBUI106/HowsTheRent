@@ -20,12 +20,12 @@ export default function PaymentHistoryPage() {
     .sort((a, b) => new Date(b.paidAt ?? b.invoiceMonth).getTime() - new Date(a.paidAt ?? a.invoiceMonth).getTime())
 
   return (
-    <Layout title="Lich su thanh toan">
+    <Layout title="Lịch sử thanh toán">
       <div>
         {isLoading ? (
           <ListSkeleton items={4} />
         ) : paid.length === 0 ? (
-          <div className="py-12 text-center text-fg-subtle">Chua co lich su thanh toan</div>
+          <div className="py-12 text-center text-fg-subtle">Chưa có lịch sử thanh toán</div>
         ) : (
           <div className="space-y-3">
             {paid.map(inv => (
@@ -33,10 +33,10 @@ export default function PaymentHistoryPage() {
                 <CardContent className="flex items-center justify-between p-4">
                   <div>
                     <p className="font-medium text-fg">
-                      Thang {new Date(inv.invoiceMonth).toLocaleDateString('vi-VN', { month: 'long', year: 'numeric' })}
+                      Tháng {new Date(inv.invoiceMonth).toLocaleDateString('vi-VN', { month: 'long', year: 'numeric' })}
                     </p>
                     <p className="mt-0.5 text-sm text-fg-muted">
-                      {inv.paymentMethod === 'CASH' ? 'Tien mat' : 'PayOS'} ·{' '}
+                      {inv.paymentMethod === 'CASH' ? 'Tiền mặt' : 'PayOS'} ·{' '}
                       {inv.paidAt ? formatDate(inv.paidAt) : '-'}
                     </p>
                   </div>

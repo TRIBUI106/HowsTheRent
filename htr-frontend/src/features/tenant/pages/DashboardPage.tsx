@@ -27,25 +27,25 @@ export default function TenantDashboard() {
     <Layout title="Dashboard">
       <div className="space-y-6">
         <div>
-          <h3 className="mb-4 text-lg font-medium text-fg">Hoa don</h3>
+          <h3 className="mb-4 text-lg font-medium text-fg">Hóa đơn</h3>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             <Card><CardContent className="p-6">
-              <p className="text-sm text-fg-muted">Tong hoa don</p>
+              <p className="text-sm text-fg-muted">Tổng hóa đơn</p>
               <p className="text-2xl font-bold text-fg">{invoices.length}</p>
             </CardContent></Card>
             <Card><CardContent className="p-6">
-              <p className="text-sm text-fg-muted">Cho thanh toan</p>
+              <p className="text-sm text-fg-muted">Chờ thanh toán</p>
               <p className="text-2xl font-bold text-warning">{pending.length}</p>
             </CardContent></Card>
             <Card><CardContent className="p-6">
-              <p className="text-sm text-fg-muted">Qua han</p>
+              <p className="text-sm text-fg-muted">Quá hạn</p>
               <p className="text-2xl font-bold text-error">{overdue.length}</p>
             </CardContent></Card>
           </div>
         </div>
 
         <div>
-          <h3 className="mb-4 text-lg font-medium text-fg">Yeu cau bao tri</h3>
+          <h3 className="mb-4 text-lg font-medium text-fg">Yêu cầu bảo trì</h3>
           <Card>
             <div className="divide-y divide-border/60">
               {maintenance.map(req => (
@@ -57,7 +57,7 @@ export default function TenantDashboard() {
                   <Badge status={req.status} />
                 </div>
               ))}
-              {maintenance.length === 0 && <p className="p-4 text-center text-fg-subtle">Chua co yeu cau bao tri</p>}
+              {maintenance.length === 0 && <p className="p-4 text-center text-fg-subtle">Chưa có yêu cầu bảo trì</p>}
             </div>
           </Card>
         </div>

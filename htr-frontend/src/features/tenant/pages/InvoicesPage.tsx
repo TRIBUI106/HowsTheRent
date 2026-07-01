@@ -28,12 +28,12 @@ export default function TenantInvoicesPage() {
   }
 
   return (
-    <Layout title="Hoa don">
+    <Layout title="Hóa đơn">
       {isLoading ? (
         <TableSkeleton rows={5} columns={6} />
       ) : (
         <Card>
-          <Table headers={['Thang', 'Phong', 'Tong tien', 'Trang thai', 'Han', 'Thao tac']}>
+          <Table headers={['Tháng', 'Phòng', 'Tổng tiền', 'Trạng thái', 'Hạn', 'Thao tác']}>
             {invoices.map(inv => (
               <TableRow key={inv.id}>
                 <TableCell>{inv.invoiceMonth?.slice(0, 7)}</TableCell>
@@ -43,9 +43,9 @@ export default function TenantInvoicesPage() {
                 <TableCell>{formatDate(inv.dueDate)}</TableCell>
                 <TableCell>
                   {inv.status === 'PENDING' && (
-                    <Button size="sm" onClick={() => handlePay(inv)}>Thanh toan</Button>
+                    <Button size="sm" onClick={() => handlePay(inv)}>Thanh toán</Button>
                   )}
-                  {inv.status === 'PAID' && <span className="text-sm text-success">Da thanh toan</span>}
+                  {inv.status === 'PAID' && <span className="text-sm text-success">Đã thanh toán</span>}
                 </TableCell>
               </TableRow>
             ))}

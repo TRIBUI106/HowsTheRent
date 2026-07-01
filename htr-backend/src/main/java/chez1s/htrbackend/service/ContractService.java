@@ -56,16 +56,16 @@ public class ContractService {
     @Transactional
     public Contract create(UUID roomId, CreateContractRequest req) {
         if (contractRepository.existsByRoomIdAndStatus(roomId, ContractStatus.ACTIVE)) {
-            throw new BusinessException("Room already has an active contract");
+            throw new BusinessException("Phòng đã có hợp đồng đang hoạt động");
         }
         Room room = roomService.getById(roomId);
         User tenant = userRepository.findById(req.getTenantId())
                 .orElseThrow(() -> new ResourceNotFoundException("User", req.getTenantId()));
         if (tenant.getRole() != UserRole.TENANT) {
-            throw new BusinessException("Selected user is not a tenant");
+            throw new BusinessException("Người dùng được chọn không phải khách thuê");
         }
         if (!tenant.isActive()) {
-            throw new BusinessException("Selected tenant is inactive");
+            throw new BusinessException("Khách thuê được chọn đang bị vô hiệu hóa");
         }
         Contract contract = Contract.builder()
                 .room(room)
@@ -89,7 +89,7 @@ public class ContractService {
     public Contract terminate(UUID id) {
         Contract contract = getById(id);
         if (contract.getStatus() != ContractStatus.ACTIVE) {
-            throw new BusinessException("Contract is not active");
+            throw new BusinessException("Hợp đồng không còn hoạt động");
         }
         contract.setStatus(ContractStatus.TERMINATED);
         contract.setMoveOutDate(LocalDate.now());
@@ -102,10 +102,10 @@ public class ContractService {
     public Contract renew(UUID oldContractId, RenewContractRequest req) {
         Contract old = getById(oldContractId);
         if (old.getStatus() != ContractStatus.ACTIVE) {
-            throw new BusinessException("Contract is not active");
+            throw new BusinessException("Hợp đồng không còn hoạt động");
         }
         if (req.newEndDate().isBefore(req.newStartDate())) {
-            throw new BusinessException("End date must be after start date");
+            throw new BusinessException("Ngày kết thúc phải sau ngày bắt đầu");
         }
         // Terminate old
         old.setStatus(ContractStatus.EXPIRED);

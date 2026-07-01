@@ -17,7 +17,7 @@ export default function ContractDetailPage() {
 
   if (isLoading) {
     return (
-      <Layout title="Hop dong cua toi">
+      <Layout title="Hợp đồng của tôi">
         <DetailSkeleton />
       </Layout>
     )
@@ -25,46 +25,46 @@ export default function ContractDetailPage() {
 
   if (!contract) {
     return (
-      <Layout title="Hop dong cua toi">
-        <div className="py-12 text-center text-fg-subtle">Khong co hop dong dang active</div>
+      <Layout title="Hợp đồng của tôi">
+        <div className="py-12 text-center text-fg-subtle">Không có hợp đồng đang hoạt động</div>
       </Layout>
     )
   }
 
   return (
-    <Layout title="Hop dong cua toi">
+    <Layout title="Hợp đồng của tôi">
       <div className="max-w-2xl">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
-            <span>Hop dong thue phong</span>
+            <span>Hợp đồng thuê phòng</span>
             <Badge status={contract.status} />
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <p className="mb-1 text-xs text-fg-muted">Phong</p>
+                <p className="mb-1 text-xs text-fg-muted">Phòng</p>
                 <p className="font-medium text-fg">{contract.room.roomNumber || '-'}</p>
               </div>
               <div>
-                <p className="mb-1 text-xs text-fg-muted">Toa nha</p>
+                <p className="mb-1 text-xs text-fg-muted">Tòa nhà</p>
                 <p className="font-medium text-fg">{contract.room.propertyName || '-'}</p>
               </div>
               <div>
-                <p className="mb-1 text-xs text-fg-muted">Ngay vao</p>
+                <p className="mb-1 text-xs text-fg-muted">Ngày vào</p>
                 <p className="font-medium text-fg">{contract.moveInDate ? formatDate(contract.moveInDate) : '-'}</p>
               </div>
               <div>
-                <p className="mb-1 text-xs text-fg-muted">Ngay ket thuc</p>
-                <p className="font-medium text-fg">{contract.moveOutDate ? formatDate(contract.moveOutDate) : 'Khong xac dinh'}</p>
+                <p className="mb-1 text-xs text-fg-muted">Ngày kết thúc</p>
+                <p className="font-medium text-fg">{contract.moveOutDate ? formatDate(contract.moveOutDate) : 'Không xác định'}</p>
               </div>
               <div>
-                <p className="mb-1 text-xs text-fg-muted">Tien coc</p>
+                <p className="mb-1 text-xs text-fg-muted">Tiền cọc</p>
                 <p className="font-medium text-fg">{formatCurrency(contract.depositAmount ?? 0)}</p>
               </div>
             </div>
             {contract.notes && (
               <div>
-                <p className="mb-1 text-xs text-fg-muted">Ghi chu</p>
+                <p className="mb-1 text-xs text-fg-muted">Ghi chú</p>
                 <p className="text-sm text-fg-muted">{contract.notes}</p>
               </div>
             )}

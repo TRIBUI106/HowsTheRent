@@ -49,14 +49,14 @@ public class PayOSService {
         Map<String, Object> body = new HashMap<>();
         body.put("orderCode", orderCode);
         body.put("amount", amount);
-        body.put("description", "Thanh toan hoa don " + invoice.getInvoiceMonth());
+        body.put("description", "Thanh toán hóa đơn " + invoice.getInvoiceMonth());
         body.put("buyerName", invoice.getContract().getTenant().getFullName());
         body.put("buyerEmail", invoice.getContract().getTenant().getEmail());
         body.put("returnUrl", "http://localhost:5173/payment/success");
         body.put("cancelUrl", "http://localhost:5173/payment/cancel");
 
         Map<String, Object> item = new HashMap<>();
-        item.put("name", "Hoa don " + invoice.getInvoiceMonth());
+        item.put("name", "Hóa đơn " + invoice.getInvoiceMonth());
         item.put("quantity", 1);
         item.put("price", amount);
         body.put("items", new Object[]{item});
