@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import api from '@/lib/api'
+import { extractPageContent, normalizeInvoice } from '@/lib/apiMappers'
 import Layout from '@/components/Layout'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -10,28 +11,30 @@ import { formatCurrency, formatDate } from '@/lib/utils'
 import type { Invoice } from '@/types'
 
 export default function TenantInvoicesPage() {
-  const { data: invoices, isLoading } = useQuery<Invoice[]>({
+  const { data, isLoading } = useQuery({
     queryKey: ['tenant-invoices'],
     queryFn: () => api.get('/invoices/mine').then(r => r.data),
   })
+
+  const invoices: Invoice[] = extractPageContent<any>(data).map(normalizeInvoice)
 
   async function handlePay(invoice: Invoice) {
     if (invoice.checkoutUrl) {
       window.open(invoice.checkoutUrl, '_blank')
     } else {
-      const { data } = await api.post(`/invoices/${invoice.id}/pay-online`)
-      window.open(data.checkoutUrl, '_blank')
+      const { data: payment } = await api.post(`/invoices/${invoice.id}/pay-online`)
+      window.open(payment.checkoutUrl, '_blank')
     }
   }
 
   return (
-    <Layout title="Hóa đơn">
+    <Layout title="Hoa don">
       {isLoading ? (
         <TableSkeleton rows={5} columns={6} />
       ) : (
         <Card>
-          <Table headers={['Tháng', 'Phòng', 'Tổng tiền', 'Trạng thái', 'Hạn', 'Thao tác']}>
-            {invoices?.map(inv => (
+          <Table headers={['Thang', 'Phong', 'Tong tien', 'Trang thai', 'Han', 'Thao tac']}>
+            {invoices.map(inv => (
               <TableRow key={inv.id}>
                 <TableCell>{inv.invoiceMonth?.slice(0, 7)}</TableCell>
                 <TableCell>{inv.room?.roomNumber}</TableCell>
@@ -40,9 +43,9 @@ export default function TenantInvoicesPage() {
                 <TableCell>{formatDate(inv.dueDate)}</TableCell>
                 <TableCell>
                   {inv.status === 'PENDING' && (
-                    <Button size="sm" onClick={() => handlePay(inv)}>Thanh toán</Button>
+                    <Button size="sm" onClick={() => handlePay(inv)}>Thanh toan</Button>
                   )}
-                  {inv.status === 'PAID' && <span className="text-sm text-success">Đã thanh toán</span>}
+                  {inv.status === 'PAID' && <span className="text-sm text-success">Da thanh toan</span>}
                 </TableCell>
               </TableRow>
             ))}

@@ -5,6 +5,7 @@ import chez1s.htrbackend.domain.entity.Room;
 import chez1s.htrbackend.domain.entity.User;
 import chez1s.htrbackend.domain.enums.ContractStatus;
 import chez1s.htrbackend.domain.enums.RoomStatus;
+import chez1s.htrbackend.domain.enums.UserRole;
 import chez1s.htrbackend.domain.repository.ContractRepository;
 import chez1s.htrbackend.domain.repository.UserRepository;
 import chez1s.htrbackend.dto.request.CreateContractRequest;
@@ -18,7 +19,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
@@ -61,6 +61,12 @@ public class ContractService {
         Room room = roomService.getById(roomId);
         User tenant = userRepository.findById(req.getTenantId())
                 .orElseThrow(() -> new ResourceNotFoundException("User", req.getTenantId()));
+        if (tenant.getRole() != UserRole.TENANT) {
+            throw new BusinessException("Selected user is not a tenant");
+        }
+        if (!tenant.isActive()) {
+            throw new BusinessException("Selected tenant is inactive");
+        }
         Contract contract = Contract.builder()
                 .room(room)
                 .tenant(tenant)

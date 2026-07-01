@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { CardsSkeleton } from '@/components/ui/feedback'
+import { getRoomPropertyName } from '@/lib/apiMappers'
 import api from '@/lib/api'
 import type { Room } from '@/types'
 
@@ -128,7 +129,7 @@ export default function MeterReadingsPage() {
                     <div className="flex items-center justify-between mb-3">
                       <div>
                         <p className="font-semibold text-fg">{room.roomNumber}</p>
-                        <p className="text-xs text-fg-muted">{room.property?.name}</p>
+                        <p className="text-xs text-fg-muted">{getRoomPropertyName(room)}</p>
                       </div>
                       {done && <span className="text-success text-sm font-medium">&#10003; Đã lưu</span>}
                     </div>

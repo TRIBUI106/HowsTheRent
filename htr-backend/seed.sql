@@ -1,5 +1,5 @@
 -- Seed data for local development
--- Run: docker exec -i propms-postgres psql -U propms -d propms < seed.sql
+-- Run: docker exec -i htr-postgres psql -U htr -d htr < seed.sql
 
 -- Admin user (password: Admin123!)
 INSERT INTO users (id, full_name, email, phone, password_hash, role, is_active, created_at, updated_at)

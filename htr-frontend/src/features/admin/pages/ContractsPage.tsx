@@ -7,17 +7,23 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { TableSkeleton } from '@/components/ui/feedback'
 import api from '@/lib/api'
+import { getRoomPropertyName, normalizeContract } from '@/lib/apiMappers'
 import { userApi } from '@/api'
-import type { Room, User } from '@/types'
+import type { Contract, Room, User } from '@/types'
 import { Download } from 'lucide-react'
 
-interface Contract {
+interface ContractApiRow {
   id: string
-  room: { id: string; roomNumber: string; property: { name: string } }
-  tenant: { id: string; fullName: string; email: string }
+  roomId: string
+  roomNumber: string
+  propertyId: string
+  propertyName: string
+  tenantId: string
+  tenantName: string
+  tenantEmail: string
   moveInDate: string
   moveOutDate?: string
-  status: string
+  status: Contract['status']
   depositAmount: number
   notes?: string
 }
@@ -31,7 +37,11 @@ interface CreateForm {
 }
 
 const emptyForm = (): CreateForm => ({
-  roomId: '', tenantId: '', moveInDate: '', depositAmount: '', notes: '',
+  roomId: '',
+  tenantId: '',
+  moveInDate: '',
+  depositAmount: '',
+  notes: '',
 })
 
 export default function ContractsPage() {
@@ -40,29 +50,28 @@ export default function ContractsPage() {
   const [showCreate, setShowCreate] = useState(false)
   const [form, setForm] = useState<CreateForm>(emptyForm())
   const [formError, setFormError] = useState<string | null>(null)
-
   const [renewing, setRenewing] = useState<string | null>(null)
   const [renewForm, setRenewForm] = useState({ newEndDate: '', newDepositAmount: '' })
   const [renewError, setRenewError] = useState('')
 
-  const { data: contracts, isLoading, error } = useQuery<Contract[]>({
+  const { data: contractsData, isLoading, error } = useQuery<ContractApiRow[]>({
     queryKey: ['admin-contracts'],
     queryFn: () => api.get('/contracts').then(r => r.data),
   })
 
   const { data: emptyRooms } = useQuery<Room[]>({
     queryKey: ['rooms-empty'],
-    queryFn: () => api.get('/rooms').then(r =>
-      (r.data as Room[]).filter(rm => rm.status === 'EMPTY')
-    ),
+    queryFn: () => api.get<Room[]>('/rooms').then(r => r.data.filter(room => room.status === 'EMPTY')),
     enabled: showCreate,
   })
 
   const { data: tenants } = useQuery<User[]>({
     queryKey: ['tenants'],
-    queryFn: () => userApi.listAll().then(users => users.filter(u => u.role === 'TENANT' && u.active)),
+    queryFn: () => userApi.listAll().then(users => users.filter(user => user.role?.toUpperCase() === 'TENANT' && user.active)),
     enabled: showCreate,
   })
+
+  const contracts: Contract[] = (contractsData ?? []).map(normalizeContract)
 
   const terminateMutation = useMutation({
     mutationFn: (id: string) => api.post(`/contracts/${id}/terminate`),
@@ -80,12 +89,11 @@ export default function ContractsPage() {
       setRenewForm({ newEndDate: '', newDepositAmount: '' })
       setRenewError('')
     },
-    onError: (e: any) => setRenewError(e?.response?.data?.message ?? 'Lỗi'),
+    onError: (e: any) => setRenewError(e?.response?.data?.message ?? 'Loi'),
   })
 
   const createMutation = useMutation({
-    mutationFn: (data: object) =>
-      api.post(`/rooms/${form.roomId}/contracts`, data),
+    mutationFn: (data: object) => api.post(`/rooms/${form.roomId}/contracts`, data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['admin-contracts'] })
       qc.invalidateQueries({ queryKey: ['rooms-empty'] })
@@ -94,16 +102,17 @@ export default function ContractsPage() {
       setFormError(null)
     },
     onError: (e: any) => {
-      setFormError(e?.response?.data?.message ?? 'Không thể tạo hợp đồng')
+      setFormError(e?.response?.data?.message ?? 'Khong the tao hop dong')
     },
   })
 
   function handleCreate(e: React.FormEvent) {
     e.preventDefault()
     if (!form.roomId || !form.tenantId || !form.moveInDate || !form.depositAmount) {
-      setFormError('Vui lòng điền đầy đủ các trường bắt buộc')
+      setFormError('Vui long dien day du cac truong bat buoc')
       return
     }
+
     setFormError(null)
     createMutation.mutate({
       tenantId: form.tenantId,
@@ -114,120 +123,118 @@ export default function ContractsPage() {
   }
 
   if (isLoading) return <Layout><TableSkeleton rows={6} columns={8} /></Layout>
-  if (error) return <Layout><div className="text-error">Không thể tải danh sách hợp đồng</div></Layout>
+  if (error) return <Layout><div className="text-error">Khong the tai danh sach hop dong</div></Layout>
 
   return (
     <Layout>
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-fg">Hợp đồng</h1>
+          <h1 className="text-2xl font-bold text-fg">Hop dong</h1>
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={() => {
-              api.get('/export/contracts', { responseType: 'blob' })
-                .then(r => r.data)
-                .then(blob => {
-                  const url = URL.createObjectURL(blob)
-                  const a = document.createElement('a')
-                  a.href = url; a.download = 'hopdong.xlsx'; a.click()
-                  URL.revokeObjectURL(url)
-                })
-            }}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                api.get('/export/contracts', { responseType: 'blob' })
+                  .then(r => r.data)
+                  .then(blob => {
+                    const url = URL.createObjectURL(blob)
+                    const anchor = document.createElement('a')
+                    anchor.href = url
+                    anchor.download = 'hopdong.xlsx'
+                    anchor.click()
+                    URL.revokeObjectURL(url)
+                  })
+              }}
+            >
               <Download size={14} className="mr-1" /> Excel
             </Button>
             <Button variant="primary" onClick={() => { setShowCreate(true); setForm(emptyForm()); setFormError(null) }}>
-              + Tạo hợp đồng
+              + Tao hop dong
             </Button>
           </div>
         </div>
 
         {showCreate && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-            <Card className="w-full max-w-lg mx-4 p-6 animate-scale-in">
-              <h2 className="text-lg font-semibold text-fg mb-4">Tạo hợp đồng mới</h2>
+            <Card className="mx-4 w-full max-w-lg p-6 animate-scale-in">
+              <h2 className="mb-4 text-lg font-semibold text-fg">Tao hop dong moi</h2>
               <form onSubmit={handleCreate} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-fg mb-1">Phòng <span className="text-error">*</span></label>
+                  <label className="mb-1 block text-sm font-medium text-fg">Phong <span className="text-error">*</span></label>
                   <select
                     required
-                    className="w-full border border-border/80 rounded-xl px-3 py-2 text-sm bg-surface text-fg focus:outline-none focus:ring-2 focus:ring-accent"
+                    className="w-full rounded-xl border border-border/80 bg-surface px-3 py-2 text-sm text-fg focus:outline-none focus:ring-2 focus:ring-accent"
                     value={form.roomId}
-                    onChange={e => setForm(f => ({ ...f, roomId: e.target.value }))}
+                    onChange={e => setForm(current => ({ ...current, roomId: e.target.value }))}
                   >
-                    <option value="">Chọn phòng trống...</option>
-                    {emptyRooms?.map(r => (
-                      <option key={r.id} value={r.id}>
-                        {r.roomNumber} — {r.property?.name}
+                    <option value="">Chon phong trong...</option>
+                    {emptyRooms?.map(room => (
+                      <option key={room.id} value={room.id}>
+                        {room.roomNumber} - {getRoomPropertyName(room)}
                       </option>
                     ))}
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-fg mb-1">Khách thuê <span className="text-error">*</span></label>
+                  <label className="mb-1 block text-sm font-medium text-fg">Khach thue <span className="text-error">*</span></label>
                   <select
                     required
-                    className="w-full border border-border/80 rounded-xl px-3 py-2 text-sm bg-surface text-fg focus:outline-none focus:ring-2 focus:ring-accent"
+                    className="w-full rounded-xl border border-border/80 bg-surface px-3 py-2 text-sm text-fg focus:outline-none focus:ring-2 focus:ring-accent"
                     value={form.tenantId}
-                    onChange={e => setForm(f => ({ ...f, tenantId: e.target.value }))}
+                    onChange={e => setForm(current => ({ ...current, tenantId: e.target.value }))}
                   >
-                    <option value="">Chọn khách thuê...</option>
-                    {tenants?.map(t => (
-                      <option key={t.id} value={t.id}>{t.fullName} — {t.email}</option>
+                    <option value="">Chon khach thue...</option>
+                    {tenants?.map(tenant => (
+                      <option key={tenant.id} value={tenant.id}>
+                        {tenant.fullName} - {tenant.email}
+                      </option>
                     ))}
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-fg mb-1">Ngày vào <span className="text-error">*</span></label>
+                  <label className="mb-1 block text-sm font-medium text-fg">Ngay vao <span className="text-error">*</span></label>
                   <Input
                     type="date"
                     required
                     value={form.moveInDate}
-                    onChange={e => setForm(f => ({ ...f, moveInDate: e.target.value }))}
+                    onChange={e => setForm(current => ({ ...current, moveInDate: e.target.value }))}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-fg mb-1">Tiền đặt cọc (₫) <span className="text-error">*</span></label>
+                  <label className="mb-1 block text-sm font-medium text-fg">Tien dat coc (VND) <span className="text-error">*</span></label>
                   <Input
                     type="number"
                     required
                     min="0"
                     placeholder="0"
                     value={form.depositAmount}
-                    onChange={e => setForm(f => ({ ...f, depositAmount: e.target.value }))}
+                    onChange={e => setForm(current => ({ ...current, depositAmount: e.target.value }))}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-fg mb-1">Ghi chú</label>
+                  <label className="mb-1 block text-sm font-medium text-fg">Ghi chu</label>
                   <textarea
                     rows={2}
-                    className="w-full border border-border/80 rounded-xl px-3 py-2 text-sm bg-surface text-fg focus:outline-none focus:ring-2 focus:ring-accent resize-none"
-                    placeholder="Tuỳ chọn"
+                    className="w-full resize-none rounded-xl border border-border/80 bg-surface px-3 py-2 text-sm text-fg focus:outline-none focus:ring-2 focus:ring-accent"
+                    placeholder="Tuy chon"
                     value={form.notes}
-                    onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
+                    onChange={e => setForm(current => ({ ...current, notes: e.target.value }))}
                   />
                 </div>
 
                 {formError && <p className="text-sm text-error">{formError}</p>}
 
                 <div className="flex gap-3 pt-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="flex-1"
-                    onClick={() => { setShowCreate(false); setFormError(null) }}
-                  >
-                    Huỷ
+                  <Button type="button" variant="outline" className="flex-1" onClick={() => { setShowCreate(false); setFormError(null) }}>
+                    Huy
                   </Button>
-                  <Button
-                    type="submit"
-                    variant="primary"
-                    className="flex-1"
-                    disabled={createMutation.isPending}
-                  >
-                    {createMutation.isPending ? 'Đang tạo...' : 'Tạo hợp đồng'}
+                  <Button type="submit" variant="primary" className="flex-1" disabled={createMutation.isPending}>
+                    {createMutation.isPending ? 'Dang tao...' : 'Tao hop dong'}
                   </Button>
                 </div>
               </form>
@@ -240,66 +247,91 @@ export default function ContractsPage() {
             <table className="min-w-full divide-y divide-border/60">
               <thead className="bg-sidebar/50">
                 <tr>
-                  {['Phòng', 'Toà nhà', 'Khách thuê', 'Ngày vào', 'Ngày ra', 'Đặt cọc', 'Trạng thái', 'Thao tác'].map(h => (
-                    <th key={h} className="px-4 py-3 text-left text-xs font-medium text-fg-muted uppercase tracking-wider">{h}</th>
+                  {['Phong', 'Toa nha', 'Khach thue', 'Ngay vao', 'Ngay ra', 'Dat coc', 'Trang thai', 'Thao tac'].map(header => (
+                    <th key={header} className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-fg-muted">{header}</th>
                   ))}
                 </tr>
               </thead>
-              <tbody className="bg-surface divide-y divide-border/60">
-                {contracts?.map(c => (
-                  <tr key={c.id} className="hover:bg-sidebar/30 transition-colors">
-                    <td className="px-4 py-3 text-sm font-medium text-fg">{c.room.roomNumber}</td>
-                    <td className="px-4 py-3 text-sm text-fg-muted">{c.room.property.name}</td>
+              <tbody className="divide-y divide-border/60 bg-surface">
+                {contracts.map(contract => (
+                  <tr key={contract.id} className="transition-colors hover:bg-sidebar/30">
+                    <td className="px-4 py-3 text-sm font-medium text-fg">{contract.room.roomNumber}</td>
+                    <td className="px-4 py-3 text-sm text-fg-muted">{contract.room.propertyName}</td>
                     <td className="px-4 py-3 text-sm text-fg-muted">
-                      <div>{c.tenant.fullName}</div>
-                      <div className="text-xs text-fg-subtle">{c.tenant.email}</div>
+                      <div>{contract.tenant.fullName}</div>
+                      <div className="text-xs text-fg-subtle">{contract.tenant.email}</div>
                     </td>
-                    <td className="px-4 py-3 text-sm text-fg-muted">{c.moveInDate}</td>
-                    <td className="px-4 py-3 text-sm text-fg-muted">{c.moveOutDate ?? '—'}</td>
-                    <td className="px-4 py-3 text-sm text-fg-muted">{Number(c.depositAmount).toLocaleString('vi-VN')} ₫</td>
+                    <td className="px-4 py-3 text-sm text-fg-muted">{contract.moveInDate}</td>
+                    <td className="px-4 py-3 text-sm text-fg-muted">{contract.moveOutDate ?? '-'}</td>
+                    <td className="px-4 py-3 text-sm text-fg-muted">{Number(contract.depositAmount).toLocaleString('vi-VN')} VND</td>
                     <td className="px-4 py-3">
-                      <Badge status={c.status} />
+                      <Badge status={contract.status} />
                     </td>
                     <td className="px-4 py-3">
-                      {c.status === 'ACTIVE' && (
-                        terminating === c.id ? (
+                      {contract.status === 'ACTIVE' && (
+                        terminating === contract.id ? (
                           <div className="flex gap-2">
-                            <Button size="sm" variant="danger"
-                              onClick={() => terminateMutation.mutate(c.id)}
-                              disabled={terminateMutation.isPending}>
-                              Xác nhận
+                            <Button
+                              size="sm"
+                              variant="danger"
+                              onClick={() => terminateMutation.mutate(contract.id)}
+                              disabled={terminateMutation.isPending}
+                            >
+                              Xac nhan
                             </Button>
-                            <Button size="sm" variant="outline" onClick={() => setTerminating(null)}>Huỷ</Button>
+                            <Button size="sm" variant="outline" onClick={() => setTerminating(null)}>Huy</Button>
                           </div>
-                        ) : renewing === c.id ? (
+                        ) : renewing === contract.id ? (
                           <div className="flex flex-col gap-2">
                             <div className="flex gap-1">
-                              <input type="date" value={renewForm.newEndDate}
-                                onChange={e => setRenewForm(f => ({ ...f, newEndDate: e.target.value }))}
-                                className="border border-border/80 rounded-lg px-2 py-1 text-xs w-32 bg-surface text-fg" />
-                              <input type="number" placeholder="Đặt cọc mới"
+                              <input
+                                type="date"
+                                value={renewForm.newEndDate}
+                                onChange={e => setRenewForm(current => ({ ...current, newEndDate: e.target.value }))}
+                                className="w-32 rounded-lg border border-border/80 bg-surface px-2 py-1 text-xs text-fg"
+                              />
+                              <input
+                                type="number"
+                                placeholder="Dat coc moi"
                                 value={renewForm.newDepositAmount}
-                                onChange={e => setRenewForm(f => ({ ...f, newDepositAmount: e.target.value }))}
-                                className="border border-border/80 rounded-lg px-2 py-1 text-xs w-24 bg-surface text-fg" />
+                                onChange={e => setRenewForm(current => ({ ...current, newDepositAmount: e.target.value }))}
+                                className="w-24 rounded-lg border border-border/80 bg-surface px-2 py-1 text-xs text-fg"
+                              />
                             </div>
                             {renewError && <p className="text-xs text-error">{renewError}</p>}
                             <div className="flex gap-2">
-                              <Button size="sm" variant="primary" onClick={() => {
-                                if (!renewForm.newEndDate) { setRenewError('Cần chọn ngày kết thúc'); return }
-                                renewMutation.mutate({ id: c.id, data: { newStartDate: new Date().toISOString().slice(0,10), newEndDate: renewForm.newEndDate, newDepositAmount: Number(renewForm.newDepositAmount) || null } })
-                              }} disabled={renewMutation.isPending}>
-                                Xác nhận
+                              <Button
+                                size="sm"
+                                variant="primary"
+                                onClick={() => {
+                                  if (!renewForm.newEndDate) {
+                                    setRenewError('Can chon ngay ket thuc')
+                                    return
+                                  }
+
+                                  renewMutation.mutate({
+                                    id: contract.id,
+                                    data: {
+                                      newStartDate: new Date().toISOString().slice(0, 10),
+                                      newEndDate: renewForm.newEndDate,
+                                      newDepositAmount: Number(renewForm.newDepositAmount) || null,
+                                    },
+                                  })
+                                }}
+                                disabled={renewMutation.isPending}
+                              >
+                                Xac nhan
                               </Button>
-                              <Button size="sm" variant="outline" onClick={() => { setRenewing(null); setRenewError('') }}>Huỷ</Button>
+                              <Button size="sm" variant="outline" onClick={() => { setRenewing(null); setRenewError('') }}>Huy</Button>
                             </div>
                           </div>
                         ) : (
                           <div className="flex gap-2">
-                            <Button size="sm" variant="outline" onClick={() => setTerminating(c.id)}>
-                              Chấm dứt
+                            <Button size="sm" variant="outline" onClick={() => setTerminating(contract.id)}>
+                              Cham dut
                             </Button>
-                            <Button size="sm" variant="outline" onClick={() => { setRenewing(c.id); setRenewError('') }}>
-                              Gia hạn
+                            <Button size="sm" variant="outline" onClick={() => { setRenewing(contract.id); setRenewError('') }}>
+                              Gia han
                             </Button>
                           </div>
                         )
@@ -307,8 +339,10 @@ export default function ContractsPage() {
                     </td>
                   </tr>
                 ))}
-                {contracts?.length === 0 && (
-                  <tr><td colSpan={8} className="px-4 py-8 text-center text-fg-subtle">Chưa có hợp đồng</td></tr>
+                {contracts.length === 0 && (
+                  <tr>
+                    <td colSpan={8} className="px-4 py-8 text-center text-fg-subtle">Chua co hop dong</td>
+                  </tr>
                 )}
               </tbody>
             </table>

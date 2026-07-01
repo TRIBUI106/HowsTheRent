@@ -31,7 +31,7 @@ docker compose up -d
 | Backend API | http://localhost:8080 | — |
 | Frontend | http://localhost:5173 | — |
 | MinIO Console | http://localhost:9001 | minioadmin / minioadmin |
-| PostgreSQL | localhost:5432 | propms / secret |
+| PostgreSQL | localhost:5432 | htr / secret |
 
 ### 4. Create admin user
 
@@ -82,7 +82,7 @@ MinIO is used for file storage (contract uploads, room images).
 
 1. Access the MinIO console at http://localhost:9001
 2. Login with `minioadmin` / `minioadmin`
-3. Create a bucket named `propms` (or match `MINIO_BUCKET` env var)
+3. Create a bucket named `htr` (or match `MINIO_BUCKET` env var)
 
 For production, replace the default credentials with strong values.
 
@@ -103,7 +103,7 @@ For production, replace the default credentials with strong values.
 All variables in `.env.example` are required. Key differences from local:
 
 ```
-DB_URL=jdbc:postgresql://<host>:5432/propms
+DB_URL=jdbc:postgresql://<host>:5432/htr
 REDIS_HOST=<redis-host>
 REDIS_PORT=6379
 MINIO_URL=https://<minio-host>:9000
