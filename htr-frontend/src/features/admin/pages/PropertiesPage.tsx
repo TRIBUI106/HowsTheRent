@@ -1,4 +1,5 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { Building2, FolderTree, Plus, Settings2, Tag } from 'lucide-react'
 import { useState } from 'react'
 import axios from 'axios'
 import api from '@/lib/api'
@@ -27,6 +28,7 @@ const emptyTypeForm = { code: '', name: '', description: '' }
 export default function PropertiesPage() {
   const qc = useQueryClient()
   const [showForm, setShowForm] = useState(false)
+  const [showTypePanel, setShowTypePanel] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [deletingProperty, setDeletingProperty] = useState<Property | null>(null)
   const [form, setForm] = useState(emptyForm)
@@ -45,7 +47,14 @@ export default function PropertiesPage() {
     queryFn: () => propertyTypeApi.list(),
   })
 
+  const propertyList = properties ?? []
   const activePropertyTypes = propertyTypes.filter(t => t.active)
+  const inactivePropertyTypes = propertyTypes.filter(t => !t.active)
+  const propertyCountByTypeId = propertyList.reduce<Record<string, number>>((acc, property) => {
+    acc[property.propertyTypeId] = (acc[property.propertyTypeId] ?? 0) + 1
+    return acc
+  }, {})
+  const isTypePanelVisible = showTypePanel || showTypeForm || !!editingTypeId || propertyTypes.length === 0
 
   const resetForm = () => {
     setShowForm(false)
@@ -95,7 +104,7 @@ export default function PropertiesPage() {
       setDeletingType(null)
       showToast({ message: 'Xóa loại tài sản thành công', type: 'success' })
     },
-    onError: (error) => showToast({ message: extractErrorMessage(error, 'Xoá loại tài sản thất bại'), type: 'error' }),
+    onError: (error) => showToast({ message: extractErrorMessage(error, 'Xóa loại tài sản thất bại'), type: 'error' }),
   })
 
   const remove = useMutation({
@@ -105,10 +114,15 @@ export default function PropertiesPage() {
       setDeletingProperty(null)
       showToast({ message: 'Xóa tài sản thành công', type: 'success' })
     },
-    onError: (error) => showToast({ message: extractErrorMessage(error, 'Xoá tài sản thất bại'), type: 'error' }),
+    onError: (error) => showToast({ message: extractErrorMessage(error, 'Xóa tài sản thất bại'), type: 'error' }),
   })
 
   function startCreate() {
+    if (activePropertyTypes.length === 0) {
+      setShowTypePanel(true)
+      showToast({ message: 'Hãy tạo và kích hoạt ít nhất một loại tài sản trước khi thêm tài sản', type: 'info' })
+      return
+    }
     if (showForm && !editingId) return resetForm()
     setEditingId(null)
     setForm({ ...emptyForm, propertyTypeId: activePropertyTypes[0]?.id ?? '' })
@@ -127,6 +141,7 @@ export default function PropertiesPage() {
   }
 
   function startCreateType() {
+    setShowTypePanel(true)
     if (showTypeForm && !editingTypeId) return resetTypeForm()
     setEditingTypeId(null)
     setTypeForm(emptyTypeForm)
@@ -134,6 +149,7 @@ export default function PropertiesPage() {
   }
 
   function startEditType(type: PropertyType) {
+    setShowTypePanel(true)
     setEditingTypeId(type.id)
     setTypeForm({ code: type.code, name: type.name, description: type.description || '' })
     setShowTypeForm(true)
@@ -141,43 +157,111 @@ export default function PropertiesPage() {
 
   return (
     <Layout title="Tài sản">
-      <div className="flex justify-between items-center mb-6">
-        <p className="text-sm text-fg-muted">Quản lý tài sản</p>
-        <Button onClick={startCreate}>{showForm && !editingId ? 'Đóng' : '+ Thêm tài sản'}</Button>
-      </div>
-
-      <Card className="mb-6">
-        <CardHeader>
-          <div className="flex items-center justify-between gap-3">
-            <span>Loại tài sản</span>
-            <Button size="sm" onClick={startCreateType}>{showTypeForm && !editingTypeId ? 'Đóng' : '+ Thêm loại'}</Button>
+      <section className="mb-6 rounded-[28px] border border-border/80 bg-surface px-6 py-6">
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+          <div className="max-w-2xl">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-fg-subtle">Danh sách</p>
+            <h2 className="mt-2 text-[28px] font-semibold tracking-[-0.02em] text-fg">
+              Quản lý tài sản
+            </h2>
+            <p className="mt-2 text-sm leading-6 text-fg-muted">
+              Mỗi tài sản là một địa chỉ cụ thể. Loại tài sản chỉ là danh mục dùng để phân nhóm khi tạo mới,
+              không phải danh sách nhà hoặc dãy phòng riêng.
+            </p>
           </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
+
+          <div className="flex flex-wrap items-center gap-2">
+            <Button type="button" variant="secondary" onClick={() => setShowTypePanel(v => !v)}>
+              <Settings2 size={16} />
+              {isTypePanelVisible ? 'Thu gọn loại tài sản' : 'Quản lý loại tài sản'}
+            </Button>
+            <Button onClick={startCreate}>
+              <Plus size={16} />
+              {showForm && !editingId ? 'Đóng biểu mẫu' : 'Thêm tài sản'}
+            </Button>
+          </div>
+        </div>
+
+        <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <div className="rounded-2xl border border-border/70 bg-bg px-4 py-3">
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-xs text-fg-muted">Tài sản đang quản lý</p>
+              <Building2 size={14} className="text-fg-subtle" />
+            </div>
+            <p className="mt-3 text-2xl font-semibold tracking-[-0.02em] text-fg">{propertyList.length}</p>
+          </div>
+
+          <div className="rounded-2xl border border-border/70 bg-bg px-4 py-3">
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-xs text-fg-muted">Loại đang hoạt động</p>
+              <FolderTree size={14} className="text-fg-subtle" />
+            </div>
+            <p className="mt-3 text-2xl font-semibold tracking-[-0.02em] text-fg">{activePropertyTypes.length}</p>
+          </div>
+
+          <div className="rounded-2xl border border-border/70 bg-bg px-4 py-3">
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-xs text-fg-muted">Loại tạm ngưng</p>
+              <Tag size={14} className="text-fg-subtle" />
+            </div>
+            <p className="mt-3 text-2xl font-semibold tracking-[-0.02em] text-fg">{inactivePropertyTypes.length}</p>
+          </div>
+        </div>
+      </section>
+
+      {isTypePanelVisible && (
+        <section className="mb-6 rounded-[24px] border border-border/80 bg-bg px-5 py-5">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+            <div className="max-w-2xl">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-fg-subtle">Danh mục cấu hình</p>
+              <h3 className="mt-1 text-lg font-semibold tracking-[-0.01em] text-fg">Loại tài sản</h3>
+              <p className="mt-1 text-sm leading-6 text-fg-muted">
+                Dùng để phân nhóm tài sản khi tạo mới. Mỗi loại có thể được nhiều tài sản dùng chung.
+              </p>
+            </div>
+
+            <Button size="sm" onClick={startCreateType}>
+              <Plus size={16} />
+              {showTypeForm && !editingTypeId ? 'Đóng biểu mẫu' : 'Thêm loại tài sản'}
+            </Button>
+          </div>
+
           {showTypeForm && (
-            <form onSubmit={(e) => { e.preventDefault(); saveType.mutate(typeForm) }} className="grid grid-cols-1 md:grid-cols-4 gap-3">
-              <Input label="Mã" value={typeForm.code} onChange={e => setTypeForm({ ...typeForm, code: e.target.value })} required />
-              <Input label="Tên loại" value={typeForm.name} onChange={e => setTypeForm({ ...typeForm, name: e.target.value })} required />
-              <Input label="Mô tả" value={typeForm.description} onChange={e => setTypeForm({ ...typeForm, description: e.target.value })} />
-              <div className="flex items-end gap-2">
-                <Button type="submit" loading={saveType.isPending}>{editingTypeId ? 'Lưu' : 'Tạo'}</Button>
-                <Button type="button" variant="secondary" onClick={resetTypeForm}>Huỷ</Button>
-              </div>
-            </form>
+            <div className="mt-4 rounded-2xl border border-border/80 bg-surface p-4">
+              <form onSubmit={(e) => { e.preventDefault(); saveType.mutate(typeForm) }} className="grid grid-cols-1 gap-3 md:grid-cols-4">
+                <Input label="Mã loại" value={typeForm.code} onChange={e => setTypeForm({ ...typeForm, code: e.target.value })} required />
+                <Input label="Tên loại" value={typeForm.name} onChange={e => setTypeForm({ ...typeForm, name: e.target.value })} required />
+                <Input label="Mô tả" value={typeForm.description} onChange={e => setTypeForm({ ...typeForm, description: e.target.value })} />
+                <div className="flex items-end gap-2">
+                  <Button type="submit" loading={saveType.isPending}>{editingTypeId ? 'Lưu thay đổi' : 'Tạo loại'}</Button>
+                  <Button type="button" variant="secondary" onClick={resetTypeForm}>Huỷ</Button>
+                </div>
+              </form>
+            </div>
           )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+          <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
             {propertyTypes.map(type => (
-              <div key={type.id} className="rounded-xl border border-border bg-sidebar p-3">
-                <div className="flex items-start justify-between gap-3">
+              <div key={type.id} className="rounded-2xl border border-border/80 bg-surface p-4">
+                <div className="flex items-start justify-between gap-4">
                   <div>
-                    <p className="font-medium text-fg">{type.name}</p>
-                    <p className="text-xs text-fg-subtle mt-1">{type.code}</p>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="font-semibold text-fg">{type.name}</p>
+                      <Badge status={type.active ? 'ACTIVE' : 'INACTIVE'} />
+                    </div>
+                    <p className="mt-2 inline-flex rounded-md bg-sidebar px-2.5 py-1 text-xs font-medium text-fg-subtle">
+                      {type.code}
+                    </p>
                   </div>
-                  <Badge status={type.active ? 'ACTIVE' : 'INACTIVE'} />
+                  <div className="text-right">
+                    <p className="text-[11px] uppercase tracking-[0.12em] text-fg-subtle">Đang dùng</p>
+                    <p className="mt-1 text-xl font-semibold text-fg">{propertyCountByTypeId[type.id] ?? 0}</p>
+                  </div>
                 </div>
-                {type.description && <p className="text-sm text-fg-muted mt-2">{type.description}</p>}
-                <div className="mt-3 flex gap-2 flex-wrap">
+
+                {type.description && <p className="mt-3 text-sm leading-6 text-fg-muted">{type.description}</p>}
+
+                <div className="mt-4 flex flex-wrap gap-2">
                   <Button type="button" variant="secondary" size="sm" onClick={() => startEditType(type)}>Sửa</Button>
                   <Button
                     type="button"
@@ -186,36 +270,49 @@ export default function PropertiesPage() {
                     onClick={() => toggleTypeActive.mutate({ id: type.id, active: !type.active })}
                     disabled={toggleTypeActive.isPending}
                   >
-                    {type.active ? 'Vô hiệu hoá' : 'Kích hoạt'}
+                    {type.active ? 'Vô hiệu hóa' : 'Kích hoạt'}
                   </Button>
                   <Button type="button" variant="danger" size="sm" onClick={() => setDeletingType(type)}>
-                    Xoá
+                    Xóa
                   </Button>
                 </div>
               </div>
             ))}
-            {propertyTypes.length === 0 && <p className="text-sm text-fg-subtle">Chưa có loại tài sản</p>}
+
+            {propertyTypes.length === 0 && (
+              <div className="rounded-2xl border border-dashed border-border bg-surface px-4 py-6 text-sm text-fg-subtle">
+                Chưa có loại tài sản nào. Hãy tạo ít nhất một loại để bắt đầu thêm tài sản.
+              </div>
+            )}
           </div>
-        </CardContent>
-      </Card>
+        </section>
+      )}
 
       {showForm && (
         <Card className="mb-6">
           <CardHeader>{editingId ? 'Cập nhật tài sản' : 'Tạo tài sản mới'}</CardHeader>
           <CardContent>
-            <form onSubmit={(e) => { e.preventDefault(); save.mutate(form) }} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <form onSubmit={(e) => { e.preventDefault(); save.mutate(form) }} className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <Input label="Tên tài sản" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} required />
               <Input label="Địa chỉ" value={form.address} onChange={e => setForm({ ...form, address: e.target.value })} required />
               <div className="space-y-1">
-                <label className="block text-sm font-medium text-fg">Loại</label>
-                <select className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-fg" value={form.propertyTypeId} onChange={e => setForm({ ...form, propertyTypeId: e.target.value })} required>
-                  <option value="" disabled>Chọn loại tài sản</option>
+                <label className="block text-sm font-medium text-fg">Loại hình tài sản</label>
+                <select
+                  className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-fg"
+                  value={form.propertyTypeId}
+                  onChange={e => setForm({ ...form, propertyTypeId: e.target.value })}
+                  required
+                >
+                  <option value="" disabled>Chọn loại hình tài sản</option>
                   {activePropertyTypes.map(type => <option key={type.id} value={type.id}>{type.name}</option>)}
                 </select>
+                <p className="text-xs text-fg-subtle">Chọn từ danh mục loại tài sản đã cấu hình ở phía trên.</p>
               </div>
               <Input label="Mô tả" value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} />
-              <div className="md:col-span-2 flex gap-2">
-                <Button type="submit" loading={save.isPending} disabled={!form.propertyTypeId}>{save.isPending ? 'Đang lưu...' : editingId ? 'Lưu thay đổi' : 'Tạo tài sản'}</Button>
+              <div className="flex gap-2 md:col-span-2">
+                <Button type="submit" loading={save.isPending} disabled={!form.propertyTypeId}>
+                  {save.isPending ? 'Đang lưu...' : editingId ? 'Lưu thay đổi' : 'Tạo tài sản'}
+                </Button>
                 <Button type="button" variant="secondary" onClick={resetForm}>Huỷ</Button>
               </div>
             </form>
@@ -225,66 +322,76 @@ export default function PropertiesPage() {
 
       {isLoading ? (
         <div className="flex h-32 items-center justify-center">
-          <div className="animate-spin h-6 w-6 border-2 border-accent border-t-transparent rounded-full" />
+          <div className="h-6 w-6 animate-spin rounded-full border-2 border-accent border-t-transparent" />
         </div>
-      ) : properties?.length === 0 ? (
-        <div className="text-center py-12 text-fg-subtle">Chưa có tài sản nào</div>
+      ) : propertyList.length === 0 ? (
+        <div className="rounded-[24px] border border-dashed border-border bg-surface px-6 py-12 text-center text-fg-subtle">
+          Chưa có tài sản nào
+        </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {properties?.map(p => (
-            <Card key={p.id}>
-              <CardContent className="p-6">
-                <div className="flex justify-between items-start gap-4">
-                  <div>
-                    <h3 className="font-semibold text-fg">{p.name}</h3>
-                    <p className="text-sm text-fg-muted mt-1">{p.address}</p>
+        <section>
+          <div className="mb-4">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-fg-subtle">Tài sản cụ thể</p>
+            <h3 className="mt-1 text-lg font-semibold tracking-[-0.01em] text-fg">Danh sách tài sản</h3>
+            <p className="mt-1 text-sm text-fg-muted">Mỗi thẻ là một địa chỉ đang quản lý và được gắn với một loại hình ở trên.</p>
+          </div>
+
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {propertyList.map(p => (
+              <Card key={p.id}>
+                <CardContent className="p-6">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <h3 className="font-semibold text-fg">{p.name}</h3>
+                      <p className="mt-1 text-sm text-fg-muted">{p.address}</p>
+                    </div>
                   </div>
-                </div>
-                <div className="mt-4 grid grid-cols-2 gap-3 rounded-xl border border-border bg-sidebar p-3 text-xs">
-                  <div>
-                    <p className="text-fg-subtle">Loại</p>
-                    <p className="mt-1 font-medium text-fg">{p.propertyTypeName}</p>
+                  <div className="mt-4 grid grid-cols-2 gap-3 rounded-xl border border-border bg-sidebar p-3 text-xs">
+                    <div>
+                      <p className="text-fg-subtle">Loại hình</p>
+                      <p className="mt-1 font-medium text-fg">{p.propertyTypeName}</p>
+                    </div>
+                    <div>
+                      <p className="text-fg-subtle">Trạng thái</p>
+                      <p className="mt-1"><Badge status="ACTIVE" /></p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-fg-subtle">Trạng thái</p>
-                    <p className="mt-1"><Badge status="ACTIVE" /></p>
+                  {p.description && <p className="mt-3 text-sm text-fg-muted">{p.description}</p>}
+                  <p className="mt-4 text-xs text-fg-subtle">Tạo: {formatDate(p.createdAt)}</p>
+                  <div className="mt-5 flex gap-2">
+                    <Button type="button" variant="secondary" size="sm" onClick={() => startEdit(p)}>Sửa</Button>
+                    <Button type="button" variant="danger" size="sm" onClick={() => setDeletingProperty(p)}>Xóa</Button>
                   </div>
-                </div>
-                {p.description && <p className="text-sm text-fg-muted mt-3">{p.description}</p>}
-                <p className="text-xs text-fg-subtle mt-4">Tạo: {formatDate(p.createdAt)}</p>
-                <div className="mt-5 flex gap-2">
-                  <Button type="button" variant="secondary" size="sm" onClick={() => startEdit(p)}>Sửa</Button>
-                  <Button type="button" variant="danger" size="sm" onClick={() => setDeletingProperty(p)}>Xoá</Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </section>
       )}
 
-      <Dialog open={!!deletingProperty} onClose={() => setDeletingProperty(null)} title="Xoá tài sản?">
+      <Dialog open={!!deletingProperty} onClose={() => setDeletingProperty(null)} title="Xóa tài sản?">
         <div className="space-y-5">
           <p className="text-sm leading-6 text-fg-muted">
-            Bạn sắp xoá tài sản <span className="font-semibold text-fg">{deletingProperty?.name}</span>. Các phòng và cấu hình liên quan cũng sẽ bị xoá. Hành động này không thể hoàn tác.
+            Bạn sắp xóa tài sản <span className="font-semibold text-fg">{deletingProperty?.name}</span>. Các phòng và cấu hình liên quan cũng sẽ bị xóa. Hành động này không thể hoàn tác.
           </p>
           <div className="flex justify-end gap-2">
             <Button type="button" variant="secondary" onClick={() => setDeletingProperty(null)}>Huỷ</Button>
             <Button type="button" variant="danger" loading={remove.isPending} onClick={() => deletingProperty && remove.mutate(deletingProperty.id)}>
-              Xác nhận xoá
+              Xác nhận xóa
             </Button>
           </div>
         </div>
       </Dialog>
 
-      <Dialog open={!!deletingType} onClose={() => setDeletingType(null)} title="Xoá loại tài sản?">
+      <Dialog open={!!deletingType} onClose={() => setDeletingType(null)} title="Xóa loại tài sản?">
         <div className="space-y-5">
           <p className="text-sm leading-6 text-fg-muted">
-            Bạn sắp xoá loại tài sản <span className="font-semibold text-fg">{deletingType?.name}</span>. Hành động này không thể hoàn tác.
+            Bạn sắp xóa loại tài sản <span className="font-semibold text-fg">{deletingType?.name}</span>. Hành động này không thể hoàn tác.
           </p>
           <div className="flex justify-end gap-2">
             <Button type="button" variant="secondary" onClick={() => setDeletingType(null)}>Huỷ</Button>
             <Button type="button" variant="danger" loading={removeType.isPending} onClick={() => deletingType && removeType.mutate(deletingType.id)}>
-              Xác nhận xoá
+              Xác nhận xóa
             </Button>
           </div>
         </div>
