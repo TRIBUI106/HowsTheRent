@@ -5,7 +5,7 @@ import Layout from '@/components/Layout'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { ListSkeleton } from '@/components/ui/feedback'
-import { formatDate, formatCurrency } from '@/lib/utils'
+import { formatDate, formatCurrency, formatMonth } from '@/lib/utils'
 import type { Invoice } from '@/types'
 
 export default function PaymentHistoryPage() {
@@ -33,7 +33,7 @@ export default function PaymentHistoryPage() {
                 <CardContent className="flex items-center justify-between p-4">
                   <div>
                     <p className="font-medium text-fg">
-                      Tháng {new Date(inv.invoiceMonth).toLocaleDateString('vi-VN', { month: 'long', year: 'numeric' })}
+                      Tháng {formatMonth(inv.invoiceMonth)}
                     </p>
                     <p className="mt-0.5 text-sm text-fg-muted">
                       {inv.paymentMethod === 'CASH' ? 'Tiền mặt' : 'PayOS'} ·{' '}

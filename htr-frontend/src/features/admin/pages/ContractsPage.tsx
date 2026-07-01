@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { TableSkeleton } from '@/components/ui/feedback'
 import api from '@/lib/api'
 import { getRoomPropertyName, normalizeContract } from '@/lib/apiMappers'
+import { formatCurrency, formatCurrencyInput, formatDate, formatDateInput, parseCurrencyInput, parseDateInput } from '@/lib/utils'
 import { userApi } from '@/api'
 import type { Contract, Room, User } from '@/types'
 import { Download } from 'lucide-react'
@@ -108,7 +109,8 @@ export default function ContractsPage() {
 
   function handleCreate(e: React.FormEvent) {
     e.preventDefault()
-    if (!form.roomId || !form.tenantId || !form.moveInDate || !form.depositAmount) {
+    const moveInDate = parseDateInput(form.moveInDate)
+    if (!form.roomId || !form.tenantId || !moveInDate || !form.depositAmount) {
       setFormError('Vui lòng điền đầy đủ các trường bắt buộc')
       return
     }
@@ -116,8 +118,8 @@ export default function ContractsPage() {
     setFormError(null)
     createMutation.mutate({
       tenantId: form.tenantId,
-      moveInDate: form.moveInDate,
-      depositAmount: Number(form.depositAmount),
+      moveInDate,
+      depositAmount: parseCurrencyInput(form.depositAmount),
       notes: form.notes || null,
     })
   }
@@ -197,22 +199,24 @@ export default function ContractsPage() {
                 <div>
                   <label className="mb-1 block text-sm font-medium text-fg">Ngày vào <span className="text-error">*</span></label>
                   <Input
-                    type="date"
+                    type="text"
+                    inputMode="numeric"
+                    placeholder="dd/mm/yyyy"
                     required
                     value={form.moveInDate}
-                    onChange={e => setForm(current => ({ ...current, moveInDate: e.target.value }))}
+                    onChange={e => setForm(current => ({ ...current, moveInDate: formatDateInput(e.target.value) }))}
                   />
                 </div>
 
                 <div>
                   <label className="mb-1 block text-sm font-medium text-fg">Tiền đặt cọc (VND) <span className="text-error">*</span></label>
                   <Input
-                    type="number"
+                    type="text"
+                    inputMode="numeric"
                     required
-                    min="0"
                     placeholder="0"
                     value={form.depositAmount}
-                    onChange={e => setForm(current => ({ ...current, depositAmount: e.target.value }))}
+                    onChange={e => setForm(current => ({ ...current, depositAmount: formatCurrencyInput(e.target.value) }))}
                   />
                 </div>
 
@@ -261,9 +265,9 @@ export default function ContractsPage() {
                       <div>{contract.tenant.fullName}</div>
                       <div className="text-xs text-fg-subtle">{contract.tenant.email}</div>
                     </td>
-                    <td className="px-4 py-3 text-sm text-fg-muted">{contract.moveInDate}</td>
-                    <td className="px-4 py-3 text-sm text-fg-muted">{contract.moveOutDate ?? '-'}</td>
-                    <td className="px-4 py-3 text-sm text-fg-muted">{Number(contract.depositAmount).toLocaleString('vi-VN')} VND</td>
+                    <td className="px-4 py-3 text-sm text-fg-muted">{formatDate(contract.moveInDate)}</td>
+                    <td className="px-4 py-3 text-sm text-fg-muted">{contract.moveOutDate ? formatDate(contract.moveOutDate) : '-'}</td>
+                    <td className="px-4 py-3 text-sm text-fg-muted">{formatCurrency(contract.depositAmount)}</td>
                     <td className="px-4 py-3">
                       <Badge status={contract.status} />
                     </td>
@@ -285,16 +289,19 @@ export default function ContractsPage() {
                           <div className="flex flex-col gap-2">
                             <div className="flex gap-1">
                               <input
-                                type="date"
+                                type="text"
+                                inputMode="numeric"
+                                placeholder="dd/mm/yyyy"
                                 value={renewForm.newEndDate}
-                                onChange={e => setRenewForm(current => ({ ...current, newEndDate: e.target.value }))}
+                                onChange={e => setRenewForm(current => ({ ...current, newEndDate: formatDateInput(e.target.value) }))}
                                 className="w-32 rounded-lg border border-border/80 bg-surface px-2 py-1 text-xs text-fg"
                               />
                               <input
-                                type="number"
+                                type="text"
+                                inputMode="numeric"
                                 placeholder="Đặt cọc mới"
                                 value={renewForm.newDepositAmount}
-                                onChange={e => setRenewForm(current => ({ ...current, newDepositAmount: e.target.value }))}
+                                onChange={e => setRenewForm(current => ({ ...current, newDepositAmount: formatCurrencyInput(e.target.value) }))}
                                 className="w-24 rounded-lg border border-border/80 bg-surface px-2 py-1 text-xs text-fg"
                               />
                             </div>
@@ -304,7 +311,8 @@ export default function ContractsPage() {
                                 size="sm"
                                 variant="primary"
                                 onClick={() => {
-                                  if (!renewForm.newEndDate) {
+                                  const newEndDate = parseDateInput(renewForm.newEndDate)
+                                  if (!newEndDate) {
                                     setRenewError('Cần chọn ngày kết thúc')
                                     return
                                   }
@@ -313,8 +321,8 @@ export default function ContractsPage() {
                                     id: contract.id,
                                     data: {
                                       newStartDate: new Date().toISOString().slice(0, 10),
-                                      newEndDate: renewForm.newEndDate,
-                                      newDepositAmount: Number(renewForm.newDepositAmount) || null,
+                                      newEndDate,
+                                      newDepositAmount: parseCurrencyInput(renewForm.newDepositAmount) || null,
                                     },
                                   })
                                 }}

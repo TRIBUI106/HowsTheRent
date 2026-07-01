@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Dialog } from '@/components/ui/dialog'
-import { formatCurrency } from '@/lib/utils'
+import { formatCurrency, formatCurrencyInput, parseCurrencyInput } from '@/lib/utils'
 import { Table, TableRow, TableCell } from '@/components/ui/table'
 import type { Property, Room } from '@/types'
 
@@ -65,7 +65,7 @@ export default function RoomsPage() {
         floor: form.floor ? Number(form.floor) : null,
         areaM2: form.areaM2 ? Number(form.areaM2) : null,
         maxPeople: Number(form.maxPeople),
-        rentOverride: form.rentOverride ? Number(form.rentOverride) : null,
+        rentOverride: form.rentOverride ? parseCurrencyInput(form.rentOverride) : null,
       }
       const room = editingId
         ? await roomApi.update(selectedProperty, editingId, payload)
@@ -102,7 +102,7 @@ export default function RoomsPage() {
       floor: room.floor?.toString() || '',
       areaM2: room.areaM2?.toString() || '',
       maxPeople: room.maxPeople.toString(),
-      rentOverride: room.rentOverride?.toString() || '',
+      rentOverride: formatCurrencyInput(room.rentOverride),
       status: room.status,
     })
     setShowForm(true)
@@ -130,7 +130,7 @@ export default function RoomsPage() {
               <Input label="Tầng" type="number" value={form.floor} onChange={e => setForm({ ...form, floor: e.target.value })} />
               <Input label="Diện tích (m²)" type="number" value={form.areaM2} onChange={e => setForm({ ...form, areaM2: e.target.value })} />
               <Input label="Số người tối đa" type="number" value={form.maxPeople} onChange={e => setForm({ ...form, maxPeople: e.target.value })} required />
-              <Input label="Giá thuê (override)" type="number" value={form.rentOverride} onChange={e => setForm({ ...form, rentOverride: e.target.value })} />
+              <Input label="Giá thuê (override)" type="text" inputMode="numeric" value={form.rentOverride} onChange={e => setForm({ ...form, rentOverride: formatCurrencyInput(e.target.value) })} />
               {editingId && (
                 <div className="space-y-1">
                   <label className="block text-sm font-medium text-fg">Trạng thái</label>

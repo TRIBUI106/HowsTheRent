@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import Layout from '@/components/Layout'
 import { Card } from '@/components/ui/card'
@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { CardsSkeleton } from '@/components/ui/feedback'
 import api from '@/lib/api'
+import { formatCurrencyInput, parseCurrencyInput } from '@/lib/utils'
 
 interface Property {
   id: string
@@ -41,6 +42,24 @@ export default function FeeConfigPage() {
   })
 
   const [feeForm, setFeeForm] = useState<Partial<FeeConfig>>({})
+  const [moneyForm, setMoneyForm] = useState<Partial<Record<keyof FeeConfig, string>>>({})
+
+  useEffect(() => {
+    if (!feeConfig) {
+      setMoneyForm({})
+      return
+    }
+
+    setMoneyForm({
+      rentDefault: formatCurrencyInput(feeConfig.rentDefault),
+      elecPrice: formatCurrencyInput(feeConfig.elecPrice),
+      waterPrice: formatCurrencyInput(feeConfig.waterPrice),
+      serviceFee: formatCurrencyInput(feeConfig.serviceFee),
+      motorbikePrice: formatCurrencyInput(feeConfig.motorbikePrice),
+      carPrice: formatCurrencyInput(feeConfig.carPrice),
+      bicyclePrice: formatCurrencyInput(feeConfig.bicyclePrice),
+    })
+  }, [feeConfig])
 
   const feeMutation = useMutation({
     mutationFn: (data: Partial<FeeConfig>) =>
@@ -51,6 +70,12 @@ export default function FeeConfigPage() {
   const handleFeeSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     feeMutation.mutate({ ...feeConfig, ...feeForm, propertyId: selectedProp })
+  }
+
+  const setMoneyField = (field: keyof FeeConfig, value: string) => {
+    const formatted = formatCurrencyInput(value)
+    setMoneyForm(f => ({ ...f, [field]: formatted }))
+    setFeeForm(f => ({ ...f, [field]: parseCurrencyInput(formatted) }))
   }
 
   if (propsLoading) return <Layout><CardsSkeleton count={2} /></Layout>
@@ -65,7 +90,7 @@ export default function FeeConfigPage() {
           <select
             className="w-full border border-border/80 rounded-xl px-3 py-2 text-sm bg-surface text-fg focus:outline-none focus:ring-2 focus:ring-accent"
             value={selectedProp}
-            onChange={e => { setSelectedProp(e.target.value); setFeeForm({}) }}
+            onChange={e => { setSelectedProp(e.target.value); setFeeForm({}); setMoneyForm({}) }}
           >
             <option value="">Chọn toà nhà...</option>
             {properties?.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
@@ -81,17 +106,19 @@ export default function FeeConfigPage() {
                   <div>
                     <label className="block text-sm font-medium text-fg mb-1">Tiền phòng mặc định (₫)</label>
                     <Input
-                      type="number"
-                      defaultValue={feeConfig?.rentDefault}
-                      onChange={e => setFeeForm(f => ({ ...f, rentDefault: +e.target.value }))}
+                      type="text"
+                      inputMode="numeric"
+                      value={moneyForm.rentDefault ?? ''}
+                      onChange={e => setMoneyField('rentDefault', e.target.value)}
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-fg mb-1">Giá điện (₫/kWh)</label>
                     <Input
-                      type="number"
-                      defaultValue={feeConfig?.elecPrice}
-                      onChange={e => setFeeForm(f => ({ ...f, elecPrice: +e.target.value }))}
+                      type="text"
+                      inputMode="numeric"
+                      value={moneyForm.elecPrice ?? ''}
+                      onChange={e => setMoneyField('elecPrice', e.target.value)}
                     />
                   </div>
                   <div>
@@ -108,17 +135,19 @@ export default function FeeConfigPage() {
                   <div>
                     <label className="block text-sm font-medium text-fg mb-1">Giá nước (₫)</label>
                     <Input
-                      type="number"
-                      defaultValue={feeConfig?.waterPrice}
-                      onChange={e => setFeeForm(f => ({ ...f, waterPrice: +e.target.value }))}
+                      type="text"
+                      inputMode="numeric"
+                      value={moneyForm.waterPrice ?? ''}
+                      onChange={e => setMoneyField('waterPrice', e.target.value)}
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-fg mb-1">Phí dịch vụ (₫/tháng)</label>
                     <Input
-                      type="number"
-                      defaultValue={feeConfig?.serviceFee}
-                      onChange={e => setFeeForm(f => ({ ...f, serviceFee: +e.target.value }))}
+                      type="text"
+                      inputMode="numeric"
+                      value={moneyForm.serviceFee ?? ''}
+                      onChange={e => setMoneyField('serviceFee', e.target.value)}
                     />
                   </div>
                   <Button type="submit" disabled={feeMutation.isPending}>
@@ -137,25 +166,28 @@ export default function FeeConfigPage() {
                   <div>
                     <label className="block text-sm font-medium text-fg mb-1">Xe máy (₫/tháng)</label>
                     <Input
-                      type="number"
-                      defaultValue={feeConfig?.motorbikePrice}
-                      onChange={e => setFeeForm(f => ({ ...f, motorbikePrice: +e.target.value }))}
+                      type="text"
+                      inputMode="numeric"
+                      value={moneyForm.motorbikePrice ?? ''}
+                      onChange={e => setMoneyField('motorbikePrice', e.target.value)}
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-fg mb-1">Ô tô (₫/tháng)</label>
                     <Input
-                      type="number"
-                      defaultValue={feeConfig?.carPrice}
-                      onChange={e => setFeeForm(f => ({ ...f, carPrice: +e.target.value }))}
+                      type="text"
+                      inputMode="numeric"
+                      value={moneyForm.carPrice ?? ''}
+                      onChange={e => setMoneyField('carPrice', e.target.value)}
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-fg mb-1">Xe đạp (₫/tháng)</label>
                     <Input
-                      type="number"
-                      defaultValue={feeConfig?.bicyclePrice}
-                      onChange={e => setFeeForm(f => ({ ...f, bicyclePrice: +e.target.value }))}
+                      type="text"
+                      inputMode="numeric"
+                      value={moneyForm.bicyclePrice ?? ''}
+                      onChange={e => setMoneyField('bicyclePrice', e.target.value)}
                     />
                   </div>
                   <Button type="submit" disabled={feeMutation.isPending}>

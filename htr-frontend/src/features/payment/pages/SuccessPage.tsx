@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuthStore } from '@/stores/authStore'
 import { CheckCircle2 } from 'lucide-react'
+import { formatCurrency } from '@/lib/utils'
 
 export default function PaymentSuccessPage() {
   const [params] = useSearchParams()
@@ -31,7 +32,7 @@ export default function PaymentSuccessPage() {
         </p>
         {amount && (
           <p className="text-lg font-semibold text-success">
-            {(Number(amount) / 100).toLocaleString('vi-VN')} ₫
+            {formatCurrency(Number(amount) / 100)}
           </p>
         )}
         <p className="text-sm text-fg-subtle">Tự động chuyển hướng sau 4 giây...</p>

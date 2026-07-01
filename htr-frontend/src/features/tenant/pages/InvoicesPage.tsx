@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Table, TableRow, TableCell } from '@/components/ui/table'
 import { TableSkeleton } from '@/components/ui/feedback'
-import { formatCurrency, formatDate } from '@/lib/utils'
+import { formatCurrency, formatDate, formatMonth } from '@/lib/utils'
 import type { Invoice } from '@/types'
 
 export default function TenantInvoicesPage() {
@@ -36,7 +36,7 @@ export default function TenantInvoicesPage() {
           <Table headers={['Tháng', 'Phòng', 'Tổng tiền', 'Trạng thái', 'Hạn', 'Thao tác']}>
             {invoices.map(inv => (
               <TableRow key={inv.id}>
-                <TableCell>{inv.invoiceMonth?.slice(0, 7)}</TableCell>
+                <TableCell>{formatMonth(inv.invoiceMonth)}</TableCell>
                 <TableCell>{inv.room?.roomNumber}</TableCell>
                 <TableCell className="font-medium">{formatCurrency(inv.totalAmount)}</TableCell>
                 <TableCell><Badge status={inv.status} /></TableCell>

@@ -6,11 +6,79 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount)
+  return new Intl.NumberFormat('vi-VN', {
+    style: 'currency',
+    currency: 'VND',
+    maximumFractionDigits: 0,
+  }).format(amount)
 }
 
-export function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString('vi-VN')
+export function formatCurrencyInput(value: string | number | null | undefined): string {
+  const digits = String(value ?? '').replace(/\D/g, '')
+  if (!digits) return ''
+  return new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 0 }).format(Number(digits))
+}
+
+export function parseCurrencyInput(value: string | number | null | undefined): number {
+  const digits = String(value ?? '').replace(/\D/g, '')
+  return digits ? Number(digits) : 0
+}
+
+export function formatDateInput(value: string | null | undefined): string {
+  const digits = String(value ?? '').replace(/\D/g, '').slice(0, 8)
+  if (digits.length <= 2) return digits
+  if (digits.length <= 4) return `${digits.slice(0, 2)}/${digits.slice(2)}`
+  return `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4)}`
+}
+
+export function parseDateInput(value: string | null | undefined): string {
+  const match = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(String(value ?? ''))
+  if (!match) return ''
+
+  const [, day, month, year] = match
+  const parsed = new Date(Number(year), Number(month) - 1, Number(day))
+  if (
+    parsed.getFullYear() !== Number(year) ||
+    parsed.getMonth() !== Number(month) - 1 ||
+    parsed.getDate() !== Number(day)
+  ) {
+    return ''
+  }
+
+  return `${year}-${month}-${day}`
+}
+
+export function formatDate(dateStr?: string | null): string {
+  if (!dateStr) return '-'
+  const datePart = dateStr.slice(0, 10)
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(datePart)
+  if (match) {
+    return `${match[3]}/${match[2]}/${match[1]}`
+  }
+
+  const date = new Date(dateStr)
+  if (Number.isNaN(date.getTime())) return '-'
+  return new Intl.DateTimeFormat('vi-VN', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  }).format(date)
+}
+
+export function formatMonth(dateStr?: string | null): string {
+  if (!dateStr) return '-'
+  const datePart = dateStr.slice(0, 10)
+  const match = /^(\d{4})-(\d{2})/.exec(datePart)
+  if (match) {
+    return `${match[2]}/${match[1]}`
+  }
+
+  const date = new Date(dateStr)
+  if (Number.isNaN(date.getTime())) return '-'
+  return new Intl.DateTimeFormat('vi-VN', {
+    month: '2-digit',
+    year: 'numeric',
+  }).format(date)
 }
 
 export function statusColor(status: string): string {
