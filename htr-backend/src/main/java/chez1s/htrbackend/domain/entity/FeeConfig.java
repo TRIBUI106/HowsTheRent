@@ -3,6 +3,7 @@ package chez1s.htrbackend.domain.entity;
 import chez1s.htrbackend.domain.enums.WaterMode;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.ColumnDefault;
 
 import java.math.BigDecimal;
 import java.util.UUID;
@@ -45,12 +46,15 @@ public class FeeConfig extends BaseEntity {
     @Column(name = "service_pro_rata", nullable = false)
     private boolean serviceProRata;
 
+    @ColumnDefault("0")
     @Column(name = "motorbike_price", nullable = false, precision = 15, scale = 2)
     private BigDecimal motorbikePrice;
 
+    @ColumnDefault("0")
     @Column(name = "car_price", nullable = false, precision = 15, scale = 2)
     private BigDecimal carPrice;
 
+    @ColumnDefault("0")
     @Column(name = "bicycle_price", nullable = false, precision = 15, scale = 2)
     private BigDecimal bicyclePrice;
 }
