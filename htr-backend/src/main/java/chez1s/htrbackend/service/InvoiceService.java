@@ -5,6 +5,7 @@ import chez1s.htrbackend.domain.enums.ContractStatus;
 import chez1s.htrbackend.domain.enums.InvoiceStatus;
 import chez1s.htrbackend.domain.enums.PaymentMethod;
 import chez1s.htrbackend.domain.repository.*;
+import chez1s.htrbackend.dto.response.InvoiceGenerationResponse;
 import chez1s.htrbackend.dto.response.InvoiceResponse;
 import chez1s.htrbackend.dto.response.PageResponse;
 import chez1s.htrbackend.exception.BusinessException;
@@ -19,6 +20,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -116,15 +118,67 @@ public class InvoiceService {
     }
 
     @Transactional
-    public void generateAllForMonth(YearMonth targetMonth) {
+    public InvoiceGenerationResponse generateAllForMonth(YearMonth targetMonth) {
         List<Contract> activeContracts = contractRepository.findByStatus(ContractStatus.ACTIVE);
+        LocalDate monthDate = targetMonth.atDay(1);
+        List<String> details = new ArrayList<>();
+        int generated = 0;
+        int alreadyExists = 0;
+        int missingMeterReading = 0;
+        int missingFeeConfig = 0;
+        int failed = 0;
+
         for (Contract contract : activeContracts) {
+            UUID roomId = contract.getRoom().getId();
+            String roomLabel = contract.getRoom().getRoomNumber() != null
+                    ? contract.getRoom().getRoomNumber()
+                    : roomId.toString();
             try {
-                generateForContract(contract, targetMonth);
+                if (invoiceRepository.existsByRoomIdAndInvoiceMonth(roomId, monthDate)) {
+                    alreadyExists++;
+                    continue;
+                }
+
+                UUID propertyId = contract.getRoom().getProperty().getId();
+                if (feeConfigRepository.findByPropertyId(propertyId).isEmpty()) {
+                    missingFeeConfig++;
+                    details.add("Phòng " + roomLabel + ": chưa cấu hình phí");
+                    continue;
+                }
+
+                if (meterReadingRepository.findByRoomIdAndReadingMonth(roomId, monthDate).isEmpty()) {
+                    missingMeterReading++;
+                    details.add("Phòng " + roomLabel + ": chưa có chỉ số điện nước");
+                    continue;
+                }
+
+                Invoice invoice = generateForContract(contract, targetMonth);
+                if (invoice != null) {
+                    generated++;
+                }
             } catch (Exception e) {
+                failed++;
+                details.add("Phòng " + roomLabel + ": " + e.getMessage());
                 log.error("Failed to generate invoice for contract {}: {}", contract.getId(), e.getMessage());
             }
         }
+
+        String message = "Đã tạo " + generated + " hóa đơn cho " + targetMonth;
+        if (generated == 0) {
+            message = "Không có hóa đơn mới cho " + targetMonth;
+        }
+
+        return new InvoiceGenerationResponse(
+                targetMonth.toString(),
+                activeContracts.size(),
+                generated,
+                alreadyExists,
+                missingMeterReading,
+                missingFeeConfig,
+                failed,
+                message,
+                details
+        );
     }
 
     @Transactional

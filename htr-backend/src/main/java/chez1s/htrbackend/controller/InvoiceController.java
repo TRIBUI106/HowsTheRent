@@ -1,6 +1,7 @@
 package chez1s.htrbackend.controller;
 
 import chez1s.htrbackend.domain.entity.Invoice;
+import chez1s.htrbackend.dto.response.InvoiceGenerationResponse;
 import chez1s.htrbackend.dto.response.InvoiceResponse;
 import chez1s.htrbackend.dto.response.PageResponse;
 import chez1s.htrbackend.service.InvoiceService;
@@ -50,10 +51,9 @@ public class InvoiceController {
 
     @PostMapping("/generate")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Map<String, String>> generateAll(@RequestParam int year, @RequestParam int month) {
+    public ResponseEntity<InvoiceGenerationResponse> generateAll(@RequestParam int year, @RequestParam int month) {
         YearMonth targetMonth = YearMonth.of(year, month);
-        invoiceService.generateAllForMonth(targetMonth);
-        return ResponseEntity.ok(Map.of("message", "Invoices generated for " + targetMonth));
+        return ResponseEntity.ok(invoiceService.generateAllForMonth(targetMonth));
     }
 
     @PostMapping("/{id}/pay-cash")
