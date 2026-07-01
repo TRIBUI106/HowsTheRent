@@ -37,7 +37,7 @@ const inventoryCards = [
   { label: 'Tổng tài sản', key: 'totalProperties', icon: Building2 },
   { label: 'Tổng phòng', key: 'totalRooms', icon: Home },
   { label: 'Phòng trống', key: 'emptyRooms', icon: DoorOpen },
-  { label: 'Tỷ lệ lấp đầy', key: 'occupancyRate', icon: TrendingUp, suffix: '%' },
+  { label: 'Tỷ lệ đầy', key: 'occupancyRate', icon: TrendingUp, suffix: '%' },
 ] satisfies Array<{
   label: string
   key: keyof Dashboard
