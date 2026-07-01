@@ -84,11 +84,9 @@ public class MaintenanceController {
             Authentication auth,
             @RequestParam("title") String title,
             @RequestParam(value = "description", required = false) String description,
-            @RequestParam(value = "roomId") UUID roomId,
             @RequestParam(value = "images", required = false) List<MultipartFile> images) {
         UUID tenantId = (UUID) auth.getPrincipal();
         CreateMaintenanceRequest req = new CreateMaintenanceRequest();
-        req.setRoomId(roomId);
         req.setTitle(title);
         req.setDescription(description);
         MaintenanceRequest created = maintenanceService.create(tenantId, req);
@@ -99,6 +97,6 @@ public class MaintenanceController {
             }
         }
         return ResponseEntity.status(HttpStatus.CREATED)
-            .body(MaintenanceRequestResponse.from(maintenanceService.getById(created.getId())));
+                .body(MaintenanceRequestResponse.from(maintenanceService.getById(created.getId())));
     }
 }

@@ -61,19 +61,30 @@ export default function PropertiesPage() {
 
   const save = useMutation({
     mutationFn: (d: typeof form) => editingId ? api.put(`/properties/${editingId}`, d) : api.post('/properties', d),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['properties'] }); resetForm() },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['properties'] })
+      showToast({ message: editingId ? 'Cập nhật tài sản thành công' : 'Tạo tài sản thành công', type: 'success' })
+      resetForm()
+    },
     onError: (error) => showToast({ message: extractErrorMessage(error, 'Lưu tài sản thất bại'), type: 'error' }),
   })
 
   const saveType = useMutation({
     mutationFn: (d: typeof typeForm) => editingTypeId ? propertyTypeApi.update(editingTypeId, d) : propertyTypeApi.create(d),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['property-types'] }); resetTypeForm() },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['property-types'] })
+      showToast({ message: editingTypeId ? 'Cập nhật loại tài sản thành công' : 'Tạo loại tài sản thành công', type: 'success' })
+      resetTypeForm()
+    },
     onError: (error) => showToast({ message: extractErrorMessage(error, 'Lưu loại tài sản thất bại'), type: 'error' }),
   })
 
   const toggleTypeActive = useMutation({
     mutationFn: ({ id, active }: { id: string; active: boolean }) => propertyTypeApi.updateActive(id, active),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['property-types'] }),
+    onSuccess: (_data, variables) => {
+      qc.invalidateQueries({ queryKey: ['property-types'] })
+      showToast({ message: variables.active ? 'Đã kích hoạt loại tài sản' : 'Đã vô hiệu hóa loại tài sản', type: 'success' })
+    },
     onError: (error) => showToast({ message: extractErrorMessage(error, 'Cập nhật trạng thái thất bại'), type: 'error' }),
   })
 
@@ -82,6 +93,7 @@ export default function PropertiesPage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['property-types'] })
       setDeletingType(null)
+      showToast({ message: 'Xóa loại tài sản thành công', type: 'success' })
     },
     onError: (error) => showToast({ message: extractErrorMessage(error, 'Xoá loại tài sản thất bại'), type: 'error' }),
   })
@@ -91,6 +103,7 @@ export default function PropertiesPage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['properties'] })
       setDeletingProperty(null)
+      showToast({ message: 'Xóa tài sản thành công', type: 'success' })
     },
     onError: (error) => showToast({ message: extractErrorMessage(error, 'Xoá tài sản thất bại'), type: 'error' }),
   })

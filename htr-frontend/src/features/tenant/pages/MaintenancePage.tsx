@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import api from '@/lib/api'
 import { extractPageContent, getRoomPropertyName, normalizeContract, normalizeMaintenanceRequest } from '@/lib/apiMappers'
@@ -16,7 +16,6 @@ export default function TenantMaintenancePage() {
   const [showCreate, setShowCreate] = useState(false)
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
-  const [roomId, setRoomId] = useState('')
   const [images, setImages] = useState<File[]>([])
   const [previewUrls, setPreviewUrls] = useState<string[]>([])
   const [error, setError] = useState('')
@@ -36,17 +35,11 @@ export default function TenantMaintenancePage() {
   const activeContracts: Contract[] = extractPageContent<any>(contractsData)
     .map(normalizeContract)
     .filter(contract => contract.status === 'ACTIVE')
-
-  useEffect(() => {
-    if (!roomId && activeContracts.length === 1) {
-      setRoomId(activeContracts[0].room.id)
-    }
-  }, [activeContracts, roomId])
+  const activeRoom = activeContracts[0]?.room
 
   const createMutation = useMutation({
     mutationFn: () => {
       const form = new FormData()
-      form.append('roomId', roomId)
       form.append('title', title)
       if (description) form.append('description', description)
       images.forEach(img => form.append('images', img))
@@ -57,12 +50,11 @@ export default function TenantMaintenancePage() {
       setShowCreate(false)
       setTitle('')
       setDescription('')
-      setRoomId(activeContracts.length === 1 ? activeContracts[0].room.id : '')
       setImages([])
       setPreviewUrls([])
       setError('')
     },
-    onError: (e: any) => setError(e?.response?.data?.message ?? 'Lỗi khi tạo yêu cầu'),
+    onError: (e: any) => setError(e?.response?.data?.message ?? 'Lá»—i khi táº¡o yÃªu cáº§u'),
   })
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -82,12 +74,12 @@ export default function TenantMaintenancePage() {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!roomId) {
-      setError('Vui lòng chọn phòng')
+    if (!activeRoom) {
+      setError('Báº¡n chÆ°a cÃ³ phÃ²ng Ä‘ang thuÃª Ä‘á»ƒ gá»­i yÃªu cáº§u')
       return
     }
     if (!title.trim()) {
-      setError('Tiêu đề không được để trống')
+      setError('TiÃªu Ä‘á» khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng')
       return
     }
     setError('')
@@ -95,12 +87,12 @@ export default function TenantMaintenancePage() {
   }
 
   return (
-    <Layout title="Bảo trì">
+    <Layout title="Báº£o trÃ¬">
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-fg">Yêu cầu bảo trì</h1>
+          <h1 className="text-2xl font-bold text-fg">YÃªu cáº§u báº£o trÃ¬</h1>
           <Button variant="primary" onClick={() => { setShowCreate(true); setError('') }}>
-            + Tạo yêu cầu
+            + Táº¡o yÃªu cáº§u
           </Button>
         </div>
 
@@ -108,58 +100,48 @@ export default function TenantMaintenancePage() {
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
             <Card className="mx-4 w-full max-w-md p-6 animate-scale-in">
               <div className="mb-4 flex items-center justify-between">
-                <h2 className="text-lg font-semibold text-fg">Tạo yêu cầu bảo trì</h2>
+                <h2 className="text-lg font-semibold text-fg">Táº¡o yÃªu cáº§u báº£o trÃ¬</h2>
                 <button onClick={() => setShowCreate(false)} className="text-fg-subtle transition-colors hover:text-fg">
                   <X size={18} />
                 </button>
               </div>
               <form onSubmit={handleSubmit} className="space-y-4">
+                {activeRoom && (
+                  <div className="rounded-xl border border-border/80 bg-sidebar/60 px-3 py-2.5">
+                    <p className="text-xs font-medium uppercase tracking-wide text-fg-subtle">PhÃ²ng gá»­i yÃªu cáº§u</p>
+                    <p className="mt-1 text-sm text-fg">{activeRoom.roomNumber} - {getRoomPropertyName(activeRoom)}</p>
+                  </div>
+                )}
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-fg">Phòng <span className="text-error">*</span></label>
-                  <select
-                    value={roomId}
-                    onChange={e => setRoomId(e.target.value)}
-                    required
-                    className="w-full rounded-xl border border-border/80 bg-surface px-3 py-2 text-sm text-fg focus:outline-none focus:ring-2 focus:ring-accent"
-                  >
-                    <option value="">Chọn phòng</option>
-                    {activeContracts.map(contract => (
-                      <option key={contract.id} value={contract.room.id}>
-                        {contract.room.roomNumber} - {getRoomPropertyName(contract.room)}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="mb-1 block text-sm font-medium text-fg">Tiêu đề <span className="text-error">*</span></label>
+                  <label className="mb-1 block text-sm font-medium text-fg">TiÃªu Ä‘á» <span className="text-error">*</span></label>
                   <input
                     type="text"
                     value={title}
                     onChange={e => setTitle(e.target.value)}
                     required
                     className="w-full rounded-xl border border-border/80 bg-surface px-3 py-2 text-sm text-fg focus:outline-none focus:ring-2 focus:ring-accent"
-                    placeholder="VD: Bơm nước bị rò"
+                    placeholder="VD: BÆ¡m nÆ°á»›c bá»‹ rÃ²"
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-fg">Mô tả</label>
+                  <label className="mb-1 block text-sm font-medium text-fg">MÃ´ táº£</label>
                   <textarea
                     rows={3}
                     value={description}
                     onChange={e => setDescription(e.target.value)}
                     className="w-full resize-none rounded-xl border border-border/80 bg-surface px-3 py-2 text-sm text-fg focus:outline-none focus:ring-2 focus:ring-accent"
-                    placeholder="Mô tả chi tiết vấn đề..."
+                    placeholder="MÃ´ táº£ chi tiáº¿t váº¥n Ä‘á»..."
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-fg">Hình ảnh</label>
+                  <label className="mb-1 block text-sm font-medium text-fg">HÃ¬nh áº£nh</label>
                   <input ref={fileRef} type="file" accept="image/*" multiple onChange={handleFileChange} className="hidden" />
                   <button
                     type="button"
                     onClick={() => fileRef.current?.click()}
                     className="flex items-center gap-2 rounded-xl border border-border/80 px-4 py-2 text-sm text-fg-muted transition-colors hover:bg-sidebar"
                   >
-                    <Camera size={16} /> Chọn hình ảnh
+                    <Camera size={16} /> Chá»n hÃ¬nh áº£nh
                   </button>
                   {previewUrls.length > 0 && (
                     <div className="mt-2 flex flex-wrap gap-2">
@@ -181,10 +163,10 @@ export default function TenantMaintenancePage() {
                 {error && <p className="text-sm text-error">{error}</p>}
                 <div className="flex gap-3 pt-2">
                   <Button type="button" variant="outline" className="flex-1" onClick={() => setShowCreate(false)}>
-                    Hủy
+                    Há»§y
                   </Button>
-                  <Button type="submit" variant="primary" className="flex-1" disabled={createMutation.isPending}>
-                    {createMutation.isPending ? 'Đang gửi...' : 'Gửi yêu cầu'}
+                  <Button type="submit" variant="primary" className="flex-1" disabled={createMutation.isPending || !activeRoom}>
+                    {createMutation.isPending ? 'Äang gá»­i...' : 'Gá»­i yÃªu cáº§u'}
                   </Button>
                 </div>
               </form>
@@ -214,11 +196,11 @@ export default function TenantMaintenancePage() {
                     </div>
                     <Badge status={req.status} />
                   </div>
-                  <p className="mt-3 text-xs text-fg-subtle">Ngày tạo: {formatDate(req.createdAt)}</p>
+                  <p className="mt-3 text-xs text-fg-subtle">NgÃ y táº¡o: {formatDate(req.createdAt)}</p>
                 </CardContent>
               </Card>
             ))}
-            {requests.length === 0 && <p className="py-8 text-center text-fg-subtle">Chưa có yêu cầu bảo trì</p>}
+            {requests.length === 0 && <p className="py-8 text-center text-fg-subtle">ChÆ°a cÃ³ yÃªu cáº§u báº£o trÃ¬</p>}
           </div>
         )}
       </div>

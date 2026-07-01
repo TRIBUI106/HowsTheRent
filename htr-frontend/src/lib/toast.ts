@@ -1,4 +1,4 @@
-type ToastType = 'info' | 'error'
+type ToastType = 'info' | 'success' | 'error'
 
 type ToastPayload = {
   message: string

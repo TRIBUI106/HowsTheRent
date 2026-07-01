@@ -4,7 +4,7 @@ import { getToastEventName } from '@/lib/toast'
 type ToastItem = {
   id: number
   message: string
-  type: 'info' | 'error'
+  type: 'info' | 'success' | 'error'
 }
 
 export default function ToastViewport() {
@@ -14,7 +14,7 @@ export default function ToastViewport() {
     const eventName = getToastEventName()
 
     const onToast = (event: Event) => {
-      const custom = event as CustomEvent<{ message: string; type?: 'info' | 'error'; durationMs?: number }>
+      const custom = event as CustomEvent<{ message: string; type?: 'info' | 'success' | 'error'; durationMs?: number }>
       const message = custom.detail?.message
       if (!message) return
 
@@ -39,8 +39,10 @@ export default function ToastViewport() {
           key={item.id}
           className={
             item.type === 'error'
-              ? 'rounded-lg border border-danger/40 bg-danger/95 px-4 py-3 text-sm text-white shadow-lg'
-              : 'rounded-lg border border-accent/30 bg-surface px-4 py-3 text-sm text-fg shadow-lg'
+              ? 'rounded-xl border border-error/30 bg-error px-4 py-3 text-sm text-white shadow-lg'
+              : item.type === 'success'
+                ? 'rounded-xl border border-success/30 bg-success px-4 py-3 text-sm text-white shadow-lg'
+                : 'rounded-xl border border-accent/30 bg-fg px-4 py-3 text-sm text-white shadow-lg'
           }
         >
           {item.message}

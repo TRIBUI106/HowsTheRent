@@ -3,8 +3,8 @@ package chez1s.htrbackend.service;
 import chez1s.htrbackend.domain.entity.MaintenanceRequest;
 import chez1s.htrbackend.domain.entity.Room;
 import chez1s.htrbackend.domain.entity.User;
-import chez1s.htrbackend.domain.enums.MaintenanceStatus;
 import chez1s.htrbackend.domain.enums.ContractStatus;
+import chez1s.htrbackend.domain.enums.MaintenanceStatus;
 import chez1s.htrbackend.domain.repository.ContractRepository;
 import chez1s.htrbackend.domain.repository.MaintenanceRequestRepository;
 import chez1s.htrbackend.domain.repository.UserRepository;
@@ -13,7 +13,6 @@ import chez1s.htrbackend.dto.response.MaintenanceRequestResponse;
 import chez1s.htrbackend.dto.response.PageResponse;
 import chez1s.htrbackend.exception.BusinessException;
 import chez1s.htrbackend.exception.ResourceNotFoundException;
-import chez1s.htrbackend.service.StorageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -60,10 +59,10 @@ public class MaintenanceService {
 
     @Transactional
     public MaintenanceRequest create(UUID tenantId, CreateMaintenanceRequest req) {
-        if (!contractRepository.existsByTenantIdAndRoomIdAndStatus(tenantId, req.getRoomId(), ContractStatus.ACTIVE)) {
-            throw new BusinessException("Bạn không có hợp đồng đang hoạt động cho phòng này");
-        }
-        Room room = roomService.getById(req.getRoomId());
+        var activeContract = contractRepository.findFirstByTenantIdAndStatusOrderByCreatedAtDesc(tenantId, ContractStatus.ACTIVE)
+                .orElseThrow(() -> new BusinessException("Bạn chưa có hợp đồng đang hoạt động"));
+
+        Room room = roomService.getById(activeContract.getRoom().getId());
         MaintenanceRequest mr = MaintenanceRequest.builder()
                 .room(room)
                 .tenant(User.builder().id(tenantId).build())
@@ -73,9 +72,13 @@ public class MaintenanceService {
                 .status(MaintenanceStatus.OPEN)
                 .build();
         mr = maintenanceRepository.save(mr);
-        notificationService.create(room.getProperty().getOwner().getId(),
-                "New Maintenance Request", req.getTitle(),
-                "MAINTENANCE", mr.getId());
+        notificationService.create(
+                room.getProperty().getOwner().getId(),
+                "New Maintenance Request",
+                req.getTitle(),
+                "MAINTENANCE",
+                mr.getId()
+        );
         return mr;
     }
 
@@ -87,9 +90,13 @@ public class MaintenanceService {
         mr.setAssignedTo(tech);
         mr.setStatus(MaintenanceStatus.IN_PROGRESS);
         mr = maintenanceRepository.save(mr);
-        notificationService.create(technicianId,
-                "Maintenance Assigned", mr.getTitle(),
-                "MAINTENANCE", mr.getId());
+        notificationService.create(
+                technicianId,
+                "Maintenance Assigned",
+                mr.getTitle(),
+                "MAINTENANCE",
+                mr.getId()
+        );
         return mr;
     }
 
@@ -102,9 +109,13 @@ public class MaintenanceService {
         mr.setStatus(MaintenanceStatus.DONE);
         mr.setResolvedAt(LocalDateTime.now());
         mr = maintenanceRepository.save(mr);
-        notificationService.create(mr.getTenant().getId(),
-                "Maintenance Resolved", mr.getTitle(),
-                "MAINTENANCE", mr.getId());
+        notificationService.create(
+                mr.getTenant().getId(),
+                "Maintenance Resolved",
+                mr.getTitle(),
+                "MAINTENANCE",
+                mr.getId()
+        );
         return mr;
     }
 
