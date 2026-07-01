@@ -1,14 +1,14 @@
-import { useState, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import api from '@/lib/api'
-import { extractPageContent, normalizeMaintenanceRequest } from '@/lib/apiMappers'
+import { extractPageContent, getRoomPropertyName, normalizeContract, normalizeMaintenanceRequest } from '@/lib/apiMappers'
 import Layout from '@/components/Layout'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { ListSkeleton } from '@/components/ui/feedback'
 import { formatDate } from '@/lib/utils'
-import type { MaintenanceRequest } from '@/types'
+import type { Contract, MaintenanceRequest } from '@/types'
 import { Camera, X } from 'lucide-react'
 
 export default function TenantMaintenancePage() {
@@ -16,6 +16,7 @@ export default function TenantMaintenancePage() {
   const [showCreate, setShowCreate] = useState(false)
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
+  const [roomId, setRoomId] = useState('')
   const [images, setImages] = useState<File[]>([])
   const [previewUrls, setPreviewUrls] = useState<string[]>([])
   const [error, setError] = useState('')
@@ -26,11 +27,26 @@ export default function TenantMaintenancePage() {
     queryFn: () => api.get('/maintenance/mine').then(r => r.data),
   })
 
+  const { data: contractsData } = useQuery({
+    queryKey: ['tenant-contracts'],
+    queryFn: () => api.get('/contracts/mine').then(r => r.data),
+  })
+
   const requests: MaintenanceRequest[] = extractPageContent<any>(data).map(normalizeMaintenanceRequest)
+  const activeContracts: Contract[] = extractPageContent<any>(contractsData)
+    .map(normalizeContract)
+    .filter(contract => contract.status === 'ACTIVE')
+
+  useEffect(() => {
+    if (!roomId && activeContracts.length === 1) {
+      setRoomId(activeContracts[0].room.id)
+    }
+  }, [activeContracts, roomId])
 
   const createMutation = useMutation({
     mutationFn: () => {
       const form = new FormData()
+      form.append('roomId', roomId)
       form.append('title', title)
       if (description) form.append('description', description)
       images.forEach(img => form.append('images', img))
@@ -41,6 +57,7 @@ export default function TenantMaintenancePage() {
       setShowCreate(false)
       setTitle('')
       setDescription('')
+      setRoomId(activeContracts.length === 1 ? activeContracts[0].room.id : '')
       setImages([])
       setPreviewUrls([])
       setError('')
@@ -65,6 +82,10 @@ export default function TenantMaintenancePage() {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    if (!roomId) {
+      setError('Vui lòng chọn phòng')
+      return
+    }
     if (!title.trim()) {
       setError('Tiêu đề không được để trống')
       return
@@ -93,6 +114,22 @@ export default function TenantMaintenancePage() {
                 </button>
               </div>
               <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-fg">Phòng <span className="text-error">*</span></label>
+                  <select
+                    value={roomId}
+                    onChange={e => setRoomId(e.target.value)}
+                    required
+                    className="w-full rounded-xl border border-border/80 bg-surface px-3 py-2 text-sm text-fg focus:outline-none focus:ring-2 focus:ring-accent"
+                  >
+                    <option value="">Chọn phòng</option>
+                    {activeContracts.map(contract => (
+                      <option key={contract.id} value={contract.room.id}>
+                        {contract.room.roomNumber} - {getRoomPropertyName(contract.room)}
+                      </option>
+                    ))}
+                  </select>
+                </div>
                 <div>
                   <label className="mb-1 block text-sm font-medium text-fg">Tiêu đề <span className="text-error">*</span></label>
                   <input
@@ -143,7 +180,7 @@ export default function TenantMaintenancePage() {
                 </div>
                 {error && <p className="text-sm text-error">{error}</p>}
                 <div className="flex gap-3 pt-2">
-                    <Button type="button" variant="outline" className="flex-1" onClick={() => setShowCreate(false)}>
+                  <Button type="button" variant="outline" className="flex-1" onClick={() => setShowCreate(false)}>
                     Hủy
                   </Button>
                   <Button type="submit" variant="primary" className="flex-1" disabled={createMutation.isPending}>

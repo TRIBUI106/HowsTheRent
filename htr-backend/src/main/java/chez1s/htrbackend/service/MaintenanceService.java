@@ -4,6 +4,8 @@ import chez1s.htrbackend.domain.entity.MaintenanceRequest;
 import chez1s.htrbackend.domain.entity.Room;
 import chez1s.htrbackend.domain.entity.User;
 import chez1s.htrbackend.domain.enums.MaintenanceStatus;
+import chez1s.htrbackend.domain.enums.ContractStatus;
+import chez1s.htrbackend.domain.repository.ContractRepository;
 import chez1s.htrbackend.domain.repository.MaintenanceRequestRepository;
 import chez1s.htrbackend.domain.repository.UserRepository;
 import chez1s.htrbackend.dto.request.CreateMaintenanceRequest;
@@ -26,6 +28,7 @@ import java.util.UUID;
 public class MaintenanceService {
 
     private final MaintenanceRequestRepository maintenanceRepository;
+    private final ContractRepository contractRepository;
     private final RoomService roomService;
     private final UserRepository userRepository;
     private final NotificationService notificationService;
@@ -57,6 +60,9 @@ public class MaintenanceService {
 
     @Transactional
     public MaintenanceRequest create(UUID tenantId, CreateMaintenanceRequest req) {
+        if (!contractRepository.existsByTenantIdAndRoomIdAndStatus(tenantId, req.getRoomId(), ContractStatus.ACTIVE)) {
+            throw new BusinessException("Bạn không có hợp đồng đang hoạt động cho phòng này");
+        }
         Room room = roomService.getById(req.getRoomId());
         MaintenanceRequest mr = MaintenanceRequest.builder()
                 .room(room)

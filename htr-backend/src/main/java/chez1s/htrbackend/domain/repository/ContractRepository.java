@@ -12,4 +12,5 @@ public interface ContractRepository extends JpaRepository<Contract, UUID> {
     List<Contract> findByTenantId(UUID tenantId);
     List<Contract> findByStatus(ContractStatus status);
     boolean existsByRoomIdAndStatus(UUID roomId, ContractStatus status);
+    boolean existsByTenantIdAndRoomIdAndStatus(UUID tenantId, UUID roomId, ContractStatus status);
 }
