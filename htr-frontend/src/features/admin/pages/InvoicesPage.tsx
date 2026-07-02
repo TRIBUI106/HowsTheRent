@@ -1,22 +1,22 @@
 import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { Download, ReceiptText } from 'lucide-react'
 import api from '@/lib/api'
+import { extractPageContent, normalizeInvoice } from '@/lib/apiMappers'
 import Layout from '@/components/Layout'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Dialog } from '@/components/ui/dialog'
-import { Table, TableRow, TableCell } from '@/components/ui/table'
+import { Table, TableCell, TableRow } from '@/components/ui/table'
 import { Pagination } from '@/components/ui/pagination'
 import { TableSkeleton } from '@/components/ui/feedback'
 import { formatCurrency, formatDate, formatMonth } from '@/lib/utils'
 import { showToast } from '@/lib/toast'
-import type { Invoice } from '@/types'
-import { Download, ReceiptText } from 'lucide-react'
+import type { Invoice, Page } from '@/types'
 
 const SIZE = 20
-
-const STATUS_OPTIONS = ['', 'PENDING', 'PAID', 'OVERDUE', 'CANCELLED']
+const STATUS_OPTIONS = ['', 'PENDING', 'PAID', 'OVERDUE'] as const
 
 interface InvoiceGenerationResult {
   month: string
@@ -44,17 +44,20 @@ export default function AdminInvoicesPage() {
   const [generateConfirmed, setGenerateConfirmed] = useState(false)
   const [generationResult, setGenerationResult] = useState<InvoiceGenerationResult | null>(null)
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading } = useQuery<Page<Invoice>>({
     queryKey: ['invoices', page, statusFilter],
-    queryFn: () => {
-      const params = new URLSearchParams({ page: String(page), size: String(SIZE) })
-      if (statusFilter) params.set('status', statusFilter)
-      return api.get(`/invoices?${params}`).then(r => r.data)
-    },
+    queryFn: () =>
+      api.get('/invoices', {
+        params: {
+          page,
+          size: SIZE,
+          status: statusFilter || undefined,
+        },
+      }).then((r) => r.data),
   })
 
-  const invoices: Invoice[] = Array.isArray(data) ? data : (data?.content ?? [])
-  const totalPages: number = Array.isArray(data) ? 1 : (data?.totalPages ?? 1)
+  const invoices: Invoice[] = extractPageContent(data).map(normalizeInvoice)
+  const totalPages = data?.totalPages ?? 1
   const generateMonthLabel = generateMonth ? formatMonth(`${generateMonth}-01`) : ''
 
   const generateMutation = useMutation({
@@ -63,10 +66,14 @@ export default function AdminInvoicesPage() {
       const { data } = await api.post('/invoices/generate', null, { params: { year, month } })
       return data as InvoiceGenerationResult
     },
-    onSuccess: (data) => {
-      setGenerationResult(data)
-      showToast({ message: data.message, type: data.generated > 0 ? 'success' : 'info' })
+    onSuccess: (result) => {
+      setGenerationResult(result)
+      showToast({
+        message: result.message,
+        type: result.generated > 0 ? 'success' : 'info',
+      })
       qc.invalidateQueries({ queryKey: ['invoices'] })
+      qc.invalidateQueries({ queryKey: ['dashboard'] })
       qc.invalidateQueries({ queryKey: ['tenant-invoices'] })
       setPage(0)
       setStatusFilter('')
@@ -87,40 +94,57 @@ export default function AdminInvoicesPage() {
     setShowGenerateDialog(true)
   }
 
+  function exportExcel() {
+    api.get('/export/invoices', { responseType: 'blob' })
+      .then((r) => r.data)
+      .then((blob) => {
+        const url = URL.createObjectURL(blob)
+        const anchor = document.createElement('a')
+        anchor.href = url
+        anchor.download = 'hoadon.xlsx'
+        anchor.click()
+        URL.revokeObjectURL(url)
+      })
+      .catch((error: any) => {
+        showToast({
+          message: error?.response?.data?.message ?? 'Không thể xuất Excel hóa đơn',
+          type: 'error',
+        })
+      })
+  }
+
   return (
     <Layout title="Hóa đơn">
       <div className="space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h1 className="text-2xl font-bold text-fg">Hóa đơn</h1>
+
           <div className="flex flex-wrap items-center justify-end gap-2">
             <Button size="sm" onClick={openGenerateDialog}>
               <ReceiptText size={14} />
               Tạo hóa đơn
             </Button>
-            <Button variant="outline" size="sm" onClick={() => {
-              api.get('/export/invoices', { responseType: 'blob' })
-                .then(r => r.data)
-                .then(blob => {
-                  const url = URL.createObjectURL(blob)
-                  const a = document.createElement('a')
-                  a.href = url; a.download = 'hoadon.xlsx'; a.click()
-                  URL.revokeObjectURL(url)
-                })
-            }}>
-              <Download size={14} className="mr-1" /> Excel
+
+            <Button variant="outline" size="sm" onClick={exportExcel}>
+              <Download size={14} className="mr-1" />
+              Excel
             </Button>
+
             <div className="flex gap-2">
-              {STATUS_OPTIONS.map(s => (
+              {STATUS_OPTIONS.map((status) => (
                 <button
-                  key={s || 'ALL'}
-                  onClick={() => { setStatusFilter(s); setPage(0) }}
-                  className={`px-3 py-1.5 rounded-xl text-sm font-medium transition-colors ${
-                    statusFilter === s
+                  key={status || 'ALL'}
+                  onClick={() => {
+                    setStatusFilter(status)
+                    setPage(0)
+                  }}
+                  className={`rounded-xl px-3 py-1.5 text-sm font-medium transition-colors ${
+                    statusFilter === status
                       ? 'bg-accent text-accent-fg'
                       : 'bg-sidebar text-fg-muted hover:bg-surface hover:text-fg'
                   }`}
                 >
-                  {s || 'Tất cả'}
+                  {status || 'Tất cả'}
                 </button>
               ))}
             </div>
@@ -132,22 +156,24 @@ export default function AdminInvoicesPage() {
         ) : (
           <Card>
             <Table headers={['Tháng', 'Phòng', 'Tổng tiền', 'Trạng thái', 'Hạn', 'Thanh toán']}>
-              {invoices.map(inv => (
-                <TableRow key={inv.id}>
-                  <TableCell>{formatMonth(inv.invoiceMonth)}</TableCell>
-                  <TableCell>{inv.room?.roomNumber}</TableCell>
-                  <TableCell className="font-medium">{formatCurrency(inv.totalAmount)}</TableCell>
-                  <TableCell><Badge status={inv.status} /></TableCell>
-                  <TableCell>{formatDate(inv.dueDate)}</TableCell>
-                  <TableCell>{inv.paymentMethod || '-'}</TableCell>
+              {invoices.map((invoice) => (
+                <TableRow key={invoice.id}>
+                  <TableCell>{formatMonth(invoice.invoiceMonth)}</TableCell>
+                  <TableCell>{invoice.room?.roomNumber || '-'}</TableCell>
+                  <TableCell className="font-medium">{formatCurrency(invoice.totalAmount)}</TableCell>
+                  <TableCell><Badge status={invoice.status} /></TableCell>
+                  <TableCell>{formatDate(invoice.dueDate)}</TableCell>
+                  <TableCell>{invoice.paymentMethod || '-'}</TableCell>
                 </TableRow>
               ))}
+
               {invoices.length === 0 && (
                 <TableRow>
-                  <TableCell className="text-center text-fg-subtle py-8">Không có hóa đơn</TableCell>
+                  <TableCell className="py-8 text-center text-fg-subtle">Không có hóa đơn</TableCell>
                 </TableRow>
               )}
             </Table>
+
             <div className="px-4">
               <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
             </div>
@@ -164,8 +190,8 @@ export default function AdminInvoicesPage() {
       >
         <form
           className="space-y-5"
-          onSubmit={(e) => {
-            e.preventDefault()
+          onSubmit={(event) => {
+            event.preventDefault()
             generateMutation.mutate()
           }}
         >
@@ -177,8 +203,8 @@ export default function AdminInvoicesPage() {
               id="invoice-month"
               type="month"
               value={generateMonth}
-              onChange={(e) => {
-                setGenerateMonth(e.target.value)
+              onChange={(event) => {
+                setGenerateMonth(event.target.value)
                 setGenerateConfirmed(false)
                 setGenerationResult(null)
               }}
@@ -200,6 +226,7 @@ export default function AdminInvoicesPage() {
                   {generationResult.activeContracts} hợp đồng đang hoạt động được kiểm tra.
                 </p>
               </div>
+
               <div className="grid grid-cols-2 gap-2 text-sm md:grid-cols-3">
                 <div className="rounded-lg bg-surface px-3 py-2">
                   <p className="text-xs text-fg-muted">Đã tạo</p>
@@ -222,6 +249,7 @@ export default function AdminInvoicesPage() {
                   <p className="font-semibold text-error">{generationResult.failed}</p>
                 </div>
               </div>
+
               {generationResult.details.length > 0 && (
                 <div className="max-h-32 overflow-y-auto rounded-lg bg-surface px-3 py-2 text-xs text-fg-muted">
                   {generationResult.details.slice(0, 8).map((detail) => (
@@ -239,7 +267,7 @@ export default function AdminInvoicesPage() {
             <input
               type="checkbox"
               checked={generateConfirmed}
-              onChange={(e) => setGenerateConfirmed(e.target.checked)}
+              onChange={(event) => setGenerateConfirmed(event.target.checked)}
               className="mt-0.5 h-4 w-4 rounded border-border accent-accent"
             />
             <span>Tôi đã kiểm tra chỉ số điện nước của tháng này và muốn tạo hóa đơn.</span>

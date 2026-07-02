@@ -15,6 +15,8 @@ public record PropertyResponse(
         String propertyTypeCode,
         String propertyTypeName,
         String description,
+        Integer floorCount,
+        Integer roomCount,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {
@@ -29,6 +31,8 @@ public record PropertyResponse(
                 p.getType().getCode(),
                 p.getType().getName(),
                 p.getDescription(),
+                p.getFloorCount(),
+                p.getRoomCount(),
                 p.getCreatedAt(),
                 p.getUpdatedAt()
         );

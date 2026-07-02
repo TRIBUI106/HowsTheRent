@@ -46,6 +46,8 @@ public class PropertyService {
                 .address(req.getAddress())
                 .type(propertyTypeService.getActiveById(req.getPropertyTypeId()))
                 .description(req.getDescription())
+                .floorCount(req.getFloorCount())
+                .roomCount(req.getRoomCount())
                 .build();
         property = propertyRepository.save(property);
 
@@ -74,6 +76,8 @@ public class PropertyService {
         property.setAddress(req.getAddress());
         property.setType(propertyTypeService.getActiveById(req.getPropertyTypeId()));
         property.setDescription(req.getDescription());
+        property.setFloorCount(req.getFloorCount());
+        property.setRoomCount(req.getRoomCount());
         return propertyRepository.save(property);
     }
 

@@ -33,8 +33,10 @@ public class MaintenanceController {
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<PageResponse<MaintenanceRequestResponse>> listAll(
+            Authentication auth,
             @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
-        return ResponseEntity.ok(maintenanceService.listAll(pageable));
+        UUID ownerId = (UUID) auth.getPrincipal();
+        return ResponseEntity.ok(maintenanceService.listAllByOwner(ownerId, pageable));
     }
 
     @GetMapping("/mine")

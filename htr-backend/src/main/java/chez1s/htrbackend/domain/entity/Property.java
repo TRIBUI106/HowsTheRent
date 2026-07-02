@@ -33,4 +33,10 @@ public class Property extends BaseEntity {
 
     @Column(columnDefinition = "TEXT")
     private String description;
+
+    @Column(name = "floor_count")
+    private Integer floorCount;
+
+    @Column(name = "room_count")
+    private Integer roomCount;
 }

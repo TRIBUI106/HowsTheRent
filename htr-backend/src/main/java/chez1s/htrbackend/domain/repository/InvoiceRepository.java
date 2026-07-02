@@ -4,6 +4,7 @@ import chez1s.htrbackend.domain.entity.Invoice;
 import chez1s.htrbackend.domain.enums.InvoiceStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -15,9 +16,22 @@ import java.util.UUID;
 
 public interface InvoiceRepository extends JpaRepository<Invoice, UUID> {
     boolean existsByRoomIdAndInvoiceMonth(UUID roomId, LocalDate invoiceMonth);
+
+    @EntityGraph(attributePaths = {"room", "room.property", "contract", "contract.tenant"})
     List<Invoice> findByRoomIdOrderByInvoiceMonthDesc(UUID roomId);
+
+    @EntityGraph(attributePaths = {"room", "room.property", "contract", "contract.tenant"})
     Page<Invoice> findByContractTenantId(UUID tenantId, Pageable pageable);
+
+    @EntityGraph(attributePaths = {"room", "room.property", "contract", "contract.tenant"})
     List<Invoice> findByContractTenantIdOrderByInvoiceMonthDesc(UUID tenantId);
+
+    @EntityGraph(attributePaths = {"room", "room.property", "contract", "contract.tenant"})
+    Page<Invoice> findByRoomPropertyOwnerId(UUID ownerId, Pageable pageable);
+
+    @EntityGraph(attributePaths = {"room", "room.property", "contract", "contract.tenant"})
+    Page<Invoice> findByRoomPropertyOwnerIdAndStatus(UUID ownerId, InvoiceStatus status, Pageable pageable);
+
     List<Invoice> findByStatusAndDueDateBefore(InvoiceStatus status, LocalDate date);
     Optional<Invoice> findByPaymentLinkId(String paymentLinkId);
 
@@ -28,4 +42,5 @@ public interface InvoiceRepository extends JpaRepository<Invoice, UUID> {
     BigDecimal sumPaidAmountByMonthAndPropertyIds(LocalDate month, List<UUID> propertyIds);
 
     long countByStatus(InvoiceStatus status);
+    long countByRoomPropertyOwnerIdAndStatus(UUID ownerId, InvoiceStatus status);
 }

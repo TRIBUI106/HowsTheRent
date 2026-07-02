@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { Camera, X } from 'lucide-react'
 import api from '@/lib/api'
 import { extractPageContent, getRoomPropertyName, normalizeContract, normalizeMaintenanceRequest } from '@/lib/apiMappers'
 import Layout from '@/components/Layout'
@@ -8,145 +9,180 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { ListSkeleton } from '@/components/ui/feedback'
 import { formatDate } from '@/lib/utils'
+import { showToast } from '@/lib/toast'
 import type { Contract, MaintenanceRequest } from '@/types'
-import { Camera, X } from 'lucide-react'
 
 export default function TenantMaintenancePage() {
   const qc = useQueryClient()
+  const fileRef = useRef<HTMLInputElement>(null)
   const [showCreate, setShowCreate] = useState(false)
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [images, setImages] = useState<File[]>([])
   const [previewUrls, setPreviewUrls] = useState<string[]>([])
   const [error, setError] = useState('')
-  const fileRef = useRef<HTMLInputElement>(null)
 
   const { data, isLoading } = useQuery({
     queryKey: ['tenant-maintenance'],
-    queryFn: () => api.get('/maintenance/mine').then(r => r.data),
+    queryFn: () => api.get('/maintenance/mine').then((r) => r.data),
   })
 
   const { data: contractsData } = useQuery({
     queryKey: ['tenant-contracts'],
-    queryFn: () => api.get('/contracts/mine').then(r => r.data),
+    queryFn: () => api.get('/contracts/mine').then((r) => r.data),
   })
 
   const requests: MaintenanceRequest[] = extractPageContent<any>(data).map(normalizeMaintenanceRequest)
   const activeContracts: Contract[] = extractPageContent<any>(contractsData)
     .map(normalizeContract)
-    .filter(contract => contract.status === 'ACTIVE')
+    .filter((contract) => contract.status === 'ACTIVE')
   const activeRoom = activeContracts[0]?.room
+
+  function clearPreviews() {
+    previewUrls.forEach((url) => URL.revokeObjectURL(url))
+    setPreviewUrls([])
+  }
+
+  function resetForm() {
+    setTitle('')
+    setDescription('')
+    setImages([])
+    clearPreviews()
+    setError('')
+  }
 
   const createMutation = useMutation({
     mutationFn: () => {
       const form = new FormData()
-      form.append('title', title)
-      if (description) form.append('description', description)
-      images.forEach(img => form.append('images', img))
-      return api.post('/maintenance/with-images', form, { headers: { 'Content-Type': 'multipart/form-data' } })
+      form.append('title', title.trim())
+      if (description.trim()) form.append('description', description.trim())
+      images.forEach((image) => form.append('images', image))
+      return api.post('/maintenance/with-images', form)
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['tenant-maintenance'] })
+      qc.invalidateQueries({ queryKey: ['dashboard'] })
       setShowCreate(false)
-      setTitle('')
-      setDescription('')
-      setImages([])
-      setPreviewUrls([])
-      setError('')
+      resetForm()
+      showToast({ message: 'Đã gửi yêu cầu bảo trì', type: 'success' })
     },
-    onError: (e: any) => setError(e?.response?.data?.message ?? 'Lá»—i khi táº¡o yÃªu cáº§u'),
+    onError: (error: any) => {
+      const message = error?.response?.data?.message ?? 'Lỗi khi tạo yêu cầu'
+      setError(message)
+      showToast({ message, type: 'error' })
+    },
   })
 
-  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const files = Array.from(e.target.files ?? [])
-    setImages(prev => [...prev, ...files])
-    files.forEach(file => {
-      const reader = new FileReader()
-      reader.onloadend = () => setPreviewUrls(prev => [...prev, reader.result as string])
-      reader.readAsDataURL(file)
-    })
+  function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(event.target.files ?? [])
+    if (files.length === 0) return
+
+    const urls = files.map((file) => URL.createObjectURL(file))
+    setImages((previous) => [...previous, ...files])
+    setPreviewUrls((previous) => [...previous, ...urls])
   }
 
   function removeImage(index: number) {
-    setImages(prev => prev.filter((_, i) => i !== index))
-    setPreviewUrls(prev => prev.filter((_, i) => i !== index))
+    const url = previewUrls[index]
+    if (url) URL.revokeObjectURL(url)
+    setImages((previous) => previous.filter((_, imageIndex) => imageIndex !== index))
+    setPreviewUrls((previous) => previous.filter((_, urlIndex) => urlIndex !== index))
   }
 
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
+  function handleSubmit(event: React.FormEvent) {
+    event.preventDefault()
+
     if (!activeRoom) {
-      setError('Báº¡n chÆ°a cÃ³ phÃ²ng Ä‘ang thuÃª Ä‘á»ƒ gá»­i yÃªu cáº§u')
+      setError('Bạn chưa có phòng đang thuê để gửi yêu cầu')
       return
     }
+
     if (!title.trim()) {
-      setError('TiÃªu Ä‘á» khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng')
+      setError('Tiêu đề không được để trống')
       return
     }
+
     setError('')
     createMutation.mutate()
   }
 
   return (
-    <Layout title="Báº£o trÃ¬">
+    <Layout title="Bảo trì">
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-fg">YÃªu cáº§u báº£o trÃ¬</h1>
+          <h1 className="text-2xl font-bold text-fg">Yêu cầu bảo trì</h1>
           <Button variant="primary" onClick={() => { setShowCreate(true); setError('') }}>
-            + Táº¡o yÃªu cáº§u
+            + Tạo yêu cầu
           </Button>
         </div>
 
         {showCreate && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-            <Card className="mx-4 w-full max-w-md p-6 animate-scale-in">
+            <Card className="mx-4 w-full max-w-md animate-scale-in p-6">
               <div className="mb-4 flex items-center justify-between">
-                <h2 className="text-lg font-semibold text-fg">Táº¡o yÃªu cáº§u báº£o trÃ¬</h2>
-                <button onClick={() => setShowCreate(false)} className="text-fg-subtle transition-colors hover:text-fg">
+                <h2 className="text-lg font-semibold text-fg">Tạo yêu cầu bảo trì</h2>
+                <button
+                  onClick={() => {
+                    setShowCreate(false)
+                    resetForm()
+                  }}
+                  className="text-fg-subtle transition-colors hover:text-fg"
+                >
                   <X size={18} />
                 </button>
               </div>
+
               <form onSubmit={handleSubmit} className="space-y-4">
                 {activeRoom && (
                   <div className="rounded-xl border border-border/80 bg-sidebar/60 px-3 py-2.5">
-                    <p className="text-xs font-medium uppercase tracking-wide text-fg-subtle">PhÃ²ng gá»­i yÃªu cáº§u</p>
-                    <p className="mt-1 text-sm text-fg">{activeRoom.roomNumber} - {getRoomPropertyName(activeRoom)}</p>
+                    <p className="text-xs font-medium uppercase tracking-wide text-fg-subtle">Phòng gửi yêu cầu</p>
+                    <p className="mt-1 text-sm text-fg">
+                      {activeRoom.roomNumber} - {getRoomPropertyName(activeRoom)}
+                    </p>
                   </div>
                 )}
+
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-fg">TiÃªu Ä‘á» <span className="text-error">*</span></label>
+                  <label className="mb-1 block text-sm font-medium text-fg">
+                    Tiêu đề <span className="text-error">*</span>
+                  </label>
                   <input
                     type="text"
                     value={title}
-                    onChange={e => setTitle(e.target.value)}
+                    onChange={(event) => setTitle(event.target.value)}
                     required
                     className="w-full rounded-xl border border-border/80 bg-surface px-3 py-2 text-sm text-fg focus:outline-none focus:ring-2 focus:ring-accent"
-                    placeholder="VD: BÆ¡m nÆ°á»›c bá»‹ rÃ²"
+                    placeholder="VD: Bơm nước bị rò"
                   />
                 </div>
+
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-fg">MÃ´ táº£</label>
+                  <label className="mb-1 block text-sm font-medium text-fg">Mô tả</label>
                   <textarea
                     rows={3}
                     value={description}
-                    onChange={e => setDescription(e.target.value)}
+                    onChange={(event) => setDescription(event.target.value)}
                     className="w-full resize-none rounded-xl border border-border/80 bg-surface px-3 py-2 text-sm text-fg focus:outline-none focus:ring-2 focus:ring-accent"
-                    placeholder="MÃ´ táº£ chi tiáº¿t váº¥n Ä‘á»..."
+                    placeholder="Mô tả chi tiết vấn đề..."
                   />
                 </div>
+
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-fg">HÃ¬nh áº£nh</label>
+                  <label className="mb-1 block text-sm font-medium text-fg">Hình ảnh</label>
                   <input ref={fileRef} type="file" accept="image/*" multiple onChange={handleFileChange} className="hidden" />
                   <button
                     type="button"
                     onClick={() => fileRef.current?.click()}
                     className="flex items-center gap-2 rounded-xl border border-border/80 px-4 py-2 text-sm text-fg-muted transition-colors hover:bg-sidebar"
                   >
-                    <Camera size={16} /> Chá»n hÃ¬nh áº£nh
+                    <Camera size={16} />
+                    Chọn hình ảnh
                   </button>
+
                   {previewUrls.length > 0 && (
                     <div className="mt-2 flex flex-wrap gap-2">
                       {previewUrls.map((url, index) => (
-                        <div key={index} className="relative">
+                        <div key={url} className="relative">
                           <img src={url} alt="" className="h-20 w-20 rounded-xl border border-border/80 object-cover" />
                           <button
                             type="button"
@@ -160,13 +196,23 @@ export default function TenantMaintenancePage() {
                     </div>
                   )}
                 </div>
+
                 {error && <p className="text-sm text-error">{error}</p>}
+
                 <div className="flex gap-3 pt-2">
-                  <Button type="button" variant="outline" className="flex-1" onClick={() => setShowCreate(false)}>
-                    Há»§y
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="flex-1"
+                    onClick={() => {
+                      setShowCreate(false)
+                      resetForm()
+                    }}
+                  >
+                    Hủy
                   </Button>
                   <Button type="submit" variant="primary" className="flex-1" disabled={createMutation.isPending || !activeRoom}>
-                    {createMutation.isPending ? 'Äang gá»­i...' : 'Gá»­i yÃªu cáº§u'}
+                    {createMutation.isPending ? 'Đang gửi...' : 'Gửi yêu cầu'}
                   </Button>
                 </div>
               </form>
@@ -178,29 +224,32 @@ export default function TenantMaintenancePage() {
           <ListSkeleton items={4} />
         ) : (
           <div className="space-y-4">
-            {requests.map(req => (
-              <Card key={req.id}>
+            {requests.map((request) => (
+              <Card key={request.id}>
                 <CardContent className="p-4">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
-                      <p className="font-medium text-fg">{req.title}</p>
-                      <p className="mt-1 text-sm text-fg-muted">{req.room?.roomNumber}</p>
-                      {req.description && <p className="mt-2 text-sm text-fg-muted">{req.description}</p>}
-                      {req.images.length > 0 && (
+                      <p className="font-medium text-fg">{request.title}</p>
+                      <p className="mt-1 text-sm text-fg-muted">{request.room?.roomNumber}</p>
+                      {request.description && <p className="mt-2 text-sm text-fg-muted">{request.description}</p>}
+                      {request.images.length > 0 && (
                         <div className="mt-2 flex flex-wrap gap-2">
-                          {req.images.map((img, index) => (
-                            <img key={index} src={img} alt="" className="h-16 w-16 rounded-xl border border-border/80 object-cover" />
+                          {request.images.map((image) => (
+                            <img key={image} src={image} alt="" className="h-16 w-16 rounded-xl border border-border/80 object-cover" />
                           ))}
                         </div>
                       )}
                     </div>
-                    <Badge status={req.status} />
+                    <Badge status={request.status} />
                   </div>
-                  <p className="mt-3 text-xs text-fg-subtle">NgÃ y táº¡o: {formatDate(req.createdAt)}</p>
+                  <p className="mt-3 text-xs text-fg-subtle">Ngày tạo: {formatDate(request.createdAt)}</p>
                 </CardContent>
               </Card>
             ))}
-            {requests.length === 0 && <p className="py-8 text-center text-fg-subtle">ChÆ°a cÃ³ yÃªu cáº§u báº£o trÃ¬</p>}
+
+            {requests.length === 0 && (
+              <p className="py-8 text-center text-fg-subtle">Chưa có yêu cầu bảo trì</p>
+            )}
           </div>
         )}
       </div>

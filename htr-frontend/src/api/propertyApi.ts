@@ -11,6 +11,8 @@ export const propertyApi = {
     address: string;
     propertyTypeId: string;
     description?: string;
+    floorCount?: number | null;
+    roomCount?: number | null;
   }) => api.post<Property>("/properties", data).then((r) => r.data),
   update: (
     id: string,
@@ -19,6 +21,8 @@ export const propertyApi = {
       address: string;
       propertyTypeId: string;
       description?: string;
+      floorCount?: number | null;
+      roomCount?: number | null;
     },
   ) => api.put<Property>(`/properties/${id}`, data).then((r) => r.data),
   getFeeConfig: (id: string) =>

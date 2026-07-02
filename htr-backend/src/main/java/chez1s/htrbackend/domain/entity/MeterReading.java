@@ -1,5 +1,6 @@
 package chez1s.htrbackend.domain.entity;
 
+import chez1s.htrbackend.domain.enums.MeterReadingSource;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -37,6 +38,11 @@ public class MeterReading {
 
     @Column(name = "water_new")
     private Long waterNew;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    @Builder.Default
+    private MeterReadingSource source = MeterReadingSource.MANUAL;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "recorded_by", nullable = false)

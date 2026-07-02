@@ -36,6 +36,8 @@ type FlatMaintenanceLike = Partial<Omit<MaintenanceRequest, 'room' | 'tenant' | 
   propertyId?: string
   tenantId?: string
   tenantName?: string
+  assignedToId?: string
+  assignedToName?: string
   status?: MaintenanceRequest['status']
 }
 
@@ -158,7 +160,15 @@ export function normalizeMaintenanceRequest(requestLike: FlatMaintenanceLike): M
     description: requestLike.description,
     images: requestLike.images ?? [],
     status: requestLike.status ?? 'OPEN',
-    assignedTo: requestLike.assignedTo,
+    assignedTo: requestLike.assignedTo ?? (
+      requestLike.assignedToId || requestLike.assignedToName
+        ? emptyUser({
+            id: requestLike.assignedToId ?? '',
+            fullName: requestLike.assignedToName ?? '',
+            role: 'TECHNICIAN',
+          })
+        : undefined
+    ),
     resolvedAt: requestLike.resolvedAt,
     createdAt: requestLike.createdAt ?? '',
     updatedAt: requestLike.updatedAt ?? '',

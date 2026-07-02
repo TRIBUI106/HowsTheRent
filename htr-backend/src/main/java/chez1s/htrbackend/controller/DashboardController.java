@@ -38,6 +38,7 @@ public class DashboardController {
     public ResponseEntity<Map<String, Object>> getDashboard(Authentication auth) {
         UUID ownerId = (UUID) auth.getPrincipal();
         var properties = propertyService.listByOwner(ownerId);
+        var propertyIds = properties.stream().map(p -> p.getId()).toList();
 
         long totalRooms = 0;
         long occupiedRooms = 0;
@@ -51,12 +52,13 @@ public class DashboardController {
             emptyRooms += roomRepository.countByPropertyIdAndStatus(pid, RoomStatus.EMPTY);
         }
 
-        long pendingInvoices = invoiceRepository.countByStatus(InvoiceStatus.PENDING);
-        long overdueInvoices = invoiceRepository.countByStatus(InvoiceStatus.OVERDUE);
-        long openMaintenance = maintenanceRepository.countByStatus(MaintenanceStatus.OPEN);
-        long inProgressMaintenance = maintenanceRepository.countByStatus(MaintenanceStatus.IN_PROGRESS);
-        BigDecimal revenueThisMonth = invoiceRepository.sumPaidAmountByMonth(
-                LocalDate.now().withDayOfMonth(1));
+        long pendingInvoices = invoiceRepository.countByRoomPropertyOwnerIdAndStatus(ownerId, InvoiceStatus.PENDING);
+        long overdueInvoices = invoiceRepository.countByRoomPropertyOwnerIdAndStatus(ownerId, InvoiceStatus.OVERDUE);
+        long openMaintenance = maintenanceRepository.countByRoomPropertyOwnerIdAndStatus(ownerId, MaintenanceStatus.OPEN);
+        long inProgressMaintenance = maintenanceRepository.countByRoomPropertyOwnerIdAndStatus(ownerId, MaintenanceStatus.IN_PROGRESS);
+        BigDecimal revenueThisMonth = propertyIds.isEmpty()
+                ? BigDecimal.ZERO
+                : invoiceRepository.sumPaidAmountByMonthAndPropertyIds(LocalDate.now().withDayOfMonth(1), propertyIds);
 
         Map<String, Object> dashboard = new LinkedHashMap<>();
         dashboard.put("totalProperties", properties.size());
@@ -79,12 +81,14 @@ public class DashboardController {
             @RequestParam(defaultValue = "12") int months) {
         UUID ownerId = (UUID) auth.getPrincipal();
         var properties = propertyService.listByOwner(ownerId);
+        var propertyIds = properties.stream().map(p -> p.getId()).toList();
         List<Map<String, Object>> result = new ArrayList<>();
         LocalDate today = LocalDate.now();
         for (int i = months - 1; i >= 0; i--) {
             LocalDate month = today.minusMonths(i);
-            BigDecimal amount = invoiceRepository.sumPaidAmountByMonthAndPropertyIds(
-                month, properties.stream().map(p -> p.getId()).toList());
+            BigDecimal amount = propertyIds.isEmpty()
+                    ? BigDecimal.ZERO
+                    : invoiceRepository.sumPaidAmountByMonthAndPropertyIds(month, propertyIds);
             Map<String, Object> entry = new LinkedHashMap<>();
             entry.put("month", month.toString());
             entry.put("label", month.getMonth().getDisplayName(TextStyle.SHORT, Locale.forLanguageTag("vi")));

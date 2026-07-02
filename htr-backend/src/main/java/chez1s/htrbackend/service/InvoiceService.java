@@ -41,8 +41,11 @@ public class InvoiceService {
         return invoiceRepository.findAll();
     }
 
-    public PageResponse<InvoiceResponse> listAll(Pageable pageable) {
-        return PageResponse.from(invoiceRepository.findAll(pageable).map(InvoiceResponse::from));
+    public PageResponse<InvoiceResponse> listAllByOwner(UUID ownerId, Pageable pageable, InvoiceStatus status) {
+        var page = status == null
+                ? invoiceRepository.findByRoomPropertyOwnerId(ownerId, pageable)
+                : invoiceRepository.findByRoomPropertyOwnerIdAndStatus(ownerId, status, pageable);
+        return PageResponse.from(page.map(InvoiceResponse::from));
     }
 
     public List<Invoice> listByTenant(UUID tenantId) {

@@ -36,8 +36,8 @@ public class MaintenanceService {
         return maintenanceRepository.findAll();
     }
 
-    public PageResponse<MaintenanceRequestResponse> listAll(Pageable pageable) {
-        return PageResponse.from(maintenanceRepository.findAll(pageable).map(MaintenanceRequestResponse::from));
+    public PageResponse<MaintenanceRequestResponse> listAllByOwner(UUID ownerId, Pageable pageable) {
+        return PageResponse.from(maintenanceRepository.findByRoomPropertyOwnerId(ownerId, pageable).map(MaintenanceRequestResponse::from));
     }
 
     public List<MaintenanceRequest> listByTenant(UUID tenantId) {

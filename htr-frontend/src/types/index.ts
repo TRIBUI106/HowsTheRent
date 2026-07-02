@@ -38,6 +38,8 @@ export interface Property {
   propertyTypeCode: string
   propertyTypeName: string
   description?: string
+  floorCount?: number | null
+  roomCount?: number | null
   createdAt: string
   updatedAt: string
 }
@@ -95,6 +97,7 @@ export interface MeterReading {
   elecNew: number
   waterOld?: number
   waterNew?: number
+  source?: 'MANUAL' | 'HUNONIC'
   recordedBy: User
   recordedAt: string
 }

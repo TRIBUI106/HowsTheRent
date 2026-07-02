@@ -15,6 +15,7 @@ public record MeterReadingResponse(
         Long elecNew,
         Long waterOld,
         Long waterNew,
+        String source,
         UUID recordedById,
         String recordedByName,
         LocalDateTime recordedAt
@@ -29,6 +30,7 @@ public record MeterReadingResponse(
                 m.getElecNew(),
                 m.getWaterOld(),
                 m.getWaterNew(),
+                m.getSource().name(),
                 m.getRecordedBy().getId(),
                 m.getRecordedBy().getFullName(),
                 m.getRecordedAt()

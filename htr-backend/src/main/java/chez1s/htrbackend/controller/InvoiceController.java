@@ -1,6 +1,7 @@
 package chez1s.htrbackend.controller;
 
 import chez1s.htrbackend.domain.entity.Invoice;
+import chez1s.htrbackend.domain.enums.InvoiceStatus;
 import chez1s.htrbackend.dto.response.InvoiceGenerationResponse;
 import chez1s.htrbackend.dto.response.InvoiceResponse;
 import chez1s.htrbackend.dto.response.PageResponse;
@@ -31,8 +32,11 @@ public class InvoiceController {
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<PageResponse<InvoiceResponse>> listAll(
+            Authentication auth,
+            @RequestParam(required = false) InvoiceStatus status,
             @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
-        return ResponseEntity.ok(invoiceService.listAll(pageable));
+        UUID ownerId = (UUID) auth.getPrincipal();
+        return ResponseEntity.ok(invoiceService.listAllByOwner(ownerId, pageable, status));
     }
 
     @GetMapping("/mine")
