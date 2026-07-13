@@ -1,6 +1,7 @@
 package chez1s.htrbackend.controller;
 
 import chez1s.htrbackend.domain.entity.MaintenanceRequest;
+import chez1s.htrbackend.domain.enums.MaintenanceStatus;
 import chez1s.htrbackend.dto.request.CreateMaintenanceRequest;
 import chez1s.htrbackend.dto.response.MaintenanceRequestResponse;
 import chez1s.htrbackend.dto.response.PageResponse;
@@ -19,6 +20,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -61,7 +63,7 @@ public class MaintenanceController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('TENANT')")
+    @PreAuthorize("hasAnyRole('TENANT','ADMIN')")
     public ResponseEntity<MaintenanceRequestResponse> create(Authentication auth,
                                                              @Valid @RequestBody CreateMaintenanceRequest req) {
         UUID tenantId = (UUID) auth.getPrincipal();
@@ -74,6 +76,33 @@ public class MaintenanceController {
         return ResponseEntity.ok(MaintenanceRequestResponse.from(maintenanceService.assign(id, technicianId)));
     }
 
+    @PostMapping("/{id}/start")
+    @PreAuthorize("hasAnyRole('ADMIN','TECHNICIAN')")
+    public ResponseEntity<MaintenanceRequestResponse> startWork(@PathVariable UUID id) {
+        return ResponseEntity.ok(MaintenanceRequestResponse.from(maintenanceService.startWork(id)));
+    }
+
+    @PostMapping("/{id}/submit-review")
+    @PreAuthorize("hasAnyRole('ADMIN','TECHNICIAN')")
+    public ResponseEntity<MaintenanceRequestResponse> submitWork(@PathVariable UUID id,
+                                                                 @RequestParam(required = false) BigDecimal materialCost) {
+        return ResponseEntity.ok(MaintenanceRequestResponse.from(maintenanceService.submitWork(id, materialCost)));
+    }
+
+    @PostMapping("/{id}/cancel")
+    @PreAuthorize("hasAnyRole('ADMIN','TENANT')")
+    public ResponseEntity<MaintenanceRequestResponse> cancel(@PathVariable UUID id,
+                                                             @RequestParam("reason") String reason) {
+        return ResponseEntity.ok(MaintenanceRequestResponse.from(maintenanceService.cancel(id, reason)));
+    }
+
+    @PostMapping("/{id}/update-status")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<MaintenanceRequestResponse> updateStatus(@PathVariable UUID id,
+                                                                   @RequestParam("status") MaintenanceStatus status) {
+        return ResponseEntity.ok(MaintenanceRequestResponse.from(maintenanceService.updateStatus(id, status)));
+    }
+
     @PostMapping("/{id}/resolve")
     @PreAuthorize("hasAnyRole('ADMIN','TECHNICIAN')")
     public ResponseEntity<MaintenanceRequestResponse> resolve(@PathVariable UUID id) {
@@ -81,7 +110,7 @@ public class MaintenanceController {
     }
 
     @PostMapping(value = "/with-images", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @PreAuthorize("hasRole('TENANT')")
+    @PreAuthorize("hasAnyRole('TENANT','ADMIN')")
     public ResponseEntity<MaintenanceRequestResponse> createWithImages(
             Authentication auth,
             @RequestParam("title") String title,

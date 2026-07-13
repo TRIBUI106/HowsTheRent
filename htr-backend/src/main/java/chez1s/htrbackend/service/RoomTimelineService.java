@@ -138,8 +138,12 @@ public class RoomTimelineService {
         if (mr.getAssignedTo() != null) meta.put("assignedTo", mr.getAssignedTo().getFullName());
         String statusVi = switch (mr.getStatus()) {
             case OPEN -> "Mới";
+            case ASSIGNED -> "Đã phân công";
             case IN_PROGRESS -> "Đang xử lý";
-            case DONE -> "Đã xong";
+            case PENDING_PAYMENT -> "Chờ thanh toán vật tư";
+            case PENDING_REVIEW -> "Chờ nghiệm thu";
+            case COMPLETED, DONE -> "Đã xong";
+            case CANCELLED -> "Đã hủy";
         };
         return new RoomTimelineResponse(
                 "MAINTENANCE",

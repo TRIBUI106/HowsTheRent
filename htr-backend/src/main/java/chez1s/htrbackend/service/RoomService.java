@@ -1,8 +1,13 @@
 package chez1s.htrbackend.service;
 
+import chez1s.htrbackend.domain.entity.MaintenanceRequest;
 import chez1s.htrbackend.domain.entity.Property;
 import chez1s.htrbackend.domain.entity.Room;
+import chez1s.htrbackend.domain.enums.MaintenanceCategory;
+import chez1s.htrbackend.domain.enums.MaintenancePriority;
+import chez1s.htrbackend.domain.enums.MaintenanceStatus;
 import chez1s.htrbackend.domain.enums.RoomStatus;
+import chez1s.htrbackend.domain.repository.MaintenanceRequestRepository;
 import chez1s.htrbackend.domain.repository.RoomRepository;
 import chez1s.htrbackend.dto.request.CreateRoomRequest;
 import chez1s.htrbackend.exception.ResourceNotFoundException;
@@ -19,6 +24,7 @@ public class RoomService {
 
     private final RoomRepository roomRepository;
     private final PropertyService propertyService;
+    private final MaintenanceRequestRepository maintenanceRepository;
 
     public List<Room> listByProperty(UUID propertyId) {
         return roomRepository.findByPropertyId(propertyId);
@@ -62,16 +68,37 @@ public class RoomService {
 
     @Transactional
     public Room updateStatus(UUID propertyId, UUID id, RoomStatus status) {
-        Room room = getById(propertyId, id);
-        room.setStatus(status);
-        return roomRepository.save(room);
+        return applyStatusChange(getById(propertyId, id), status);
     }
 
     @Transactional
     public Room updateStatus(UUID id, RoomStatus status) {
-        Room room = getById(id);
-        room.setStatus(status);
-        return roomRepository.save(room);
+        return applyStatusChange(getById(id), status);
+    }
+
+    private Room applyStatusChange(Room room, RoomStatus newStatus) {
+        room.setStatus(newStatus);
+        Room saved = roomRepository.save(room);
+
+        if (newStatus == RoomStatus.MAINTENANCE) {
+            long activeTickets = maintenanceRepository.countByRoomIdAndStatusNotIn(
+                    saved.getId(),
+                    List.of(MaintenanceStatus.DONE, MaintenanceStatus.COMPLETED, MaintenanceStatus.CANCELLED)
+            );
+            if (activeTickets == 0) {
+                MaintenanceRequest req = MaintenanceRequest.builder()
+                        .room(saved)
+                        .tenant(saved.getProperty().getOwner())
+                        .title("Bảo trì phòng " + saved.getRoomNumber())
+                        .description("Phòng chuyển sang trạng thái bảo trì từ trang Quản lý phòng.")
+                        .status(MaintenanceStatus.OPEN)
+                        .priority(MaintenancePriority.NORMAL)
+                        .category(MaintenanceCategory.OTHER)
+                        .build();
+                maintenanceRepository.save(req);
+            }
+        }
+        return saved;
     }
 
     @Transactional

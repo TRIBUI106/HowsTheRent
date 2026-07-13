@@ -24,6 +24,7 @@ const summaryCards = [
   { label: 'Doanh thu tháng', key: 'revenueThisMonth', icon: BadgeDollarSign, tone: 'success', format: 'currency' },
   { label: 'Hóa đơn quá hạn', key: 'overdueInvoices', icon: AlertCircle, tone: 'error' },
   { label: 'Bảo trì mới', key: 'openMaintenance', icon: Wrench, tone: 'warning' },
+  { label: 'Khẩn cấp (URGENT)', key: 'urgentMaintenance', icon: AlertCircle, tone: 'error' },
   { label: 'Đang xử lý', key: 'inProgressMaintenance', icon: Clock, tone: 'accent' },
 ] satisfies Array<{
   label: string
@@ -48,8 +49,8 @@ const inventoryCards = [
 function DashboardSkeleton() {
   return (
     <div className="space-y-5">
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-4">
-        {Array.from({ length: 4 }).map((_, i) => (
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+        {Array.from({ length: 5 }).map((_, i) => (
           <div key={i} className="rounded-2xl border border-border/80 bg-surface p-5">
             <div className="h-3 w-24 rounded bg-sidebar animate-pulse" />
             <div className="mt-4 h-8 w-32 rounded bg-sidebar animate-pulse" />
@@ -138,7 +139,7 @@ export default function AdminDashboard() {
         </div>
       </section>
 
-      <section className="mb-5 grid grid-cols-1 gap-4 xl:grid-cols-4">
+      <section className="mb-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
         {summaryCards.map(card => {
           const Icon = card.icon
           const rawValue = data?.[card.key] ?? 0

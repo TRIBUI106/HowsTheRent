@@ -140,9 +140,14 @@ export interface MaintenanceRequest {
   title: string
   description?: string
   images: string[]
-  status: 'OPEN' | 'IN_PROGRESS' | 'DONE'
+  status: 'OPEN' | 'ASSIGNED' | 'IN_PROGRESS' | 'PENDING_PAYMENT' | 'PENDING_REVIEW' | 'COMPLETED' | 'CANCELLED' | 'DONE'
+  priority?: 'NORMAL' | 'HIGH' | 'URGENT'
+  category?: 'ELECTRIC' | 'PLUMBING' | 'AIR_CONDITIONER' | 'FURNITURE' | 'OTHER'
   assignedTo?: User
   resolvedAt?: string
+  expectedResolvedAt?: string
+  cancelReason?: string
+  materialCost?: number
   createdAt: string
   updatedAt: string
 }
@@ -169,6 +174,7 @@ export interface Dashboard {
   revenueThisMonth: number
   openMaintenance: number
   inProgressMaintenance: number
+  urgentMaintenance?: number
 }
 
 export interface RoomTimelineEntry {
