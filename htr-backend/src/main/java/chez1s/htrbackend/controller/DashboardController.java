@@ -1,11 +1,14 @@
 package chez1s.htrbackend.controller;
 
 import chez1s.htrbackend.domain.enums.InvoiceStatus;
+import chez1s.htrbackend.domain.enums.MaintenancePriority;
 import chez1s.htrbackend.domain.enums.MaintenanceStatus;
 import chez1s.htrbackend.domain.enums.RoomStatus;
+import chez1s.htrbackend.domain.enums.UserRole;
 import chez1s.htrbackend.domain.repository.InvoiceRepository;
 import chez1s.htrbackend.domain.repository.MaintenanceRequestRepository;
 import chez1s.htrbackend.domain.repository.RoomRepository;
+import chez1s.htrbackend.domain.repository.UserRepository;
 import chez1s.htrbackend.service.PropertyService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -16,12 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.TextStyle;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 @RestController
 @RequestMapping("/api/dashboard")
@@ -32,12 +30,20 @@ public class DashboardController {
     private final RoomRepository roomRepository;
     private final InvoiceRepository invoiceRepository;
     private final MaintenanceRequestRepository maintenanceRepository;
+    private final UserRepository userRepository;
+
+    private boolean isAdmin(UUID userId) {
+        return userRepository.findById(userId)
+                .map(u -> u.getRole() == UserRole.ADMIN)
+                .orElse(false);
+    }
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Map<String, Object>> getDashboard(Authentication auth) {
         UUID ownerId = (UUID) auth.getPrincipal();
-        var properties = propertyService.listByOwner(ownerId);
+        boolean admin = isAdmin(ownerId);
+        var properties = admin ? propertyService.listAll() : propertyService.listByOwner(ownerId);
         var propertyIds = properties.stream().map(p -> p.getId()).toList();
 
         long totalRooms = 0;
@@ -52,10 +58,27 @@ public class DashboardController {
             emptyRooms += roomRepository.countByPropertyIdAndStatus(pid, RoomStatus.EMPTY);
         }
 
-        long pendingInvoices = invoiceRepository.countByRoomPropertyOwnerIdAndStatus(ownerId, InvoiceStatus.PENDING);
-        long overdueInvoices = invoiceRepository.countByRoomPropertyOwnerIdAndStatus(ownerId, InvoiceStatus.OVERDUE);
-        long openMaintenance = maintenanceRepository.countByRoomPropertyOwnerIdAndStatus(ownerId, MaintenanceStatus.OPEN);
-        long inProgressMaintenance = maintenanceRepository.countByRoomPropertyOwnerIdAndStatus(ownerId, MaintenanceStatus.IN_PROGRESS);
+        long pendingInvoices = admin
+                ? invoiceRepository.countByStatus(InvoiceStatus.PENDING)
+                : invoiceRepository.countByRoomPropertyOwnerIdAndStatus(ownerId, InvoiceStatus.PENDING);
+        long overdueInvoices = admin
+                ? invoiceRepository.countByStatus(InvoiceStatus.OVERDUE)
+                : invoiceRepository.countByRoomPropertyOwnerIdAndStatus(ownerId, InvoiceStatus.OVERDUE);
+
+        List<MaintenanceStatus> openStatuses = List.of(MaintenanceStatus.OPEN, MaintenanceStatus.ASSIGNED);
+        List<MaintenanceStatus> inProgressStatuses = List.of(MaintenanceStatus.IN_PROGRESS, MaintenanceStatus.PENDING_PAYMENT, MaintenanceStatus.PENDING_REVIEW);
+        List<MaintenanceStatus> closedStatuses = List.of(MaintenanceStatus.DONE, MaintenanceStatus.COMPLETED, MaintenanceStatus.CANCELLED);
+
+        long openMaintenance = admin
+                ? maintenanceRepository.countByStatusIn(openStatuses)
+                : maintenanceRepository.countByRoomPropertyOwnerIdAndStatusIn(ownerId, openStatuses);
+        long inProgressMaintenance = admin
+                ? maintenanceRepository.countByStatusIn(inProgressStatuses)
+                : maintenanceRepository.countByRoomPropertyOwnerIdAndStatusIn(ownerId, inProgressStatuses);
+        long urgentMaintenance = admin
+                ? maintenanceRepository.countByPriorityInAndStatusNotIn(List.of(MaintenancePriority.URGENT), closedStatuses)
+                : maintenanceRepository.countByRoomPropertyOwnerIdAndPriorityInAndStatusNotIn(ownerId, List.of(MaintenancePriority.URGENT), closedStatuses);
+
         BigDecimal revenueThisMonth = propertyIds.isEmpty()
                 ? BigDecimal.ZERO
                 : invoiceRepository.sumPaidAmountByMonthAndPropertyIds(LocalDate.now().withDayOfMonth(1), propertyIds);
@@ -71,6 +94,7 @@ public class DashboardController {
         dashboard.put("revenueThisMonth", revenueThisMonth);
         dashboard.put("openMaintenance", openMaintenance);
         dashboard.put("inProgressMaintenance", inProgressMaintenance);
+        dashboard.put("urgentMaintenance", urgentMaintenance);
         return ResponseEntity.ok(dashboard);
     }
 
@@ -80,7 +104,8 @@ public class DashboardController {
             Authentication auth,
             @RequestParam(defaultValue = "12") int months) {
         UUID ownerId = (UUID) auth.getPrincipal();
-        var properties = propertyService.listByOwner(ownerId);
+        boolean admin = isAdmin(ownerId);
+        var properties = admin ? propertyService.listAll() : propertyService.listByOwner(ownerId);
         var propertyIds = properties.stream().map(p -> p.getId()).toList();
         List<Map<String, Object>> result = new ArrayList<>();
         LocalDate today = LocalDate.now();

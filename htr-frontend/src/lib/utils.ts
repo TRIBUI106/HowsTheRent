@@ -90,8 +90,13 @@ export function statusColor(status: string): string {
     PAID: 'bg-badge-green text-badge-green-text',
     OVERDUE: 'bg-badge-red text-badge-red-text',
     OPEN: 'bg-badge-orange text-badge-orange-text',
+    ASSIGNED: 'bg-badge-blue text-badge-blue-text',
     IN_PROGRESS: 'bg-badge-blue text-badge-blue-text',
+    PENDING_PAYMENT: 'bg-badge-amber text-badge-amber-text',
+    PENDING_REVIEW: 'bg-badge-blue text-badge-blue-text',
+    COMPLETED: 'bg-badge-green text-badge-green-text',
     DONE: 'bg-badge-green text-badge-green-text',
+    CANCELLED: 'bg-badge-neutral text-badge-neutral-text',
     ACTIVE: 'bg-badge-green text-badge-green-text',
     INACTIVE: 'bg-badge-neutral text-badge-neutral-text',
     TERMINATED: 'bg-badge-neutral text-badge-neutral-text',
@@ -109,12 +114,46 @@ export function statusLabel(status: string): string {
     PAID: 'Đã thanh toán',
     OVERDUE: 'Quá hạn',
     OPEN: 'Mới',
+    ASSIGNED: 'Đã phân công',
     IN_PROGRESS: 'Đang xử lý',
+    PENDING_PAYMENT: 'Chờ thanh toán vật tư',
+    PENDING_REVIEW: 'Chờ nghiệm thu',
+    COMPLETED: 'Hoàn thành',
     DONE: 'Hoàn thành',
+    CANCELLED: 'Đã hủy',
     ACTIVE: 'Hoạt động',
     INACTIVE: 'Không hoạt động',
     TERMINATED: 'Đã kết thúc',
     EXPIRED: 'Hết hạn',
   }
   return map[status] || status
+}
+
+export function priorityColor(priority?: string): string {
+  const map: Record<string, string> = {
+    NORMAL: 'bg-badge-neutral text-badge-neutral-text',
+    HIGH: 'bg-badge-amber text-badge-amber-text',
+    URGENT: 'bg-badge-red text-badge-red-text',
+  }
+  return map[priority ?? 'NORMAL'] || 'bg-badge-neutral text-badge-neutral-text'
+}
+
+export function priorityLabel(priority?: string): string {
+  const map: Record<string, string> = {
+    NORMAL: 'Bình thường',
+    HIGH: 'Cao',
+    URGENT: 'Khẩn cấp',
+  }
+  return map[priority ?? 'NORMAL'] || 'Bình thường'
+}
+
+export function categoryLabel(category?: string): string {
+  const map: Record<string, string> = {
+    ELECTRIC: 'Điện',
+    PLUMBING: 'Nước / Đường ống',
+    AIR_CONDITIONER: 'Điều hòa',
+    FURNITURE: 'Nội thất',
+    OTHER: 'Khác',
+  }
+  return map[category ?? 'OTHER'] || 'Khác'
 }

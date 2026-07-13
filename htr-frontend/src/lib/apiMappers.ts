@@ -39,6 +39,20 @@ type FlatMaintenanceLike = Partial<Omit<MaintenanceRequest, 'room' | 'tenant' | 
   assignedToId?: string
   assignedToName?: string
   status?: MaintenanceRequest['status']
+  priority?: MaintenanceRequest['priority']
+  category?: MaintenanceRequest['category']
+  ticketCode?: string
+  preferredTimeSlots?: string[]
+  confirmedTimeSlot?: string
+  confirmSlotByTenant?: boolean
+  completionImages?: string[]
+  attachmentVideo?: string
+  startedAt?: string
+  isOverdueSla?: boolean
+  isComplained?: boolean
+  complainReason?: string
+  cancelReason?: string
+  materialCost?: number
 }
 
 type FlatContractLike = Partial<Omit<Contract, 'room' | 'tenant' | 'status'>> & {
@@ -160,6 +174,8 @@ export function normalizeMaintenanceRequest(requestLike: FlatMaintenanceLike): M
     description: requestLike.description,
     images: requestLike.images ?? [],
     status: requestLike.status ?? 'OPEN',
+    priority: requestLike.priority ?? 'NORMAL',
+    category: requestLike.category ?? 'OTHER',
     assignedTo: requestLike.assignedTo ?? (
       requestLike.assignedToId || requestLike.assignedToName
         ? emptyUser({
@@ -170,6 +186,19 @@ export function normalizeMaintenanceRequest(requestLike: FlatMaintenanceLike): M
         : undefined
     ),
     resolvedAt: requestLike.resolvedAt,
+    expectedResolvedAt: requestLike.expectedResolvedAt,
+    ticketCode: requestLike.ticketCode,
+    preferredTimeSlots: requestLike.preferredTimeSlots ?? [],
+    confirmedTimeSlot: requestLike.confirmedTimeSlot,
+    confirmSlotByTenant: requestLike.confirmSlotByTenant,
+    completionImages: requestLike.completionImages ?? [],
+    attachmentVideo: requestLike.attachmentVideo,
+    startedAt: requestLike.startedAt,
+    isOverdueSla: requestLike.isOverdueSla,
+    isComplained: requestLike.isComplained,
+    complainReason: requestLike.complainReason,
+    cancelReason: requestLike.cancelReason,
+    materialCost: requestLike.materialCost,
     createdAt: requestLike.createdAt ?? '',
     updatedAt: requestLike.updatedAt ?? '',
   }

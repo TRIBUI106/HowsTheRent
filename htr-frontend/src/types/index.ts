@@ -133,6 +133,28 @@ export interface Invoice {
   paidAt?: string
 }
 
+export interface MaintenanceMaterial {
+  id: string
+  requestId: string
+  name: string
+  quantity: number
+  unit: string
+  unitPrice: number
+  totalPrice: number
+  isFreeInContract?: boolean
+  createdAt?: string
+}
+
+export interface MaintenanceNote {
+  id: string
+  requestId: string
+  actorId?: string
+  actorName?: string
+  status?: string
+  note: string
+  createdAt: string
+}
+
 export interface MaintenanceRequest {
   id: string
   room: Room
@@ -140,12 +162,28 @@ export interface MaintenanceRequest {
   title: string
   description?: string
   images: string[]
-  status: 'OPEN' | 'IN_PROGRESS' | 'DONE'
+  status: 'OPEN' | 'ASSIGNED' | 'IN_PROGRESS' | 'PENDING_PAYMENT' | 'PENDING_REVIEW' | 'COMPLETED' | 'CANCELLED' | 'DONE'
+  priority?: 'NORMAL' | 'HIGH' | 'URGENT'
+  category?: 'ELECTRIC' | 'PLUMBING' | 'AIR_CONDITIONER' | 'FURNITURE' | 'OTHER'
   assignedTo?: User
   resolvedAt?: string
+  expectedResolvedAt?: string
+  ticketCode?: string
+  preferredTimeSlots?: string[]
+  confirmedTimeSlot?: string
+  confirmSlotByTenant?: boolean
+  completionImages?: string[]
+  attachmentVideo?: string
+  startedAt?: string
+  isOverdueSla?: boolean
+  isComplained?: boolean
+  complainReason?: string
+  cancelReason?: string
+  materialCost?: number
   createdAt: string
   updatedAt: string
 }
+
 
 export interface Notification {
   id: string
@@ -169,6 +207,7 @@ export interface Dashboard {
   revenueThisMonth: number
   openMaintenance: number
   inProgressMaintenance: number
+  urgentMaintenance?: number
 }
 
 export interface RoomTimelineEntry {
@@ -199,4 +238,50 @@ export interface AuditLog {
   requestPath?: string
   ipAddress?: string
   createdAt: string
+}
+
+export interface SlaRule {
+  id: string
+  priority?: 'NORMAL' | 'HIGH' | 'URGENT'
+  category?: 'ELECTRIC' | 'PLUMBING' | 'AIR_CONDITIONER' | 'FURNITURE' | 'OTHER'
+  maxHours: number
+  updatedAt?: string
+}
+
+export interface TechnicianPerformance {
+  technicianId: string
+  technicianName: string
+  specialties: string
+  assignedCount: number
+  activeCount: number
+  completedCount: number
+  overdueSlaCount: number
+  avgRatingStars: number
+  totalReviews: number
+}
+
+export interface MaintenanceReportSummary {
+  totalTickets: number
+  completedTickets: number
+  openTickets: number
+  inProgressTickets: number
+  overdueSlaTickets: number
+  avgResolutionHours: number
+  byCategory: Record<string, number>
+  byPriority: Record<string, number>
+  byStatus: Record<string, number>
+  technicianPerformance: TechnicianPerformance[]
+}
+
+export interface MaintenanceReview {
+  id: string
+  requestId: string
+  requestTitle?: string
+  technicianId?: string
+  technicianName?: string
+  tenantId?: string
+  tenantName?: string
+  ratingStars: number
+  comment?: string
+  createdAt?: string
 }

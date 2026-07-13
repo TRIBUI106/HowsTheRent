@@ -12,6 +12,8 @@ import UsersPage from '@/features/admin/pages/UsersPage'
 import MeterReadingsPage from '@/features/admin/pages/MeterReadingsPage'
 import AuditLogPage from '@/features/admin/pages/AuditLogPage'
 import RoomDetailPage from '@/features/admin/pages/RoomDetailPage'
+import ReportsPage from '@/features/admin/pages/ReportsPage'
+import SlaConfigPage from '@/features/admin/pages/SlaConfigPage'
 
 const ADMIN = ['ADMIN']
 
@@ -23,6 +25,8 @@ const adminRoutes = [
   <Route key="/admin/contracts" path="/admin/contracts" element={<RequireRole roles={ADMIN}><ContractsPage /></RequireRole>} />,
   <Route key="/admin/invoices" path="/admin/invoices" element={<RequireRole roles={ADMIN}><AdminInvoicesPage /></RequireRole>} />,
   <Route key="/admin/maintenance" path="/admin/maintenance" element={<RequireRole roles={ADMIN}><AdminMaintenancePage /></RequireRole>} />,
+  <Route key="/admin/reports" path="/admin/reports" element={<RequireRole roles={ADMIN}><ReportsPage /></RequireRole>} />,
+  <Route key="/admin/sla-config" path="/admin/sla-config" element={<RequireRole roles={ADMIN}><SlaConfigPage /></RequireRole>} />,
   <Route key="/admin/notifications" path="/admin/notifications" element={<RequireRole roles={ADMIN}><AdminNotificationsPage /></RequireRole>} />,
   <Route key="/admin/fee-config" path="/admin/fee-config" element={<RequireRole roles={ADMIN}><FeeConfigPage /></RequireRole>} />,
   <Route key="/admin/users" path="/admin/users" element={<RequireRole roles={ADMIN}><UsersPage /></RequireRole>} />,

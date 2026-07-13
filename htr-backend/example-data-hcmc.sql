@@ -48,12 +48,12 @@ SET
     updated_at = EXCLUDED.updated_at;
 
 -- Properties
-INSERT INTO properties (id, owner_id, name, address, type, description, created_at, updated_at)
+INSERT INTO properties (id, owner_id, name, address, type, description, floor_count, room_count, created_at, updated_at)
 VALUES
-    ('b3000000-0000-0000-0000-000000000001', 'b1000000-0000-0000-0000-000000000001', 'Masteri Thao Dien - Toa T3', '159 Xa lo Ha Noi, Phuong Thao Dien, TP Thu Duc, TP.HCM', 'b2000000-0000-0000-0000-000000000001', 'Can ho huu nghi cho nhom khach di lam tai khu dong thanh pho.', '2026-01-08 09:00:00', '2026-06-30 10:00:00'),
-    ('b3000000-0000-0000-0000-000000000002', 'b1000000-0000-0000-0000-000000000001', 'Vinhomes Central Park - Park 6', '208 Nguyen Huu Canh, Phuong 22, Quan Binh Thanh, TP.HCM', 'b2000000-0000-0000-0000-000000000001', 'Can ho huong song, phu hop cho gia dinh tre va nhan su van phong.', '2026-01-08 09:15:00', '2026-06-30 10:05:00'),
-    ('b3000000-0000-0000-0000-000000000003', 'b1000000-0000-0000-0000-000000000001', 'The Gold View - Block A', '346 Ben Van Don, Phuong 1, Quan 4, TP.HCM', 'b2000000-0000-0000-0000-000000000001', 'Can ho gan trung tam, de di Quan 1 va khu Ben Nghe.', '2026-01-08 09:30:00', '2026-06-30 10:10:00'),
-    ('b3000000-0000-0000-0000-000000000004', 'b1000000-0000-0000-0000-000000000001', 'Lexington Residence - Block LD', '67 Mai Chi Tho, Phuong An Phu, TP Thu Duc, TP.HCM', 'b2000000-0000-0000-0000-000000000001', 'Can ho co san noi that co ban, thich hop cho nguoi o lau dai.', '2026-01-08 09:45:00', '2026-06-30 10:15:00')
+    ('b3000000-0000-0000-0000-000000000001', 'b1000000-0000-0000-0000-000000000001', 'Masteri Thao Dien - Toa T3', '159 Xa lo Ha Noi, Phuong Thao Dien, TP Thu Duc, TP.HCM', 'b2000000-0000-0000-0000-000000000001', 'Can ho huu nghi cho nhom khach di lam tai khu dong thanh pho.', 25, 150, '2026-01-08 09:00:00', '2026-06-30 10:00:00'),
+    ('b3000000-0000-0000-0000-000000000002', 'b1000000-0000-0000-0000-000000000001', 'Vinhomes Central Park - Park 6', '208 Nguyen Huu Canh, Phuong 22, Quan Binh Thanh, TP.HCM', 'b2000000-0000-0000-0000-000000000001', 'Can ho huong song, phu hop cho gia dinh tre va nhan su van phong.', 30, 200, '2026-01-08 09:15:00', '2026-06-30 10:05:00'),
+    ('b3000000-0000-0000-0000-000000000003', 'b1000000-0000-0000-0000-000000000001', 'The Gold View - Block A', '346 Ben Van Don, Phuong 1, Quan 4, TP.HCM', 'b2000000-0000-0000-0000-000000000001', 'Can ho gan trung tam, de di Quan 1 va khu Ben Nghe.', 20, 120, '2026-01-08 09:30:00', '2026-06-30 10:10:00'),
+    ('b3000000-0000-0000-0000-000000000004', 'b1000000-0000-0000-0000-000000000001', 'Lexington Residence - Block LD', '67 Mai Chi Tho, Phuong An Phu, TP Thu Duc, TP.HCM', 'b2000000-0000-0000-0000-000000000001', 'Can ho co san noi that co ban, thich hop cho nguoi o lau dai.', 22, 140, '2026-01-08 09:45:00', '2026-06-30 10:15:00')
 ON CONFLICT (id) DO UPDATE
 SET
     owner_id = EXCLUDED.owner_id,
@@ -61,6 +61,8 @@ SET
     address = EXCLUDED.address,
     type = EXCLUDED.type,
     description = EXCLUDED.description,
+    floor_count = EXCLUDED.floor_count,
+    room_count = EXCLUDED.room_count,
     updated_at = EXCLUDED.updated_at;
 
 -- Fee configs
@@ -189,12 +191,12 @@ SET
 
 -- Maintenance requests
 INSERT INTO maintenance_requests (
-    id, room_id, tenant_id, title, description, status, assigned_to, resolved_at, created_at, updated_at
+    id, room_id, tenant_id, title, description, status, priority, category, ticket_code, assigned_to, resolved_at, created_at, updated_at
 )
 VALUES
-    ('b8000000-0000-0000-0000-000000000001', 'b5000000-0000-0000-0000-000000000002', 'b1000000-0000-0000-0000-000000000003', 'Dieu hoa lanh yeu vao buoi toi', 'May lanh van chay nhung khong du mat, dac biet tu 20h tro di.', 'OPEN', 'b1000000-0000-0000-0000-000000000008', NULL, '2026-06-29 20:35:00', '2026-06-29 20:35:00'),
-    ('b8000000-0000-0000-0000-000000000002', 'b5000000-0000-0000-0000-000000000004', 'b1000000-0000-0000-0000-000000000004', 'Cua phong tam bi keu', 'Ban le cua phong tam keu lon, can them dau mo va siet lai.', 'IN_PROGRESS', 'b1000000-0000-0000-0000-000000000009', NULL, '2026-06-27 18:10:00', '2026-06-30 08:15:00'),
-    ('b8000000-0000-0000-0000-000000000003', 'b5000000-0000-0000-0000-000000000009', 'b1000000-0000-0000-0000-000000000007', 'Den ban cong khong sang', 'Da thay bong den moi nhung van khong sang, nghi la do cong tac.', 'DONE', 'b1000000-0000-0000-0000-000000000008', '2026-06-25 15:40:00', '2026-06-24 19:45:00', '2026-06-25 15:40:00')
+    ('b8000000-0000-0000-0000-000000000001', 'b5000000-0000-0000-0000-000000000002', 'b1000000-0000-0000-0000-000000000003', 'Dieu hoa lanh yeu vao buoi toi', 'May lanh van chay nhung khong du mat, dac biet tu 20h tro di.', 'OPEN', 'HIGH', 'AIR_CONDITIONER', 'MNT-20260629-001', 'b1000000-0000-0000-0000-000000000008', NULL, '2026-06-29 20:35:00', '2026-06-29 20:35:00'),
+    ('b8000000-0000-0000-0000-000000000002', 'b5000000-0000-0000-0000-000000000004', 'b1000000-0000-0000-0000-000000000004', 'Cua phong tam bi keu', 'Ban le cua phong tam keu lon, can them dau mo va siet lai.', 'IN_PROGRESS', 'NORMAL', 'FURNITURE', 'MNT-20260627-002', 'b1000000-0000-0000-0000-000000000009', NULL, '2026-06-27 18:10:00', '2026-06-30 08:15:00'),
+    ('b8000000-0000-0000-0000-000000000003', 'b5000000-0000-0000-0000-000000000009', 'b1000000-0000-0000-0000-000000000007', 'Den ban cong khong sang', 'Da thay bong den moi nhung van khong sang, nghi la do cong tac.', 'DONE', 'NORMAL', 'ELECTRIC', 'MNT-20260624-003', 'b1000000-0000-0000-0000-000000000008', '2026-06-25 15:40:00', '2026-06-24 19:45:00', '2026-06-25 15:40:00')
 ON CONFLICT (id) DO UPDATE
 SET
     room_id = EXCLUDED.room_id,
@@ -202,6 +204,9 @@ SET
     title = EXCLUDED.title,
     description = EXCLUDED.description,
     status = EXCLUDED.status,
+    priority = EXCLUDED.priority,
+    category = EXCLUDED.category,
+    ticket_code = EXCLUDED.ticket_code,
     assigned_to = EXCLUDED.assigned_to,
     resolved_at = EXCLUDED.resolved_at,
     updated_at = EXCLUDED.updated_at;
