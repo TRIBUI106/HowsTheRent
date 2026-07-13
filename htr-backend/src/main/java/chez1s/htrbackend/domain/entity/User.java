@@ -37,6 +37,9 @@ public class User extends BaseEntity {
     @Column(name = "avatar_url")
     private String avatarUrl;
 
+    @Column(length = 255)
+    private String specialties;
+
     @Column(name = "is_active", nullable = false)
     private boolean active = true;
 }

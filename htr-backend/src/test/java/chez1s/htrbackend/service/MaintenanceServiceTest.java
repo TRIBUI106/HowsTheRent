@@ -44,6 +44,8 @@ class MaintenanceServiceTest {
     private MaintenanceNoteRepository noteRepository;
     @Spy
     private MaintenanceStateTransitionValidator transitionValidator = new MaintenanceStateTransitionValidator();
+    @Mock
+    private SlaService slaService;
 
     @InjectMocks
     private MaintenanceService maintenanceService;
@@ -77,6 +79,7 @@ class MaintenanceServiceTest {
                 .completionImages(new ArrayList<>())
                 .preferredTimeSlots(new ArrayList<>())
                 .build();
+        lenient().when(slaService.calculateExpectedResolvedAt(any(), any())).thenReturn(java.time.LocalDateTime.now().plusHours(1));
     }
 
     @Test

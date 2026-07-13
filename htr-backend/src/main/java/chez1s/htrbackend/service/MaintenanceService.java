@@ -36,6 +36,7 @@ public class MaintenanceService {
     private final MaintenanceMaterialRepository materialRepository;
     private final MaintenanceNoteRepository noteRepository;
     private final MaintenanceStateTransitionValidator transitionValidator;
+    private final SlaService slaService;
 
     private static final AtomicLong codeCounter = new AtomicLong(System.currentTimeMillis() % 1000);
 
@@ -107,6 +108,10 @@ public class MaintenanceService {
         User tenant = userRepository.findById(tenantId)
                 .orElse(User.builder().id(tenantId).build());
 
+        MaintenancePriority prio = req.getPriority() != null ? req.getPriority() : MaintenancePriority.NORMAL;
+        MaintenanceCategory cat = req.getCategory() != null ? req.getCategory() : MaintenanceCategory.OTHER;
+        java.time.LocalDateTime expectedAt = req.getExpectedResolvedAt() != null ? req.getExpectedResolvedAt() : slaService.calculateExpectedResolvedAt(prio, cat);
+
         MaintenanceRequest mr = MaintenanceRequest.builder()
                 .ticketCode(generateTicketCode())
                 .room(room)
@@ -117,9 +122,9 @@ public class MaintenanceService {
                 .attachmentVideo(req.getAttachmentVideo())
                 .preferredTimeSlots(req.getPreferredTimeSlots() != null ? req.getPreferredTimeSlots() : List.of())
                 .status(MaintenanceStatus.OPEN)
-                .priority(req.getPriority() != null ? req.getPriority() : MaintenancePriority.NORMAL)
-                .category(req.getCategory() != null ? req.getCategory() : MaintenanceCategory.OTHER)
-                .expectedResolvedAt(req.getExpectedResolvedAt())
+                .priority(prio)
+                .category(cat)
+                .expectedResolvedAt(expectedAt)
                 .build();
         mr = maintenanceRepository.save(mr);
 
