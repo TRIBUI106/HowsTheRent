@@ -239,3 +239,49 @@ export interface AuditLog {
   ipAddress?: string
   createdAt: string
 }
+
+export interface SlaRule {
+  id: string
+  priority?: 'NORMAL' | 'HIGH' | 'URGENT'
+  category?: 'ELECTRIC' | 'PLUMBING' | 'AIR_CONDITIONER' | 'FURNITURE' | 'OTHER'
+  maxHours: number
+  updatedAt?: string
+}
+
+export interface TechnicianPerformance {
+  technicianId: string
+  technicianName: string
+  specialties: string
+  assignedCount: number
+  activeCount: number
+  completedCount: number
+  overdueSlaCount: number
+  avgRatingStars: number
+  totalReviews: number
+}
+
+export interface MaintenanceReportSummary {
+  totalTickets: number
+  completedTickets: number
+  openTickets: number
+  inProgressTickets: number
+  overdueSlaTickets: number
+  avgResolutionHours: number
+  byCategory: Record<string, number>
+  byPriority: Record<string, number>
+  byStatus: Record<string, number>
+  technicianPerformance: TechnicianPerformance[]
+}
+
+export interface MaintenanceReview {
+  id: string
+  requestId: string
+  requestTitle?: string
+  technicianId?: string
+  technicianName?: string
+  tenantId?: string
+  tenantName?: string
+  ratingStars: number
+  comment?: string
+  createdAt?: string
+}

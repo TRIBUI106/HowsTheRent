@@ -1,8 +1,8 @@
 import { useRef, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Camera, X, Clock, AlertTriangle, CheckCircle, CreditCard, ShieldAlert } from 'lucide-react'
+import { Camera, X, Clock, AlertTriangle, CheckCircle, CreditCard, ShieldAlert, Star } from 'lucide-react'
 import api from '@/lib/api'
-import { maintenanceApi } from '@/api'
+import { maintenanceApi, reportApi } from '@/api'
 import { extractPageContent, getRoomPropertyName, normalizeContract } from '@/lib/apiMappers'
 import Layout from '@/components/Layout'
 import { Card, CardContent } from '@/components/ui/card'
@@ -36,6 +36,11 @@ export default function TenantMaintenancePage() {
   // Complain Modal State
   const [complainModalId, setComplainModalId] = useState<string | null>(null)
   const [complainReason, setComplainReason] = useState('')
+
+  // Review Modal State
+  const [reviewModalId, setReviewModalId] = useState<string | null>(null)
+  const [ratingStars, setRatingStars] = useState<number>(5)
+  const [reviewComment, setReviewComment] = useState('')
 
   const { data, isLoading } = useQuery({
     queryKey: ['tenant-maintenance'],
@@ -116,6 +121,19 @@ export default function TenantMaintenancePage() {
     },
     onError: (err: any) => {
       showToast({ message: err?.response?.data?.message ?? 'Lỗi khi khiếu nại', type: 'error' })
+    },
+  })
+
+  const reviewMutation = useMutation({
+    mutationFn: ({ id, stars, comment }: { id: string; stars: number; comment?: string }) => reportApi.createReview(id, stars, comment),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['tenant-maintenance'] })
+      setReviewModalId(null)
+      setReviewComment('')
+      showToast({ message: 'Đã gửi đánh giá chất lượng dịch vụ bảo trì!', type: 'success' })
+    },
+    onError: (err: any) => {
+      showToast({ message: err?.response?.data?.message ?? 'Không thể gửi đánh giá', type: 'error' })
     },
   })
 
@@ -558,6 +576,25 @@ export default function TenantMaintenancePage() {
                           </div>
                         </div>
                       )}
+
+                      {/* Đánh giá chất lượng dịch vụ khi hoàn thành */}
+                      {(request.status === 'COMPLETED' || request.status === 'DONE') && (
+                        <div className="flex flex-col items-end gap-2 pt-1">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              setReviewModalId(request.id)
+                              setRatingStars(5)
+                              setReviewComment('')
+                            }}
+                            className="flex items-center gap-1.5 border-amber-400 text-amber-700 hover:bg-amber-50 dark:border-amber-600 dark:text-amber-300 shadow-sm"
+                          >
+                            <Star size={14} className="fill-amber-500 text-amber-500" />
+                            Đánh giá chất lượng KTV
+                          </Button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </CardContent>
@@ -571,6 +608,79 @@ export default function TenantMaintenancePage() {
                 <p className="text-xs text-fg-muted mt-1">Phòng của bạn đang hoạt động ổn định.</p>
               </div>
             )}
+          </div>
+        )}
+
+        {/* Review Modal */}
+        {reviewModalId && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 animate-fade-in">
+            <Card className="w-full max-w-md rounded-2xl bg-surface p-6 shadow-xl border border-border space-y-4">
+              <div className="flex items-center justify-between border-b border-border pb-3">
+                <h3 className="text-lg font-semibold text-fg flex items-center gap-2">
+                  <Star className="w-5 h-5 fill-amber-500 text-amber-500" />
+                  Đánh Giá Chất Lượng Dịch Vụ
+                </h3>
+                <button
+                  onClick={() => setReviewModalId(null)}
+                  className="text-fg-subtle hover:text-fg transition-colors p-1"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-fg mb-2">Mức độ hài lòng của bạn</label>
+                  <div className="flex items-center gap-2">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button
+                        key={star}
+                        type="button"
+                        onClick={() => setRatingStars(star)}
+                        className="p-1 transition-transform hover:scale-110 focus:outline-none"
+                      >
+                        <Star
+                          size={28}
+                          className={star <= ratingStars ? 'fill-amber-500 text-amber-500' : 'text-gray-300 dark:text-gray-600'}
+                        />
+                      </button>
+                    ))}
+                    <span className="ml-2 text-sm font-bold text-amber-600">
+                      {ratingStars} / 5 sao
+                    </span>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-fg mb-1">Nhận xét chi tiết (tùy chọn)</label>
+                  <textarea
+                    rows={3}
+                    value={reviewComment}
+                    onChange={(e) => setReviewComment(e.target.value)}
+                    placeholder="Hãy chia sẻ nhận xét của bạn về thái độ phục vụ và chất lượng sửa chữa của kỹ thuật viên..."
+                    className="w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm text-fg focus:outline-none focus:ring-2 focus:ring-accent"
+                  />
+                </div>
+
+                <div className="flex justify-end gap-2 pt-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => setReviewModalId(null)}
+                    disabled={reviewMutation.isPending}
+                    className="rounded-xl"
+                  >
+                    Hủy bỏ
+                  </Button>
+                  <Button
+                    onClick={() => reviewMutation.mutate({ id: reviewModalId, stars: ratingStars, comment: reviewComment })}
+                    disabled={reviewMutation.isPending}
+                    className="bg-amber-600 hover:bg-amber-700 text-white rounded-xl shadow-sm"
+                  >
+                    {reviewMutation.isPending ? 'Đang gửi...' : 'Gửi đánh giá'}
+                  </Button>
+                </div>
+              </div>
+            </Card>
           </div>
         )}
       </div>
