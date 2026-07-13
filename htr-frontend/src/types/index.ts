@@ -133,6 +133,28 @@ export interface Invoice {
   paidAt?: string
 }
 
+export interface MaintenanceMaterial {
+  id: string
+  requestId: string
+  name: string
+  quantity: number
+  unit: string
+  unitPrice: number
+  totalPrice: number
+  isFreeInContract?: boolean
+  createdAt?: string
+}
+
+export interface MaintenanceNote {
+  id: string
+  requestId: string
+  actorId?: string
+  actorName?: string
+  status?: string
+  note: string
+  createdAt: string
+}
+
 export interface MaintenanceRequest {
   id: string
   room: Room
@@ -146,11 +168,22 @@ export interface MaintenanceRequest {
   assignedTo?: User
   resolvedAt?: string
   expectedResolvedAt?: string
+  ticketCode?: string
+  preferredTimeSlots?: string[]
+  confirmedTimeSlot?: string
+  confirmSlotByTenant?: boolean
+  completionImages?: string[]
+  attachmentVideo?: string
+  startedAt?: string
+  isOverdueSla?: boolean
+  isComplained?: boolean
+  complainReason?: string
   cancelReason?: string
   materialCost?: number
   createdAt: string
   updatedAt: string
 }
+
 
 export interface Notification {
   id: string

@@ -69,6 +69,45 @@ public class MaintenanceRequest extends BaseEntity {
     @Column(name = "expected_resolved_at")
     private LocalDateTime expectedResolvedAt;
 
+    @Column(name = "ticket_code", length = 30)
+    private String ticketCode;
+
+    @ElementCollection
+    @CollectionTable(name = "maintenance_preferred_slots", joinColumns = @JoinColumn(name = "request_id"))
+    @Column(name = "time_slot")
+    @Builder.Default
+    private List<String> preferredTimeSlots = new ArrayList<>();
+
+    @Column(name = "confirmed_time_slot", length = 100)
+    private String confirmedTimeSlot;
+
+    @Column(name = "confirm_slot_by_tenant")
+    @Builder.Default
+    private Boolean confirmSlotByTenant = false;
+
+    @ElementCollection
+    @CollectionTable(name = "maintenance_completion_images", joinColumns = @JoinColumn(name = "request_id"))
+    @Column(name = "image_url")
+    @Builder.Default
+    private List<String> completionImages = new ArrayList<>();
+
+    @Column(name = "attachment_video")
+    private String attachmentVideo;
+
+    @Column(name = "started_at")
+    private LocalDateTime startedAt;
+
+    @Column(name = "is_overdue_sla")
+    @Builder.Default
+    private Boolean isOverdueSla = false;
+
+    @Column(name = "is_complained")
+    @Builder.Default
+    private Boolean isComplained = false;
+
+    @Column(name = "complain_reason", columnDefinition = "TEXT")
+    private String complainReason;
+
     @Column(name = "cancel_reason", columnDefinition = "TEXT")
     private String cancelReason;
 

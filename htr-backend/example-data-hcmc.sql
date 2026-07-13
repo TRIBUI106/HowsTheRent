@@ -191,12 +191,12 @@ SET
 
 -- Maintenance requests
 INSERT INTO maintenance_requests (
-    id, room_id, tenant_id, title, description, status, assigned_to, resolved_at, created_at, updated_at
+    id, room_id, tenant_id, title, description, status, priority, category, ticket_code, assigned_to, resolved_at, created_at, updated_at
 )
 VALUES
-    ('b8000000-0000-0000-0000-000000000001', 'b5000000-0000-0000-0000-000000000002', 'b1000000-0000-0000-0000-000000000003', 'Dieu hoa lanh yeu vao buoi toi', 'May lanh van chay nhung khong du mat, dac biet tu 20h tro di.', 'OPEN', 'b1000000-0000-0000-0000-000000000008', NULL, '2026-06-29 20:35:00', '2026-06-29 20:35:00'),
-    ('b8000000-0000-0000-0000-000000000002', 'b5000000-0000-0000-0000-000000000004', 'b1000000-0000-0000-0000-000000000004', 'Cua phong tam bi keu', 'Ban le cua phong tam keu lon, can them dau mo va siet lai.', 'IN_PROGRESS', 'b1000000-0000-0000-0000-000000000009', NULL, '2026-06-27 18:10:00', '2026-06-30 08:15:00'),
-    ('b8000000-0000-0000-0000-000000000003', 'b5000000-0000-0000-0000-000000000009', 'b1000000-0000-0000-0000-000000000007', 'Den ban cong khong sang', 'Da thay bong den moi nhung van khong sang, nghi la do cong tac.', 'DONE', 'b1000000-0000-0000-0000-000000000008', '2026-06-25 15:40:00', '2026-06-24 19:45:00', '2026-06-25 15:40:00')
+    ('b8000000-0000-0000-0000-000000000001', 'b5000000-0000-0000-0000-000000000002', 'b1000000-0000-0000-0000-000000000003', 'Dieu hoa lanh yeu vao buoi toi', 'May lanh van chay nhung khong du mat, dac biet tu 20h tro di.', 'OPEN', 'HIGH', 'AIR_CONDITIONER', 'MNT-20260629-001', 'b1000000-0000-0000-0000-000000000008', NULL, '2026-06-29 20:35:00', '2026-06-29 20:35:00'),
+    ('b8000000-0000-0000-0000-000000000002', 'b5000000-0000-0000-0000-000000000004', 'b1000000-0000-0000-0000-000000000004', 'Cua phong tam bi keu', 'Ban le cua phong tam keu lon, can them dau mo va siet lai.', 'IN_PROGRESS', 'NORMAL', 'FURNITURE', 'MNT-20260627-002', 'b1000000-0000-0000-0000-000000000009', NULL, '2026-06-27 18:10:00', '2026-06-30 08:15:00'),
+    ('b8000000-0000-0000-0000-000000000003', 'b5000000-0000-0000-0000-000000000009', 'b1000000-0000-0000-0000-000000000007', 'Den ban cong khong sang', 'Da thay bong den moi nhung van khong sang, nghi la do cong tac.', 'DONE', 'NORMAL', 'ELECTRIC', 'MNT-20260624-003', 'b1000000-0000-0000-0000-000000000008', '2026-06-25 15:40:00', '2026-06-24 19:45:00', '2026-06-25 15:40:00')
 ON CONFLICT (id) DO UPDATE
 SET
     room_id = EXCLUDED.room_id,
@@ -204,6 +204,9 @@ SET
     title = EXCLUDED.title,
     description = EXCLUDED.description,
     status = EXCLUDED.status,
+    priority = EXCLUDED.priority,
+    category = EXCLUDED.category,
+    ticket_code = EXCLUDED.ticket_code,
     assigned_to = EXCLUDED.assigned_to,
     resolved_at = EXCLUDED.resolved_at,
     updated_at = EXCLUDED.updated_at;

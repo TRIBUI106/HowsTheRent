@@ -46,4 +46,10 @@ public interface MaintenanceRequestRepository extends JpaRepository<MaintenanceR
     long countByPriorityInAndStatusNotIn(List<MaintenancePriority> priorities, List<MaintenanceStatus> statuses);
     long countByRoomPropertyOwnerIdAndPriorityInAndStatusNotIn(UUID ownerId, List<MaintenancePriority> priorities, List<MaintenanceStatus> statuses);
     long countByAssignedToIdAndStatusNotIn(UUID technicianId, List<MaintenanceStatus> statuses);
+
+    @EntityGraph(attributePaths = {"room", "room.property", "tenant", "assignedTo"})
+    List<MaintenanceRequest> findByStatusInAndExpectedResolvedAtBeforeAndIsOverdueSlaFalse(List<MaintenanceStatus> statuses, java.time.LocalDateTime time);
+
+    @EntityGraph(attributePaths = {"room", "room.property", "tenant", "assignedTo"})
+    List<MaintenanceRequest> findByStatusAndUpdatedAtBefore(MaintenanceStatus status, java.time.LocalDateTime time);
 }

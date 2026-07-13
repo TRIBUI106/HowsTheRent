@@ -19,4 +19,6 @@ public class CreateMaintenanceRequest {
     private MaintenancePriority priority;
     private MaintenanceCategory category;
     private LocalDateTime expectedResolvedAt;
+    private List<String> preferredTimeSlots;
+    private String attachmentVideo;
 }
