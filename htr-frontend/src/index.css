@@ -1,8 +1,48 @@
 @import "tailwindcss";
 
 @theme {
-  /* Font */
-  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  /* ── Fonts ──────────────────────────────────────────────────────────────── */
+  /* Display: Instrument Serif — headings, hero, section titles (roman only)  */
+  /* Body:    Geist — prose, UI, labels (replaces Inter)                      */
+  --font-display: 'Instrument Serif', ui-serif, Georgia, serif;
+  --font-body:    'Geist', ui-sans-serif, system-ui, sans-serif;
+  --font-sans:    'Geist', ui-sans-serif, system-ui, sans-serif; /* alias for Tailwind utilities */
+
+  /* ── Spacing (4pt scale) ─────────────────────────────────────────────────── */
+  --space-3xs: 0.25rem;   /*  4px */
+  --space-2xs: 0.5rem;    /*  8px */
+  --space-xs:  0.75rem;   /* 12px */
+  --space-sm:  1rem;      /* 16px */
+  --space-md:  1.5rem;    /* 24px */
+  --space-lg:  2rem;      /* 32px */
+  --space-xl:  3rem;      /* 48px */
+  --space-2xl: 4rem;      /* 64px */
+  --space-3xl: 6rem;      /* 96px */
+  --space-4xl: 8rem;      /* 128px */
+
+  /* ── Easing canon ───────────────────────────────────────────────────────── */
+  --ease-out:      cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in:       cubic-bezier(0.7, 0, 0.84, 0);
+  --ease-in-out:   cubic-bezier(0.65, 0, 0.35, 1);
+
+  /* ── Durations ──────────────────────────────────────────────────────────── */
+  --dur-instant: 80ms;
+  --dur-short:   150ms;
+  --dur-medium:  250ms;
+  --dur-long:    400ms;
+
+  /* ── Rules ──────────────────────────────────────────────────────────────── */
+  --rule-hair:  1px;
+  --rule-thin:  1.5px;
+  --rule-thick: 3px;
+
+  /* ── Radius ─────────────────────────────────────────────────────────────── */
+  --radius-xs:  6px;
+  --radius-sm:  10px;
+  --radius-md:  14px;
+  --radius-lg:  20px;
+  --radius-xl:  28px;
+  --radius-full: 999px;
 
   /* Backgrounds */
   --color-bg:      oklch(0.984 0.004 240);
@@ -91,15 +131,37 @@
 }
 
 @layer base {
+  /* ── Overflow clip — prevents horizontal scroll at any viewport ─────────── */
+  /* Use `clip` not `hidden` — preserves position:sticky / position:fixed     */
+  html, body {
+    overflow-x: clip;
+  }
+
   html {
-    font-family: var(--font-sans);
+    font-family: var(--font-body);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 
   body {
-    background-color: oklch(0.984 0.004 240);
-    color: oklch(0.163 0.013 255);
+    background-color: var(--color-bg);
+    color: var(--color-fg);
+  }
+
+  /* ── Reduced-motion: collapse spatial motion to short opacity fade ───────── */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
+  /* ── Long-word wrap on all heading elements ──────────────────────────────── */
+  h1, h2, h3, h4, h5, h6 {
+    overflow-wrap: anywhere;
+    min-width: 0;
   }
 }
 
