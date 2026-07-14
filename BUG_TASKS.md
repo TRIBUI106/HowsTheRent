@@ -2,7 +2,7 @@
 
 ## Current
 
-- Kiểm thử B09 — Assign tự chuyển ticket sang ASSIGNED.
+- Kiểm thử B11 — Bắt buộc lý do hủy.
 
 ## Tasks
 
@@ -17,7 +17,7 @@
 - [x] B28 — Sửa layout trang KTV khi xoay ngang.
 - [x] B33 — Cảnh báo ticket khẩn cấp quá SLA.
 - [x] Kiểm thử B05/B06 — Số liệu bảo trì trên Dashboard.
-- [ ] Kiểm thử B09 — Assign tự chuyển ticket sang ASSIGNED.
+- [x] Kiểm thử B09 — Assign tự chuyển ticket sang ASSIGNED.
 - [ ] Kiểm thử B11 — Bắt buộc lý do hủy.
 - [ ] Kiểm thử B12/B26 — Hiển thị và tự tính chi phí vật tư.
 - [ ] Kiểm thử B14/B16/B17 — Điều hòa, ưu tiên và khung giờ.

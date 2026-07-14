@@ -65,7 +65,7 @@ class MaintenanceServiceTest {
         requestId = UUID.randomUUID();
 
         tenant = User.builder().id(tenantId).fullName("Tenant Name").build();
-        tech = User.builder().id(techId).fullName("Tech Name").build();
+        tech = User.builder().id(techId).fullName("Tech Name").role(chez1s.htrbackend.domain.enums.UserRole.TECHNICIAN).active(true).build();
         room = Room.builder().id(UUID.randomUUID()).roomNumber("101").property(Property.builder().id(UUID.randomUUID()).owner(User.builder().id(UUID.randomUUID()).build()).build()).build();
 
         sampleRequest = MaintenanceRequest.builder()
@@ -136,6 +136,7 @@ class MaintenanceServiceTest {
 
         assertEquals(MaintenanceStatus.ASSIGNED, result.getStatus());
         assertEquals(tech, result.getAssignedTo());
+        verify(maintenanceRepository).save(argThat(request -> request.getStatus() == MaintenanceStatus.ASSIGNED));
     }
 
     @Test
