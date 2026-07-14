@@ -14,6 +14,8 @@ export const invoiceApi = {
       .then((r) => r.data),
   markPaidCash: (id: string) =>
     api.post<Invoice>(`/invoices/${id}/pay-cash`).then((r) => r.data),
+  requestCashPayment: (id: string) =>
+    api.post<Invoice>(`/invoices/${id}/request-cash`).then((r) => r.data),
   createPaymentLink: (id: string) =>
     api
       .post<{ checkoutUrl: string }>(`/invoices/${id}/pay-online`)

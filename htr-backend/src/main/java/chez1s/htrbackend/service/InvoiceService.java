@@ -202,6 +202,27 @@ public class InvoiceService {
     }
 
     @Transactional
+    public Invoice requestCashPayment(UUID invoiceId, UUID tenantId) {
+        Invoice invoice = getById(invoiceId);
+        if (!invoice.getContract().getTenant().getId().equals(tenantId)) {
+            throw new BusinessException("Bạn không có quyền thanh toán hóa đơn này");
+        }
+        if (invoice.getStatus() == InvoiceStatus.PAID) {
+            throw new BusinessException("Hóa đơn đã được thanh toán");
+        }
+        invoice.setPaymentMethod(PaymentMethod.CASH);
+        invoice = invoiceRepository.save(invoice);
+        notificationService.create(
+                invoice.getRoom().getProperty().getOwner().getId(),
+                "Yêu cầu thanh toán tiền mặt",
+                "Khách thuê phòng " + invoice.getRoom().getRoomNumber() + " chọn thanh toán tiền mặt cho hóa đơn " + invoice.getInvoiceMonth(),
+                "INVOICE",
+                invoice.getId()
+        );
+        return invoice;
+    }
+
+    @Transactional
     public Invoice markPaidPayOS(String paymentLinkId, String transactionId) {
         Invoice invoice = invoiceRepository.findByPaymentLinkId(paymentLinkId)
                 .orElseThrow(() -> new ResourceNotFoundException("Invoice by paymentLinkId", paymentLinkId));

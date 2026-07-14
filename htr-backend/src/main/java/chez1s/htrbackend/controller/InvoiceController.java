@@ -66,10 +66,20 @@ public class InvoiceController {
         return ResponseEntity.ok(InvoiceResponse.from(invoiceService.markPaidCash(id)));
     }
 
+    @PostMapping("/{id}/request-cash")
+    @PreAuthorize("hasRole('TENANT')")
+    public ResponseEntity<InvoiceResponse> requestCash(Authentication auth, @PathVariable UUID id) {
+        return ResponseEntity.ok(InvoiceResponse.from(invoiceService.requestCashPayment(id, (UUID) auth.getPrincipal())));
+    }
+
     @PostMapping("/{id}/pay-online")
     @PreAuthorize("hasAnyRole('ADMIN','TENANT')")
-    public ResponseEntity<Map<String, String>> createPaymentLink(@PathVariable UUID id) {
+    public ResponseEntity<Map<String, String>> createPaymentLink(Authentication auth, @PathVariable UUID id) {
         Invoice invoice = invoiceService.getById(id);
+        boolean isAdmin = auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        if (!isAdmin && !invoice.getContract().getTenant().getId().equals((UUID) auth.getPrincipal())) {
+            throw new chez1s.htrbackend.exception.BusinessException("Bạn không có quyền thanh toán hóa đơn này");
+        }
         String checkoutUrl = payOSService.createPaymentLink(invoice);
         return ResponseEntity.ok(Map.of("checkoutUrl", checkoutUrl));
     }
