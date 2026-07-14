@@ -148,8 +148,8 @@ public class MaintenanceController {
 
     @PostMapping("/{id}/pay-material")
     @PreAuthorize("hasAnyRole('TENANT','ADMIN')")
-    public ResponseEntity<MaintenanceRequestResponse> payMaterial(@PathVariable UUID id) {
-        return ResponseEntity.ok(MaintenanceRequestResponse.from(maintenanceService.updateStatus(id, MaintenanceStatus.PENDING_REVIEW)));
+    public ResponseEntity<MaintenanceRequestResponse> payMaterial(Authentication auth, @PathVariable UUID id) {
+        return ResponseEntity.ok(MaintenanceRequestResponse.from(maintenanceService.payMaterial(id, (UUID) auth.getPrincipal())));
     }
 
     // Materials endpoints

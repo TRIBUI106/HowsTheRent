@@ -297,6 +297,40 @@ public class MaintenanceService {
     }
 
     @Transactional
+    public MaintenanceRequest payMaterial(UUID id, UUID actorId) {
+        MaintenanceRequest mr = getById(id);
+        User actor = userRepository.findById(actorId)
+                .orElseThrow(() -> new ResourceNotFoundException("User", actorId));
+        if (actor.getRole() == UserRole.TENANT && !mr.getTenant().getId().equals(actorId)) {
+            throw new BusinessException("Bạn không có quyền thanh toán chi phí của phiếu này.");
+        }
+        if (mr.getStatus() != MaintenanceStatus.PENDING_PAYMENT) {
+            throw new BusinessException("Phiếu không ở trạng thái chờ thanh toán.");
+        }
+        if (mr.getMaterialCost() == null || mr.getMaterialCost().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new BusinessException("Phiếu không có chi phí vật tư cần thanh toán.");
+        }
+
+        transitionValidator.validateTransition(mr.getStatus(), MaintenanceStatus.PENDING_REVIEW);
+        mr.setMaterialPaidAt(LocalDateTime.now());
+        mr.setStatus(MaintenanceStatus.PENDING_REVIEW);
+        mr = maintenanceRepository.save(mr);
+        addNote(mr.getId(), actorId, "Đã xác nhận thanh toán chi phí vật tư: " + mr.getMaterialCost() + " VNĐ");
+        publishMaintenanceUpdate(mr);
+
+        if (mr.getAssignedTo() != null) {
+            notificationService.create(
+                    mr.getAssignedTo().getId(),
+                    "Đã thanh toán vật tư " + mr.getTicketCode(),
+                    "Cư dân đã thanh toán " + mr.getMaterialCost() + " VNĐ. Phiếu chuyển sang chờ nghiệm thu.",
+                    "MAINTENANCE",
+                    mr.getId()
+            );
+        }
+        return mr;
+    }
+
+    @Transactional
     public MaintenanceRequest addImage(UUID requestId, String imageUrl) {
         MaintenanceRequest req = getById(requestId);
         req.getImages().add(imageUrl);

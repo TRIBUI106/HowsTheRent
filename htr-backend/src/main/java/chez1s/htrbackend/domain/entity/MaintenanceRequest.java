@@ -114,4 +114,7 @@ public class MaintenanceRequest extends BaseEntity {
     @Column(name = "material_cost", precision = 15, scale = 2)
     @Builder.Default
     private BigDecimal materialCost = BigDecimal.ZERO;
+
+    @Column(name = "material_paid_at")
+    private LocalDateTime materialPaidAt;
 }

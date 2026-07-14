@@ -36,6 +36,7 @@ public record MaintenanceRequestResponse(
         String complainReason,
         String cancelReason,
         BigDecimal materialCost,
+        LocalDateTime materialPaidAt,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {
@@ -69,6 +70,7 @@ public record MaintenanceRequestResponse(
                 m.getComplainReason(),
                 m.getCancelReason(),
                 m.getMaterialCost() != null ? m.getMaterialCost() : BigDecimal.ZERO,
+                m.getMaterialPaidAt(),
                 m.getCreatedAt(),
                 m.getUpdatedAt()
         );

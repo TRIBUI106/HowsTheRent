@@ -183,6 +183,7 @@ export interface MaintenanceRequest {
   complainReason?: string
   cancelReason?: string
   materialCost?: number
+  materialPaidAt?: string
   createdAt: string
   updatedAt: string
 }

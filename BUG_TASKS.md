@@ -2,7 +2,7 @@
 
 ## Current
 
-- B20 — Thanh toán chi phí vật tư và chuyển sang chờ nghiệm thu.
+- B23 (Cư dân) — Thanh toán hóa đơn bằng QR hoặc tiền mặt.
 
 ## Tasks
 
@@ -12,7 +12,7 @@
 - [x] B29 — Đồng bộ realtime trạng thái ticket giữa KTV và Admin.
 - [x] B08 — Lọc/cảnh báo KTV bận và ưu tiên đúng chuyên môn.
 - [x] B02 — Phòng chuyển sang bảo trì xuất hiện trong luồng bảo trì.
-- [ ] B20 — Thanh toán chi phí vật tư và chuyển sang chờ nghiệm thu.
+- [x] B20 — Thanh toán chi phí vật tư và chuyển sang chờ nghiệm thu.
 - [ ] B23 (Cư dân) — Thanh toán hóa đơn bằng QR hoặc tiền mặt.
 - [ ] B28 — Sửa layout trang KTV khi xoay ngang.
 - [ ] B33 — Cảnh báo ticket khẩn cấp quá SLA.
