@@ -212,6 +212,7 @@ export interface Dashboard {
   openMaintenance: number
   inProgressMaintenance: number
   urgentMaintenance?: number
+  overdueUrgentMaintenance?: number
 }
 
 export interface RoomTimelineEntry {

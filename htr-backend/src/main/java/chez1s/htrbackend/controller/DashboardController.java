@@ -78,6 +78,9 @@ public class DashboardController {
         long urgentMaintenance = admin
                 ? maintenanceRepository.countByPriorityInAndStatusNotIn(List.of(MaintenancePriority.URGENT), closedStatuses)
                 : maintenanceRepository.countByRoomPropertyOwnerIdAndPriorityInAndStatusNotIn(ownerId, List.of(MaintenancePriority.URGENT), closedStatuses);
+        long overdueUrgentMaintenance = admin
+                ? maintenanceRepository.countByPriorityAndIsOverdueSlaTrueAndStatusNotIn(MaintenancePriority.URGENT, closedStatuses)
+                : maintenanceRepository.countByRoomPropertyOwnerIdAndPriorityAndIsOverdueSlaTrueAndStatusNotIn(ownerId, MaintenancePriority.URGENT, closedStatuses);
 
         BigDecimal revenueThisMonth = propertyIds.isEmpty()
                 ? BigDecimal.ZERO
@@ -95,6 +98,7 @@ public class DashboardController {
         dashboard.put("openMaintenance", openMaintenance);
         dashboard.put("inProgressMaintenance", inProgressMaintenance);
         dashboard.put("urgentMaintenance", urgentMaintenance);
+        dashboard.put("overdueUrgentMaintenance", overdueUrgentMaintenance);
         return ResponseEntity.ok(dashboard);
     }
 

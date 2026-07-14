@@ -2,7 +2,7 @@
 
 ## Current
 
-- B33 — Cảnh báo ticket khẩn cấp quá SLA.
+- Kiểm thử B05/B06 — Số liệu bảo trì trên Dashboard.
 
 ## Tasks
 
@@ -15,7 +15,7 @@
 - [x] B20 — Thanh toán chi phí vật tư và chuyển sang chờ nghiệm thu.
 - [x] B23 (Cư dân) — Thanh toán hóa đơn bằng QR hoặc tiền mặt.
 - [x] B28 — Sửa layout trang KTV khi xoay ngang.
-- [ ] B33 — Cảnh báo ticket khẩn cấp quá SLA.
+- [x] B33 — Cảnh báo ticket khẩn cấp quá SLA.
 - [ ] Kiểm thử B05/B06 — Số liệu bảo trì trên Dashboard.
 - [ ] Kiểm thử B09 — Assign tự chuyển ticket sang ASSIGNED.
 - [ ] Kiểm thử B11 — Bắt buộc lý do hủy.

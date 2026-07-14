@@ -48,6 +48,11 @@ public class MaintenanceCronService {
                         mr.getId()
                 );
             }
+            notificationService.publishEvent(
+                    mr.getRoom().getProperty().getOwner().getId(),
+                    "maintenance-update",
+                    chez1s.htrbackend.dto.response.MaintenanceRequestResponse.from(mr)
+            );
         }
     }
 
