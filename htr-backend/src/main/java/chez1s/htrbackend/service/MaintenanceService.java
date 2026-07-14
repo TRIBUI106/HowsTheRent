@@ -275,6 +275,15 @@ public class MaintenanceService {
         }
         mr = maintenanceRepository.save(mr);
         addNote(mr.getId(), null, "Cập nhật trạng thái sang " + newStatus);
+        if (newStatus == MaintenanceStatus.PENDING_REVIEW) {
+            notificationService.create(
+                    mr.getTenant().getId(),
+                    "Yêu cầu nghiệm thu " + mr.getTicketCode(),
+                    "Công việc đã hoàn tất. Vui lòng kiểm tra ảnh minh chứng và xác nhận nghiệm thu.",
+                    "MAINTENANCE",
+                    mr.getId()
+            );
+        }
         return mr;
     }
 

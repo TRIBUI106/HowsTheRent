@@ -2,12 +2,12 @@
 
 ## Current
 
-- B18 — Cư dân nhận thông báo realtime khi ticket chờ nghiệm thu.
+- B22 (KTV) — KTV nhận thông báo khi được phân công.
 
 ## Tasks
 
 - [x] B07 — Admin nhận thông báo realtime khi có ticket mới.
-- [ ] B18 — Cư dân nhận thông báo realtime khi ticket chờ nghiệm thu.
+- [x] B18 — Cư dân nhận thông báo realtime khi ticket chờ nghiệm thu.
 - [ ] B22 (KTV) — KTV nhận thông báo khi được phân công.
 - [ ] B29 — Đồng bộ realtime trạng thái ticket giữa KTV và Admin.
 - [ ] B08 — Lọc/cảnh báo KTV bận và ưu tiên đúng chuyên môn.
