@@ -2,6 +2,8 @@ package chez1s.htrbackend.service;
 
 import chez1s.htrbackend.domain.entity.*;
 import chez1s.htrbackend.domain.enums.MaintenanceStatus;
+import chez1s.htrbackend.domain.enums.MaintenanceCategory;
+import chez1s.htrbackend.domain.enums.MaintenancePriority;
 import chez1s.htrbackend.domain.repository.*;
 import chez1s.htrbackend.dto.request.CreateMaintenanceMaterial;
 import chez1s.htrbackend.dto.request.CreateMaintenanceRequest;
@@ -88,6 +90,9 @@ class MaintenanceServiceTest {
         req.setRoomId(room.getId());
         req.setTitle("Leak problem");
         req.setDescription("Water is leaking from the sink loudly");
+        req.setCategory(MaintenanceCategory.AIR_CONDITIONER);
+        req.setPriority(MaintenancePriority.URGENT);
+        req.setPreferredTimeSlots(List.of("Sáng (08:00 - 11:30)", "Cuối tuần (Thứ 7 - CN)"));
         
         when(roomService.getById(room.getId())).thenReturn(room);
         when(userRepository.findById(tenantId)).thenReturn(Optional.of(tenant));
@@ -108,6 +113,9 @@ class MaintenanceServiceTest {
         assertNotNull(result.getTicketCode());
         assertEquals("Leak problem", result.getTitle());
         assertEquals(MaintenanceStatus.OPEN, result.getStatus());
+        assertEquals(MaintenanceCategory.AIR_CONDITIONER, result.getCategory());
+        assertEquals(MaintenancePriority.URGENT, result.getPriority());
+        assertEquals(req.getPreferredTimeSlots(), result.getPreferredTimeSlots());
         verify(notificationService, times(1)).create(any(), any(), any(), any(), any());
     }
 
