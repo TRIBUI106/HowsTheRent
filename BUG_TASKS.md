@@ -2,7 +2,7 @@
 
 ## Current
 
-- B28 — Sửa layout trang KTV khi xoay ngang.
+- B33 — Cảnh báo ticket khẩn cấp quá SLA.
 
 ## Tasks
 
@@ -14,7 +14,7 @@
 - [x] B02 — Phòng chuyển sang bảo trì xuất hiện trong luồng bảo trì.
 - [x] B20 — Thanh toán chi phí vật tư và chuyển sang chờ nghiệm thu.
 - [x] B23 (Cư dân) — Thanh toán hóa đơn bằng QR hoặc tiền mặt.
-- [ ] B28 — Sửa layout trang KTV khi xoay ngang.
+- [x] B28 — Sửa layout trang KTV khi xoay ngang.
 - [ ] B33 — Cảnh báo ticket khẩn cấp quá SLA.
 - [ ] Kiểm thử B05/B06 — Số liệu bảo trì trên Dashboard.
 - [ ] Kiểm thử B09 — Assign tự chuyển ticket sang ASSIGNED.

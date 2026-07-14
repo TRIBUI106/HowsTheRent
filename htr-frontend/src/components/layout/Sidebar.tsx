@@ -23,13 +23,13 @@ export default function Sidebar() {
   const filteredNav = navItems.filter(item => item.roles.includes(role))
 
   return (
-    <aside className="w-64 bg-sidebar/92 border-r border-border/80 flex flex-col shrink-0 backdrop-blur-sm">
-      <div className="px-4 py-4 border-b border-border/80">
-        <div className="flex items-center gap-3">
+    <aside className="w-20 lg:w-64 bg-sidebar/92 border-r border-border/80 flex flex-col shrink-0 backdrop-blur-sm transition-[width]">
+      <div className="px-3 lg:px-4 py-4 border-b border-border/80">
+        <div className="flex items-center justify-center lg:justify-start gap-3">
           <Link to="/" className="shrink-0 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-sidebar">
             <img src={logoHtr} alt="HowsTheRent" className="h-8 w-8 rounded-xl object-cover shadow-[0_1px_2px_rgba(15,23,42,0.08)]" />
           </Link>
-          <div className="min-w-0">
+          <div className="hidden lg:block min-w-0">
             <p className="font-semibold text-sm text-fg leading-none truncate">How's The Rent</p>
             <p className="text-xs text-fg-subtle mt-1">Bảng vận hành nhà trọ</p>
           </div>
@@ -46,8 +46,9 @@ export default function Sidebar() {
             <Link
               key={item.to + item.label}
               to={item.to}
+              title={item.label}
               className={cn(
-                'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-150',
+                'flex items-center justify-center lg:justify-start gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-150',
                 isActive
                   ? 'bg-surface text-fg shadow-[0_1px_2px_rgba(15,23,42,0.04)] ring-1 ring-border/90'
                   : 'text-fg-muted hover:bg-surface/70 hover:text-fg'
@@ -61,29 +62,30 @@ export default function Sidebar() {
               )}>
                 <Icon size={15} />
               </span>
-              <span className="truncate">{item.label}</span>
+              <span className="hidden lg:block truncate">{item.label}</span>
             </Link>
           )
         })}
       </nav>
 
       <div className="px-3 py-3 border-t border-border/80">
-        <div className="rounded-2xl border border-border/80 bg-surface/80 p-3">
-          <div className="flex items-center gap-2.5 mb-3">
+        <div className="rounded-2xl border border-border/80 bg-surface/80 p-2 lg:p-3">
+          <div className="flex items-center justify-center lg:justify-start gap-2.5 mb-3">
             <div className="w-8 h-8 bg-accent-surface text-accent rounded-full flex items-center justify-center text-xs font-semibold shrink-0">
               {user?.fullName?.charAt(0).toUpperCase()}
             </div>
-            <div className="min-w-0">
+            <div className="hidden lg:block min-w-0">
               <p className="text-sm font-medium text-fg truncate leading-none mb-1">{user?.fullName}</p>
               <p className="text-xs text-fg-subtle truncate">{user?.email}</p>
             </div>
           </div>
           <button
             onClick={handleLogout}
-            className="flex items-center gap-2 text-xs text-fg-subtle hover:text-error transition-colors w-full rounded-lg px-2 py-1.5 hover:bg-error-surface/80"
+            title="Đăng xuất"
+            className="flex items-center justify-center lg:justify-start gap-2 text-xs text-fg-subtle hover:text-error transition-colors w-full rounded-lg px-2 py-1.5 hover:bg-error-surface/80"
           >
             <LogOut size={13} />
-            Đăng xuất
+            <span className="hidden lg:block">Đăng xuất</span>
           </button>
         </div>
       </div>

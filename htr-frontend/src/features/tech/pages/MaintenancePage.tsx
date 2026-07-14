@@ -172,7 +172,7 @@ export default function TechMaintenancePage() {
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-2 border-b border-border/80 pb-3">
+        <div className="flex gap-2 overflow-x-auto border-b border-border/80 pb-3 [scrollbar-width:thin]">
           <Button
             variant={activeTab === 'ALL' ? 'primary' : 'outline'}
             size="sm"
@@ -206,9 +206,9 @@ export default function TechMaintenancePage() {
         {isLoading ? (
           <ListSkeleton items={4} />
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+          <div className="grid grid-cols-1 xl:grid-cols-12 gap-5">
             {/* List */}
-            <div className={`${selectedRequestId ? 'lg:col-span-6' : 'lg:col-span-12'} space-y-4`}>
+            <div className={`${selectedRequestId ? 'xl:col-span-6' : 'xl:col-span-12'} min-w-0 space-y-4`}>
               {filteredRequests.map((request) => {
                 const isSelected = request.id === selectedRequestId
                 return (
@@ -223,7 +223,7 @@ export default function TechMaintenancePage() {
                       }`}
                     >
                       <CardContent className="p-4">
-                        <div className="flex items-start justify-between gap-3">
+                        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
                           <div className="flex-1 min-w-0 space-y-2">
                             <div className="flex flex-wrap items-center gap-2">
                               {request.ticketCode && (
@@ -270,7 +270,7 @@ export default function TechMaintenancePage() {
                             )}
                           </div>
 
-                          <div className="flex flex-col items-end gap-2 shrink-0" onClick={(e) => e.stopPropagation()}>
+                          <div className="flex flex-row flex-wrap sm:flex-col sm:items-end gap-2 shrink-0" onClick={(e) => e.stopPropagation()}>
                             <Badge status={request.status} />
 
                             {request.status === 'ASSIGNED' && (
@@ -340,14 +340,14 @@ export default function TechMaintenancePage() {
 
             {/* Chi tiết công việc / Vật tư & Nhật ký (Right Panel) */}
             {selectedRequest && (
-              <div className="lg:col-span-6 space-y-4 animate-scale-in">
+              <div className="xl:col-span-6 min-w-0 space-y-4 animate-scale-in">
                 <Card className="border border-border shadow-md">
                   <CardContent className="p-5 space-y-5">
-                    <div className="flex items-start justify-between border-b border-border/80 pb-3">
-                      <div>
-                        <div className="flex items-center gap-2">
+                    <div className="flex items-start justify-between gap-3 border-b border-border/80 pb-3">
+                      <div className="min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
                           <span className="font-mono text-xs font-semibold text-accent">#{selectedRequest.ticketCode || selectedRequest.id.slice(0, 8)}</span>
-                          <h2 className="text-lg font-bold text-fg">{selectedRequest.title}</h2>
+                          <h2 className="break-words text-lg font-bold text-fg">{selectedRequest.title}</h2>
                         </div>
                         <p className="text-xs text-fg-muted mt-1">Phòng {selectedRequest.room?.roomNumber} • Khách: {selectedRequest.tenant?.fullName}</p>
                       </div>
@@ -407,25 +407,25 @@ export default function TechMaintenancePage() {
                       {selectedRequest.status === 'IN_PROGRESS' && (
                         <div className="rounded-xl border border-border bg-surface p-3 space-y-2.5">
                           <p className="text-xs font-semibold text-fg">Thêm vật tư mới</p>
-                          <div className="grid grid-cols-12 gap-2">
+                          <div className="grid grid-cols-2 sm:grid-cols-12 gap-2">
                             <input
                               type="text"
                               placeholder="Tên linh kiện (VD: Bóng đèn LED)"
                               value={matName}
                               onChange={(e) => setMatName(e.target.value)}
-                              className="col-span-5 rounded-lg border border-border bg-bg px-2.5 py-1.5 text-xs text-fg focus:outline-none focus:ring-1 focus:ring-accent"
+                              className="col-span-2 sm:col-span-5 rounded-lg border border-border bg-bg px-2.5 py-1.5 text-xs text-fg focus:outline-none focus:ring-1 focus:ring-accent"
                             />
                             <input
                               type="number"
                               placeholder="SL"
                               value={matQty}
                               onChange={(e) => setMatQty(Number(e.target.value))}
-                              className="col-span-2 rounded-lg border border-border bg-bg px-2 py-1.5 text-xs text-fg focus:outline-none focus:ring-1 focus:ring-accent"
+                              className="col-span-1 sm:col-span-2 rounded-lg border border-border bg-bg px-2 py-1.5 text-xs text-fg focus:outline-none focus:ring-1 focus:ring-accent"
                             />
                             <select
                               value={matUnit}
                               onChange={(e) => setMatUnit(e.target.value)}
-                              className="col-span-2 rounded-lg border border-border bg-bg px-2 py-1.5 text-xs text-fg focus:outline-none focus:ring-1 focus:ring-accent"
+                              className="col-span-1 sm:col-span-2 rounded-lg border border-border bg-bg px-2 py-1.5 text-xs text-fg focus:outline-none focus:ring-1 focus:ring-accent"
                             >
                               <option value="cái">cái</option>
                               <option value="bộ">bộ</option>
@@ -438,10 +438,10 @@ export default function TechMaintenancePage() {
                               placeholder="Đơn giá VNĐ"
                               value={matPrice}
                               onChange={(e) => setMatPrice(e.target.value)}
-                              className="col-span-3 rounded-lg border border-border bg-bg px-2.5 py-1.5 text-xs text-fg focus:outline-none focus:ring-1 focus:ring-accent"
+                              className="col-span-2 sm:col-span-3 rounded-lg border border-border bg-bg px-2.5 py-1.5 text-xs text-fg focus:outline-none focus:ring-1 focus:ring-accent"
                             />
                           </div>
-                          <div className="flex items-center justify-between pt-1">
+                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pt-1">
                             <label className="flex items-center gap-1.5 text-xs text-fg cursor-pointer">
                               <input
                                 type="checkbox"
