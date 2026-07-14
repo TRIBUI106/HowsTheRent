@@ -24,6 +24,12 @@ export function useNotifications() {
           message: `${notification.title}: ${notification.body}`,
           type: 'info',
         })
+        if (notification.type === 'MAINTENANCE') {
+          qc.invalidateQueries({ queryKey: ['tech-maintenance'] })
+          qc.invalidateQueries({ queryKey: ['tenant-maintenance'] })
+          qc.invalidateQueries({ queryKey: ['maintenance'] })
+          qc.invalidateQueries({ queryKey: ['dashboard'] })
+        }
       } finally {
         qc.invalidateQueries({ queryKey: ['notifications'] })
       }
