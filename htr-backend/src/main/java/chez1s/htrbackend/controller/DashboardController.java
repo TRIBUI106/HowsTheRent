@@ -65,13 +65,12 @@ public class DashboardController {
                 ? invoiceRepository.countByStatus(InvoiceStatus.OVERDUE)
                 : invoiceRepository.countByRoomPropertyOwnerIdAndStatus(ownerId, InvoiceStatus.OVERDUE);
 
-        List<MaintenanceStatus> openStatuses = List.of(MaintenanceStatus.OPEN, MaintenanceStatus.ASSIGNED);
         List<MaintenanceStatus> inProgressStatuses = List.of(MaintenanceStatus.IN_PROGRESS, MaintenanceStatus.PENDING_PAYMENT, MaintenanceStatus.PENDING_REVIEW);
         List<MaintenanceStatus> closedStatuses = List.of(MaintenanceStatus.DONE, MaintenanceStatus.COMPLETED, MaintenanceStatus.CANCELLED);
 
         long openMaintenance = admin
-                ? maintenanceRepository.countByStatusIn(openStatuses)
-                : maintenanceRepository.countByRoomPropertyOwnerIdAndStatusIn(ownerId, openStatuses);
+                ? maintenanceRepository.countByStatusNotIn(closedStatuses)
+                : maintenanceRepository.countByRoomPropertyOwnerIdAndStatusNotIn(ownerId, closedStatuses);
         long inProgressMaintenance = admin
                 ? maintenanceRepository.countByStatusIn(inProgressStatuses)
                 : maintenanceRepository.countByRoomPropertyOwnerIdAndStatusIn(ownerId, inProgressStatuses);

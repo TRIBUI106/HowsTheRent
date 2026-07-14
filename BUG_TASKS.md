@@ -2,7 +2,7 @@
 
 ## Current
 
-- Kiểm thử B05/B06 — Số liệu bảo trì trên Dashboard.
+- Kiểm thử B09 — Assign tự chuyển ticket sang ASSIGNED.
 
 ## Tasks
 
@@ -16,7 +16,7 @@
 - [x] B23 (Cư dân) — Thanh toán hóa đơn bằng QR hoặc tiền mặt.
 - [x] B28 — Sửa layout trang KTV khi xoay ngang.
 - [x] B33 — Cảnh báo ticket khẩn cấp quá SLA.
-- [ ] Kiểm thử B05/B06 — Số liệu bảo trì trên Dashboard.
+- [x] Kiểm thử B05/B06 — Số liệu bảo trì trên Dashboard.
 - [ ] Kiểm thử B09 — Assign tự chuyển ticket sang ASSIGNED.
 - [ ] Kiểm thử B11 — Bắt buộc lý do hủy.
 - [ ] Kiểm thử B12/B26 — Hiển thị và tự tính chi phí vật tư.

@@ -23,7 +23,7 @@ interface RevenueEntry {
 const summaryCards = [
   { label: 'Doanh thu tháng', key: 'revenueThisMonth', icon: BadgeDollarSign, tone: 'success', format: 'currency' },
   { label: 'Hóa đơn quá hạn', key: 'overdueInvoices', icon: AlertCircle, tone: 'error' },
-  { label: 'Bảo trì mới', key: 'openMaintenance', icon: Wrench, tone: 'warning' },
+  { label: 'Tổng yêu cầu đang mở', key: 'openMaintenance', icon: Wrench, tone: 'warning' },
   { label: 'Khẩn cấp (URGENT)', key: 'urgentMaintenance', icon: AlertCircle, tone: 'error' },
   { label: 'Khẩn cấp quá SLA', key: 'overdueUrgentMaintenance', icon: AlertCircle, tone: 'error' },
   { label: 'Đang xử lý', key: 'inProgressMaintenance', icon: Clock, tone: 'accent' },
