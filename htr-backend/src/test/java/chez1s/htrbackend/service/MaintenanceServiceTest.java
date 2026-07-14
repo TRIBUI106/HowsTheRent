@@ -173,7 +173,8 @@ class MaintenanceServiceTest {
             return mat;
         });
         when(materialRepository.findByRequestIdOrderByCreatedAtAsc(requestId)).thenReturn(List.of(
-                MaintenanceMaterial.builder().id(UUID.randomUUID()).request(sampleRequest).totalPrice(BigDecimal.valueOf(150000)).isFreeInContract(false).build()
+                MaintenanceMaterial.builder().id(UUID.randomUUID()).request(sampleRequest).totalPrice(BigDecimal.valueOf(150000)).isFreeInContract(false).build(),
+                MaintenanceMaterial.builder().id(UUID.randomUUID()).request(sampleRequest).totalPrice(BigDecimal.valueOf(50000)).isFreeInContract(true).build()
         ));
         when(noteRepository.save(any(MaintenanceNote.class))).thenAnswer(i -> {
             MaintenanceNote note = i.getArgument(0);
@@ -189,5 +190,6 @@ class MaintenanceServiceTest {
         maintenanceService.addMaterial(requestId, req);
 
         assertEquals(BigDecimal.valueOf(150000), sampleRequest.getMaterialCost());
+        verify(maintenanceRepository).save(argThat(request -> BigDecimal.valueOf(150000).equals(request.getMaterialCost())));
     }
 }
