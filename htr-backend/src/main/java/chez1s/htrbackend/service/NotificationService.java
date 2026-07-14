@@ -62,10 +62,15 @@ public class NotificationService {
     }
 
     private void publish(UUID userId, NotificationResponse notification) {
+        publishEvent(userId, "notification", notification);
+    }
+
+    public void publishEvent(UUID userId, String eventName, Object data) {
+        if (userId == null) return;
         List<SseEmitter> userEmitters = emitters.getOrDefault(userId, new CopyOnWriteArrayList<>());
         for (SseEmitter emitter : userEmitters) {
             try {
-                emitter.send(SseEmitter.event().name("notification").data(notification));
+                emitter.send(SseEmitter.event().name(eventName).data(data));
             } catch (IOException | IllegalStateException ex) {
                 removeEmitter(userId, emitter);
             }

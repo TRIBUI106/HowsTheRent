@@ -159,6 +159,7 @@ public class MaintenanceService {
         mr.setAssignedTo(tech);
         mr.setStatus(MaintenanceStatus.ASSIGNED);
         mr = maintenanceRepository.save(mr);
+        publishMaintenanceUpdate(mr);
 
         addNote(mr.getId(), null, "Phân công kỹ thuật viên: " + tech.getFullName());
 
@@ -181,6 +182,7 @@ public class MaintenanceService {
             mr.setStartedAt(LocalDateTime.now());
         }
         mr = maintenanceRepository.save(mr);
+        publishMaintenanceUpdate(mr);
         addNote(mr.getId(), mr.getAssignedTo() != null ? mr.getAssignedTo().getId() : null, "Kỹ thuật viên bắt đầu xử lý công việc");
         return mr;
     }
@@ -203,6 +205,7 @@ public class MaintenanceService {
             addNote(mr.getId(), mr.getAssignedTo() != null ? mr.getAssignedTo().getId() : null, "Hoàn tất xử lý, gửi yêu cầu nghiệm thu cho cư dân/ban quản lý");
         }
         mr = maintenanceRepository.save(mr);
+        publishMaintenanceUpdate(mr);
 
         notificationService.create(
                 mr.getTenant().getId(),
@@ -225,6 +228,7 @@ public class MaintenanceService {
         mr.setStatus(MaintenanceStatus.CANCELLED);
         mr.setCancelReason(cancelReason.trim());
         mr = maintenanceRepository.save(mr);
+        publishMaintenanceUpdate(mr);
 
         addNote(mr.getId(), null, "Hủy phiếu bảo trì. Lý do: " + cancelReason.trim());
 
@@ -252,6 +256,7 @@ public class MaintenanceService {
         mr.setStatus(MaintenanceStatus.DONE);
         mr.setResolvedAt(LocalDateTime.now());
         mr = maintenanceRepository.save(mr);
+        publishMaintenanceUpdate(mr);
 
         addNote(mr.getId(), null, "Xác nhận nghiệm thu hoàn thành phiếu bảo trì");
 
@@ -274,6 +279,7 @@ public class MaintenanceService {
             mr.setResolvedAt(LocalDateTime.now());
         }
         mr = maintenanceRepository.save(mr);
+        publishMaintenanceUpdate(mr);
         addNote(mr.getId(), null, "Cập nhật trạng thái sang " + newStatus);
         if (newStatus == MaintenanceStatus.PENDING_REVIEW) {
             notificationService.create(
@@ -438,5 +444,14 @@ public class MaintenanceService {
                 .build();
         note = noteRepository.save(note);
         return MaintenanceNoteResponse.from(note);
+    }
+
+    private void publishMaintenanceUpdate(MaintenanceRequest request) {
+        MaintenanceRequestResponse payload = MaintenanceRequestResponse.from(request);
+        notificationService.publishEvent(request.getTenant().getId(), "maintenance-update", payload);
+        notificationService.publishEvent(request.getRoom().getProperty().getOwner().getId(), "maintenance-update", payload);
+        if (request.getAssignedTo() != null) {
+            notificationService.publishEvent(request.getAssignedTo().getId(), "maintenance-update", payload);
+        }
     }
 }
