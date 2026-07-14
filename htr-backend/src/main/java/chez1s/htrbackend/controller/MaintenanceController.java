@@ -113,7 +113,7 @@ public class MaintenanceController {
     }
 
     @PostMapping("/{id}/resolve")
-    @PreAuthorize("hasAnyRole('ADMIN','TECHNICIAN')")
+    @PreAuthorize("hasAnyRole('ADMIN','TENANT')")
     public ResponseEntity<MaintenanceRequestResponse> resolve(@PathVariable UUID id) {
         return ResponseEntity.ok(MaintenanceRequestResponse.from(maintenanceService.resolve(id)));
     }
@@ -186,6 +186,23 @@ public class MaintenanceController {
         return ResponseEntity.ok(maintenanceService.addNote(id, actorId, note));
     }
 
+    @PostMapping(value = "/{id}/completion-images", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasAnyRole('ADMIN','TECHNICIAN')")
+    public ResponseEntity<MaintenanceRequestResponse> addCompletionImages(
+            @PathVariable UUID id, @RequestParam("images") List<MultipartFile> images) {
+        if (images == null || images.isEmpty()) {
+            throw new chez1s.htrbackend.exception.BadRequestException("Vui lòng chọn ít nhất một ảnh hoàn thành.");
+        }
+        for (MultipartFile image : images) {
+            if (image.getContentType() == null || !image.getContentType().startsWith("image/")) {
+                throw new chez1s.htrbackend.exception.BadRequestException("Minh chứng hoàn thành chỉ chấp nhận tệp hình ảnh.");
+            }
+            String url = storageService.upload("maintenance/" + id + "/completion", image);
+            maintenanceService.addCompletionImage(id, url);
+        }
+        return ResponseEntity.ok(MaintenanceRequestResponse.from(maintenanceService.getById(id)));
+    }
+
     @PostMapping(value = "/with-images", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasAnyRole('TENANT','ADMIN')")
     public ResponseEntity<MaintenanceRequestResponse> createWithImages(
@@ -195,7 +212,8 @@ public class MaintenanceController {
             @RequestParam(value = "priority", required = false) chez1s.htrbackend.domain.enums.MaintenancePriority priority,
             @RequestParam(value = "category", required = false) chez1s.htrbackend.domain.enums.MaintenanceCategory category,
             @RequestParam(value = "preferredTimeSlots", required = false) List<String> preferredTimeSlots,
-            @RequestParam(value = "images", required = false) List<MultipartFile> images) {
+            @RequestParam(value = "images", required = false) List<MultipartFile> images,
+            @RequestParam(value = "video", required = false) MultipartFile video) {
         UUID tenantId = (UUID) auth.getPrincipal();
         CreateMaintenanceRequest req = new CreateMaintenanceRequest();
         req.setTitle(title);
@@ -206,9 +224,19 @@ public class MaintenanceController {
         MaintenanceRequest created = maintenanceService.create(tenantId, req);
         if (images != null && !images.isEmpty()) {
             for (MultipartFile img : images) {
+                if (img.getContentType() == null || !img.getContentType().startsWith("image/")) {
+                    throw new chez1s.htrbackend.exception.BadRequestException("Tệp trong danh sách hình ảnh không đúng định dạng.");
+                }
                 String url = storageService.upload("maintenance/" + created.getId(), img);
                 maintenanceService.addImage(created.getId(), url);
             }
+        }
+        if (video != null && !video.isEmpty()) {
+            if (video.getContentType() == null || !video.getContentType().startsWith("video/")) {
+                throw new chez1s.htrbackend.exception.BadRequestException("Tệp video không đúng định dạng.");
+            }
+            String url = storageService.upload("maintenance/" + created.getId() + "/video", video);
+            maintenanceService.setAttachmentVideo(created.getId(), url);
         }
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(MaintenanceRequestResponse.from(maintenanceService.getById(created.getId())));

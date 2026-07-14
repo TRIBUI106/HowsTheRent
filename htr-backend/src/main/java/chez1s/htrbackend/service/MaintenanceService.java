@@ -190,6 +190,10 @@ public class MaintenanceService {
         MaintenanceRequest mr = getById(id);
         transitionValidator.validateTransition(mr.getStatus(), MaintenanceStatus.PENDING_REVIEW);
 
+        if (mr.getCompletionImages() == null || mr.getCompletionImages().isEmpty()) {
+            throw new BadRequestException("Vui lòng tải lên ít nhất một ảnh hoàn thành trước khi gửi nghiệm thu.");
+        }
+
         if (materialCost != null && materialCost.compareTo(BigDecimal.ZERO) > 0) {
             mr.setMaterialCost(materialCost);
             mr.setStatus(MaintenanceStatus.PENDING_PAYMENT);
@@ -241,6 +245,10 @@ public class MaintenanceService {
         MaintenanceRequest mr = getById(id);
         transitionValidator.validateTransition(mr.getStatus(), MaintenanceStatus.DONE);
 
+        if (mr.getCompletionImages() == null || mr.getCompletionImages().isEmpty()) {
+            throw new BadRequestException("Không thể nghiệm thu khi kỹ thuật viên chưa cung cấp ảnh hoàn thành.");
+        }
+
         mr.setStatus(MaintenanceStatus.DONE);
         mr.setResolvedAt(LocalDateTime.now());
         mr = maintenanceRepository.save(mr);
@@ -281,6 +289,13 @@ public class MaintenanceService {
     public MaintenanceRequest addCompletionImage(UUID requestId, String imageUrl) {
         MaintenanceRequest req = getById(requestId);
         req.getCompletionImages().add(imageUrl);
+        return maintenanceRepository.save(req);
+    }
+
+    @Transactional
+    public MaintenanceRequest setAttachmentVideo(UUID requestId, String videoUrl) {
+        MaintenanceRequest req = getById(requestId);
+        req.setAttachmentVideo(videoUrl);
         return maintenanceRepository.save(req);
     }
 

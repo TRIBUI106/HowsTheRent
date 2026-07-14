@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { CheckCircle, Play, FileText, Clock, Plus, Trash2, Send, CheckSquare, Package } from 'lucide-react'
+import { Camera, CheckCircle, Play, FileText, Clock, Plus, Trash2, Send, CheckSquare, Package } from 'lucide-react'
 import { maintenanceApi } from '@/api'
 import Layout from '@/components/Layout'
 import { Card, CardContent } from '@/components/ui/card'
@@ -13,6 +13,7 @@ import type { MaintenanceMaterial, MaintenanceNote, MaintenanceRequest } from '@
 
 export default function TechMaintenancePage() {
   const qc = useQueryClient()
+  const completionImageRef = useRef<HTMLInputElement>(null)
   const [activeTab, setActiveTab] = useState<'ALL' | 'IN_PROGRESS' | 'ASSIGNED' | 'DONE'>('ALL')
   
   // Work modal / expanded section state
@@ -137,6 +138,17 @@ export default function TechMaintenancePage() {
     },
     onError: (err: any) => {
       showToast({ message: err?.response?.data?.message ?? 'Không thể gửi yêu cầu nghiệm thu', type: 'error' })
+    },
+  })
+
+  const completionImagesMutation = useMutation({
+    mutationFn: ({ id, images }: { id: string; images: File[] }) => maintenanceApi.addCompletionImages(id, images),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['tech-maintenance'] })
+      showToast({ message: 'Đã tải ảnh hoàn thành', type: 'success' })
+    },
+    onError: (err: any) => {
+      showToast({ message: err?.response?.data?.message ?? 'Không thể tải ảnh hoàn thành', type: 'error' })
     },
   })
 
@@ -508,11 +520,27 @@ export default function TechMaintenancePage() {
 
                     {/* Action button to finish work */}
                     {selectedRequest.status === 'IN_PROGRESS' && (
-                      <div className="pt-4 border-t border-border flex justify-end gap-2">
+                      <div className="pt-4 border-t border-border space-y-3">
+                        <input
+                          ref={completionImageRef}
+                          type="file"
+                          accept="image/*"
+                          multiple
+                          className="hidden"
+                          onChange={(event) => {
+                            const images = Array.from(event.target.files ?? [])
+                            if (images.length) completionImagesMutation.mutate({ id: selectedRequest.id, images })
+                            event.target.value = ''
+                          }}
+                        />
+                        <Button variant="outline" onClick={() => completionImageRef.current?.click()} disabled={completionImagesMutation.isPending} className="w-full flex items-center justify-center gap-2">
+                          <Camera size={16} />
+                          {selectedRequest.completionImages?.length ? `Ảnh hoàn thành (${selectedRequest.completionImages.length})` : 'Tải ảnh hoàn thành bắt buộc'}
+                        </Button>
                         <Button
                           variant="primary"
                           onClick={() => submitReviewMutation.mutate(selectedRequest.id)}
-                          disabled={submitReviewMutation.isPending}
+                          disabled={submitReviewMutation.isPending || !(selectedRequest.completionImages?.length)}
                           className="w-full flex items-center justify-center gap-2 bg-success hover:bg-success/90 text-success-fg font-semibold py-2.5"
                         >
                           <CheckCircle size={16} />

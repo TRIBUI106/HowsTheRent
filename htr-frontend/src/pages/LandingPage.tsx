@@ -443,7 +443,7 @@ function SplitPair({ pair }: { pair: typeof splitPairs[number] }) {
       }}
     >
       <div style={{ width: '100%', maxWidth: '420px' }}>
-        <VisualBlock type={pair.visual} />
+        <VisualBlock type={pair.visual as 'invoice' | 'maintenance' | 'contract'} />
       </div>
     </div>
   )

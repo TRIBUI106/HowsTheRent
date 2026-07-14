@@ -8,7 +8,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,6 +23,11 @@ import java.util.UUID;
 public class NotificationController {
 
     private final NotificationService notificationService;
+
+    @GetMapping(value = "/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public SseEmitter stream(Authentication auth) {
+        return notificationService.subscribe((UUID) auth.getPrincipal());
+    }
 
     @GetMapping
     public ResponseEntity<PageResponse<NotificationResponse>> list(

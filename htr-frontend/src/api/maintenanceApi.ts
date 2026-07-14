@@ -85,4 +85,10 @@ export const maintenanceApi = {
     api.get<any[]>(`/maintenance/${id}/notes`).then((r) => r.data ?? []),
   addNote: (id: string, note: string) =>
     api.post<any>(`/maintenance/${id}/notes`, null, { params: { note } }).then((r) => r.data),
+  addCompletionImages: (id: string, images: File[]) => {
+    const form = new FormData()
+    images.forEach((image) => form.append('images', image))
+    return api.post<MaintenanceRequest>(`/maintenance/${id}/completion-images`, form)
+      .then((r) => normalizeMaintenanceRequest(r.data))
+  },
 };

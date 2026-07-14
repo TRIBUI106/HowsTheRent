@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Camera, X, Clock, AlertTriangle, CheckCircle, CreditCard, ShieldAlert, Star } from 'lucide-react'
+import { Camera, Video, X, Clock, AlertTriangle, CheckCircle, CreditCard, ShieldAlert, Star } from 'lucide-react'
 import api from '@/lib/api'
 import { maintenanceApi, reportApi } from '@/api'
 import { extractPageContent, getRoomPropertyName, normalizeContract } from '@/lib/apiMappers'
@@ -30,6 +30,7 @@ export default function TenantMaintenancePage() {
   const [category, setCategory] = useState<'ELECTRIC' | 'PLUMBING' | 'AIR_CONDITIONER' | 'FURNITURE' | 'OTHER'>('OTHER')
   const [preferredSlots, setPreferredSlots] = useState<string[]>([])
   const [images, setImages] = useState<File[]>([])
+  const [video, setVideo] = useState<File | null>(null)
   const [previewUrls, setPreviewUrls] = useState<string[]>([])
   const [error, setError] = useState('')
 
@@ -70,6 +71,7 @@ export default function TenantMaintenancePage() {
     setCategory('OTHER')
     setPreferredSlots([])
     setImages([])
+    setVideo(null)
     clearPreviews()
     setError('')
   }
@@ -83,6 +85,7 @@ export default function TenantMaintenancePage() {
       form.append('category', category)
       preferredSlots.forEach((slot) => form.append('preferredTimeSlots', slot))
       images.forEach((image) => form.append('images', image))
+      if (video) form.append('video', video)
       return api.post('/maintenance/with-images', form)
     },
     onSuccess: () => {
@@ -342,6 +345,15 @@ export default function TenantMaintenancePage() {
                       ))}
                     </div>
                   )}
+                </div>
+
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-fg">Video minh chứng (tùy chọn)</label>
+                  <label className="flex cursor-pointer items-center gap-2 rounded-xl border border-border/80 px-4 py-2 text-sm text-fg-muted transition-colors hover:bg-sidebar">
+                    <Video size={16} />
+                    <span>{video ? video.name : 'Chọn video đính kèm'}</span>
+                    <input type="file" accept="video/*" className="hidden" onChange={(event) => setVideo(event.target.files?.[0] ?? null)} />
+                  </label>
                 </div>
 
                 {error && <p className="text-sm text-error">{error}</p>}

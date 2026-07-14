@@ -10,15 +10,36 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 @Service
 @RequiredArgsConstructor
 public class NotificationService {
 
     private final NotificationRepository notificationRepository;
+    private final Map<UUID, CopyOnWriteArrayList<SseEmitter>> emitters = new ConcurrentHashMap<>();
+
+    public SseEmitter subscribe(UUID userId) {
+        SseEmitter emitter = new SseEmitter(0L);
+        emitters.computeIfAbsent(userId, ignored -> new CopyOnWriteArrayList<>()).add(emitter);
+        Runnable cleanup = () -> removeEmitter(userId, emitter);
+        emitter.onCompletion(cleanup);
+        emitter.onTimeout(cleanup);
+        emitter.onError(ignored -> cleanup.run());
+        try {
+            emitter.send(SseEmitter.event().name("connected").data("ok"));
+        } catch (IOException ex) {
+            cleanup.run();
+        }
+        return emitter;
+    }
 
     public List<Notification> listByUser(UUID userId) {
         return notificationRepository.findByUserIdOrderByCreatedAtDesc(userId);
@@ -36,7 +57,26 @@ public class NotificationService {
                 .type(type)
                 .refId(refId)
                 .build();
-        notificationRepository.save(n);
+        n = notificationRepository.save(n);
+        publish(userId, NotificationResponse.from(n));
+    }
+
+    private void publish(UUID userId, NotificationResponse notification) {
+        List<SseEmitter> userEmitters = emitters.getOrDefault(userId, new CopyOnWriteArrayList<>());
+        for (SseEmitter emitter : userEmitters) {
+            try {
+                emitter.send(SseEmitter.event().name("notification").data(notification));
+            } catch (IOException | IllegalStateException ex) {
+                removeEmitter(userId, emitter);
+            }
+        }
+    }
+
+    private void removeEmitter(UUID userId, SseEmitter emitter) {
+        List<SseEmitter> userEmitters = emitters.get(userId);
+        if (userEmitters == null) return;
+        userEmitters.remove(emitter);
+        if (userEmitters.isEmpty()) emitters.remove(userId);
     }
 
     @Transactional
