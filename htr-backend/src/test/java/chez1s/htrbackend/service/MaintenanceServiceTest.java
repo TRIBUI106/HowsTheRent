@@ -203,6 +203,27 @@ class MaintenanceServiceTest {
     }
 
     @Test
+    void submitWork_WithoutCompletionImage_IsRejected() {
+        sampleRequest.setStatus(MaintenanceStatus.IN_PROGRESS);
+        sampleRequest.setCompletionImages(new ArrayList<>());
+        when(maintenanceRepository.findById(requestId)).thenReturn(Optional.of(sampleRequest));
+
+        assertThrows(BadRequestException.class, () -> maintenanceService.submitWork(requestId, null));
+        verify(maintenanceRepository, never()).save(any());
+    }
+
+    @Test
+    void setAttachmentVideo_PersistsVideoUrl() {
+        when(maintenanceRepository.findById(requestId)).thenReturn(Optional.of(sampleRequest));
+        when(maintenanceRepository.save(any(MaintenanceRequest.class))).thenAnswer(i -> i.getArgument(0));
+
+        MaintenanceRequest result = maintenanceService.setAttachmentVideo(requestId, "https://storage/video.mp4");
+
+        assertEquals("https://storage/video.mp4", result.getAttachmentVideo());
+        verify(maintenanceRepository).save(sampleRequest);
+    }
+
+    @Test
     void cancel_ShortReason_ThrowsBadRequest() {
         assertThrows(BadRequestException.class, () -> maintenanceService.cancel(requestId, "short"));
         assertThrows(BadRequestException.class, () -> maintenanceService.cancel(requestId, "   "));

@@ -2,7 +2,7 @@
 
 ## Current
 
-- Kiểm thử tích hợp video và ảnh nghiệm thu vừa sửa.
+- Hoàn tất toàn bộ task trong danh sách.
 
 ## Tasks
 
@@ -23,7 +23,7 @@
 - [x] Kiểm thử B14/B16/B17 — Điều hòa, ưu tiên và khung giờ.
 - [x] Kiểm thử B22 (Cư dân)/B23 (KTV) — Route bảo trì và bắt đầu xử lý.
 - [x] Kiểm thử B30/B31/B32 — Luồng trạng thái và khóa ticket kết thúc.
-- [ ] Kiểm thử tích hợp video và ảnh nghiệm thu vừa sửa.
+- [x] Kiểm thử tích hợp video và ảnh nghiệm thu vừa sửa.
 
 ## Completed
 
