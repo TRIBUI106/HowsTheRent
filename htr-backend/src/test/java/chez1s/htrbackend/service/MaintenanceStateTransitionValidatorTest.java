@@ -28,5 +28,7 @@ class MaintenanceStateTransitionValidatorTest {
         assertThrows(BadRequestException.class, () -> validator.validateTransition(MaintenanceStatus.OPEN, MaintenanceStatus.PENDING_REVIEW));
         assertThrows(BadRequestException.class, () -> validator.validateTransition(MaintenanceStatus.COMPLETED, MaintenanceStatus.IN_PROGRESS));
         assertThrows(BadRequestException.class, () -> validator.validateTransition(MaintenanceStatus.CANCELLED, MaintenanceStatus.OPEN));
+        assertThrows(BadRequestException.class, () -> validator.validateTransition(MaintenanceStatus.ASSIGNED, MaintenanceStatus.OPEN));
+        assertThrows(BadRequestException.class, () -> validator.validateTransition(MaintenanceStatus.CANCELLED, MaintenanceStatus.CANCELLED));
     }
 }

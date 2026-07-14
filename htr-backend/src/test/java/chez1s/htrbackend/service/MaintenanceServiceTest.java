@@ -166,6 +166,43 @@ class MaintenanceServiceTest {
     }
 
     @Test
+    void submitWork_UsesStoredMaterialCostAndRequiresPayment() {
+        sampleRequest.setStatus(MaintenanceStatus.IN_PROGRESS);
+        sampleRequest.setCompletionImages(new ArrayList<>(List.of("completion.jpg")));
+        sampleRequest.setMaterialCost(BigDecimal.valueOf(150000));
+        when(maintenanceRepository.findById(requestId)).thenReturn(Optional.of(sampleRequest));
+        when(maintenanceRepository.save(any(MaintenanceRequest.class))).thenAnswer(i -> i.getArgument(0));
+        when(noteRepository.save(any(MaintenanceNote.class))).thenAnswer(i -> {
+            MaintenanceNote note = i.getArgument(0);
+            note.setId(UUID.randomUUID());
+            return note;
+        });
+
+        MaintenanceRequest result = maintenanceService.submitWork(requestId, null);
+
+        assertEquals(MaintenanceStatus.PENDING_PAYMENT, result.getStatus());
+        assertEquals(BigDecimal.valueOf(150000), result.getMaterialCost());
+    }
+
+    @Test
+    void submitWork_NoCharge_SkipsPayment() {
+        sampleRequest.setStatus(MaintenanceStatus.IN_PROGRESS);
+        sampleRequest.setCompletionImages(new ArrayList<>(List.of("completion.jpg")));
+        sampleRequest.setMaterialCost(BigDecimal.ZERO);
+        when(maintenanceRepository.findById(requestId)).thenReturn(Optional.of(sampleRequest));
+        when(maintenanceRepository.save(any(MaintenanceRequest.class))).thenAnswer(i -> i.getArgument(0));
+        when(noteRepository.save(any(MaintenanceNote.class))).thenAnswer(i -> {
+            MaintenanceNote note = i.getArgument(0);
+            note.setId(UUID.randomUUID());
+            return note;
+        });
+
+        MaintenanceRequest result = maintenanceService.submitWork(requestId, null);
+
+        assertEquals(MaintenanceStatus.PENDING_REVIEW, result.getStatus());
+    }
+
+    @Test
     void cancel_ShortReason_ThrowsBadRequest() {
         assertThrows(BadRequestException.class, () -> maintenanceService.cancel(requestId, "short"));
         assertThrows(BadRequestException.class, () -> maintenanceService.cancel(requestId, "   "));

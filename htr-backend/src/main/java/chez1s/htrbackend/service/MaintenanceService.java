@@ -199,10 +199,11 @@ public class MaintenanceService {
             throw new BadRequestException("Vui lòng tải lên ít nhất một ảnh hoàn thành trước khi gửi nghiệm thu.");
         }
 
-        if (materialCost != null && materialCost.compareTo(BigDecimal.ZERO) > 0) {
-            mr.setMaterialCost(materialCost);
+        BigDecimal effectiveMaterialCost = materialCost != null ? materialCost : mr.getMaterialCost();
+        if (effectiveMaterialCost != null && effectiveMaterialCost.compareTo(BigDecimal.ZERO) > 0) {
+            mr.setMaterialCost(effectiveMaterialCost);
             mr.setStatus(MaintenanceStatus.PENDING_PAYMENT);
-            addNote(mr.getId(), mr.getAssignedTo() != null ? mr.getAssignedTo().getId() : null, "Báo giá vật tư: " + materialCost + " VNĐ, chuyển chờ thanh toán");
+            addNote(mr.getId(), mr.getAssignedTo() != null ? mr.getAssignedTo().getId() : null, "Báo giá vật tư: " + effectiveMaterialCost + " VNĐ, chuyển chờ thanh toán");
         } else {
             mr.setStatus(MaintenanceStatus.PENDING_REVIEW);
             addNote(mr.getId(), mr.getAssignedTo() != null ? mr.getAssignedTo().getId() : null, "Hoàn tất xử lý, gửi yêu cầu nghiệm thu cho cư dân/ban quản lý");
@@ -213,7 +214,7 @@ public class MaintenanceService {
         notificationService.create(
                 mr.getTenant().getId(),
                 "Cập nhật bảo trì " + mr.getTicketCode(),
-                mr.getStatus() == MaintenanceStatus.PENDING_PAYMENT ? "Vui lòng kiểm tra và xác nhận chi phí vật tư: " + materialCost + " VNĐ" : "Kỹ thuật viên đã xử lý xong, vui lòng nghiệm thu",
+                mr.getStatus() == MaintenanceStatus.PENDING_PAYMENT ? "Vui lòng kiểm tra và xác nhận chi phí vật tư: " + effectiveMaterialCost + " VNĐ" : "Kỹ thuật viên đã xử lý xong, vui lòng nghiệm thu",
                 "MAINTENANCE",
                 mr.getId()
         );
