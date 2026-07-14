@@ -162,6 +162,7 @@ class MaintenanceServiceTest {
 
         assertEquals(MaintenanceStatus.IN_PROGRESS, result.getStatus());
         assertNotNull(result.getStartedAt());
+        verify(maintenanceRepository).save(argThat(request -> request.getStatus() == MaintenanceStatus.IN_PROGRESS));
     }
 
     @Test

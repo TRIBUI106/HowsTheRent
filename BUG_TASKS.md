@@ -2,7 +2,7 @@
 
 ## Current
 
-- Kiểm thử B22 (Cư dân)/B23 (KTV) — Route bảo trì và bắt đầu xử lý.
+- Kiểm thử B30/B31/B32 — Luồng trạng thái và khóa ticket kết thúc.
 
 ## Tasks
 
@@ -21,7 +21,7 @@
 - [x] Kiểm thử B11 — Bắt buộc lý do hủy.
 - [x] Kiểm thử B12/B26 — Hiển thị và tự tính chi phí vật tư.
 - [x] Kiểm thử B14/B16/B17 — Điều hòa, ưu tiên và khung giờ.
-- [ ] Kiểm thử B22 (Cư dân)/B23 (KTV) — Route bảo trì và bắt đầu xử lý.
+- [x] Kiểm thử B22 (Cư dân)/B23 (KTV) — Route bảo trì và bắt đầu xử lý.
 - [ ] Kiểm thử B30/B31/B32 — Luồng trạng thái và khóa ticket kết thúc.
 - [ ] Kiểm thử tích hợp video và ảnh nghiệm thu vừa sửa.
 
