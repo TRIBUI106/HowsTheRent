@@ -147,6 +147,9 @@ public class MaintenanceService {
 
         User tech = userRepository.findById(technicianId)
                 .orElseThrow(() -> new ResourceNotFoundException("User", technicianId));
+        if (tech.getRole() != UserRole.TECHNICIAN || !tech.isActive()) {
+            throw new BusinessException("Chỉ có thể phân công kỹ thuật viên đang hoạt động.");
+        }
 
         long activeCount = maintenanceRepository.countByAssignedToIdAndStatusNotIn(
                 technicianId,

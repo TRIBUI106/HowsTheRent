@@ -3,7 +3,7 @@ import type { User, Page } from "@/types";
 
 export const userApi = {
   listAll: () =>
-    api.get<Page<User>>("/users").then((r) => r.data.content ?? []),
+    api.get<Page<User>>("/users", { params: { size: 200 } }).then((r) => r.data.content ?? []),
   me: () => api.get<User>("/users/me").then((r) => r.data),
   getById: (id: string) => api.get<User>(`/users/${id}`).then((r) => r.data),
   create: (data: {

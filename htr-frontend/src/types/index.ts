@@ -14,6 +14,9 @@ export interface User {
   role: 'ADMIN' | 'TENANT' | 'TECHNICIAN'
   avatarUrl?: string
   active: boolean
+  specialties?: string
+  activeTicketCount?: number
+  avgRating?: number
 }
 
 export interface AuthResponse {

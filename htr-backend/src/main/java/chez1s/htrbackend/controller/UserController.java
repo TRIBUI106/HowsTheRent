@@ -1,5 +1,6 @@
 package chez1s.htrbackend.controller;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.data.domain.Pageable;
@@ -21,6 +22,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import chez1s.htrbackend.domain.entity.User;
 import chez1s.htrbackend.domain.enums.UserRole;
+import chez1s.htrbackend.domain.enums.MaintenanceStatus;
+import chez1s.htrbackend.domain.repository.MaintenanceRequestRepository;
 import chez1s.htrbackend.domain.repository.UserRepository;
 import chez1s.htrbackend.dto.response.PageResponse;
 import chez1s.htrbackend.dto.response.UserResponse;
@@ -39,13 +42,14 @@ import lombok.RequiredArgsConstructor;
 public class UserController {
 
     private final UserRepository userRepository;
+    private final MaintenanceRequestRepository maintenanceRepository;
     private final PasswordEncoder passwordEncoder;
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<PageResponse<UserResponse>> listAll(
             @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
-        return ResponseEntity.ok(PageResponse.from(userRepository.findAll(pageable).map(UserResponse::from)));
+        return ResponseEntity.ok(PageResponse.from(userRepository.findAll(pageable).map(this::toUserResponse)));
     }
 
     @GetMapping("/me")
@@ -120,5 +124,17 @@ public class UserController {
         @NotBlank private String fullName;
         private String phone;
         private UserRole role;
+    }
+
+    private UserResponse toUserResponse(User user) {
+        UserResponse response = UserResponse.from(user);
+        if (user.getRole() == UserRole.TECHNICIAN) {
+            long activeTickets = maintenanceRepository.countByAssignedToIdAndStatusNotIn(
+                    user.getId(),
+                    List.of(MaintenanceStatus.DONE, MaintenanceStatus.COMPLETED, MaintenanceStatus.CANCELLED)
+            );
+            response.setActiveTicketCount(Math.toIntExact(activeTickets));
+        }
+        return response;
     }
 }

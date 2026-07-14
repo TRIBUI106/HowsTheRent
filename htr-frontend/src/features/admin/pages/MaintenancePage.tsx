@@ -39,7 +39,7 @@ export default function AdminMaintenancePage() {
     queryFn: () => userApi.listAll(),
   })
 
-  const technicians = users?.filter((user) => user.role === 'TECHNICIAN') ?? []
+  const technicians = users?.filter((user) => user.role === 'TECHNICIAN' && user.active) ?? []
   const inspectRequest = requests.find((r) => r.id === inspectRequestId)
 
   const { data: inspectMaterials = [], isLoading: loadingMats } = useQuery<MaintenanceMaterial[]>({
@@ -121,6 +121,14 @@ export default function AdminMaintenancePage() {
       return matchTitle || matchCode || matchRoom || matchTenant
     }
     return true
+  })
+
+  const matchesCategory = (technician: User, request: MaintenanceRequest) =>
+    !technician.specialties || technician.specialties.split(',').map((value) => value.trim()).includes(request.category || 'OTHER')
+
+  const rankedTechnicians = (request: MaintenanceRequest) => [...technicians].sort((a, b) => {
+    const score = (technician: User) => (matchesCategory(technician, request) ? 0 : 100) + (technician.activeTicketCount || 0)
+    return score(a) - score(b) || a.fullName.localeCompare(b.fullName)
   })
 
   return (
@@ -406,8 +414,11 @@ export default function AdminMaintenancePage() {
                               onChange={(event) => setSelectedTech((prev) => ({ ...prev, [request.id]: event.target.value }))}
                             >
                               <option value="">Chọn KTV</option>
-                              {technicians.map((technician) => (
-                                <option key={technician.id} value={technician.id}>{technician.fullName}</option>
+                              {rankedTechnicians(request).map((technician) => (
+                                <option key={technician.id} value={technician.id}>
+                                  {technician.fullName} — {(technician.activeTicketCount || 0) === 0 ? 'Rảnh' : `Đang xử lý ${technician.activeTicketCount} phiếu`}
+                                  {!matchesCategory(technician, request) ? ' — Khác chuyên môn' : ''}
+                                </option>
                               ))}
                             </select>
                             <button
@@ -423,6 +434,16 @@ export default function AdminMaintenancePage() {
                             <button onClick={() => setAssigningId(null)} className="text-xs text-fg-muted hover:text-fg">
                               Hủy
                             </button>
+                            {(() => {
+                              const selected = technicians.find((technician) => technician.id === selectedTech[request.id])
+                              if (!selected || ((selected.activeTicketCount || 0) === 0 && matchesCategory(selected, request))) return null
+                              return (
+                                <span className="max-w-48 text-[10px] leading-tight text-amber-600 dark:text-amber-400">
+                                  {(selected.activeTicketCount || 0) > 0 ? `Đang xử lý ${selected.activeTicketCount} phiếu. ` : ''}
+                                  {!matchesCategory(selected, request) ? 'Chuyên môn chưa khớp.' : ''}
+                                </span>
+                              )
+                            })()}
                           </div>
                         ) : (
                           <button onClick={() => setAssigningId(request.id)} className="text-xs font-medium text-blue-600 dark:text-blue-400 hover:underline">

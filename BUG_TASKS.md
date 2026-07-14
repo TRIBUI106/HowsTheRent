@@ -2,7 +2,7 @@
 
 ## Current
 
-- B08 — Lọc/cảnh báo KTV bận và ưu tiên đúng chuyên môn.
+- B02 — Phòng chuyển sang bảo trì xuất hiện trong luồng bảo trì.
 
 ## Tasks
 
@@ -10,7 +10,7 @@
 - [x] B18 — Cư dân nhận thông báo realtime khi ticket chờ nghiệm thu.
 - [x] B22 (KTV) — KTV nhận thông báo khi được phân công.
 - [x] B29 — Đồng bộ realtime trạng thái ticket giữa KTV và Admin.
-- [ ] B08 — Lọc/cảnh báo KTV bận và ưu tiên đúng chuyên môn.
+- [x] B08 — Lọc/cảnh báo KTV bận và ưu tiên đúng chuyên môn.
 - [ ] B02 — Phòng chuyển sang bảo trì xuất hiện trong luồng bảo trì.
 - [ ] B20 — Thanh toán chi phí vật tư và chuyển sang chờ nghiệm thu.
 - [ ] B23 (Cư dân) — Thanh toán hóa đơn bằng QR hoặc tiền mặt.
