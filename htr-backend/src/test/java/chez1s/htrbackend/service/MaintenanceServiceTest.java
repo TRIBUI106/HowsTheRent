@@ -159,6 +159,9 @@ class MaintenanceServiceTest {
     @Test
     void cancel_ShortReason_ThrowsBadRequest() {
         assertThrows(BadRequestException.class, () -> maintenanceService.cancel(requestId, "short"));
+        assertThrows(BadRequestException.class, () -> maintenanceService.cancel(requestId, "   "));
+        assertThrows(BadRequestException.class, () -> maintenanceService.cancel(requestId, null));
+        verify(maintenanceRepository, never()).save(any());
     }
 
     @Test
