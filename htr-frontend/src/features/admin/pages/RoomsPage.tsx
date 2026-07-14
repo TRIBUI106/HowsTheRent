@@ -91,6 +91,8 @@ export default function RoomsPage() {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['rooms', selectedProperty] })
+      qc.invalidateQueries({ queryKey: ['maintenance'] })
+      qc.invalidateQueries({ queryKey: ['dashboard'] })
       resetForm()
     },
   })

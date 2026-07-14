@@ -25,6 +25,8 @@ public class RoomService {
     private final RoomRepository roomRepository;
     private final PropertyService propertyService;
     private final MaintenanceRequestRepository maintenanceRepository;
+    private final NotificationService notificationService;
+    private final SlaService slaService;
 
     public List<Room> listByProperty(UUID propertyId) {
         return roomRepository.findByPropertyId(propertyId);
@@ -89,13 +91,27 @@ public class RoomService {
                 MaintenanceRequest req = MaintenanceRequest.builder()
                         .room(saved)
                         .tenant(saved.getProperty().getOwner())
+                        .ticketCode("MNT-ROOM-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase())
                         .title("Bảo trì phòng " + saved.getRoomNumber())
                         .description("Phòng chuyển sang trạng thái bảo trì từ trang Quản lý phòng.")
                         .status(MaintenanceStatus.OPEN)
                         .priority(MaintenancePriority.NORMAL)
                         .category(MaintenanceCategory.OTHER)
+                        .expectedResolvedAt(slaService.calculateExpectedResolvedAt(MaintenancePriority.NORMAL, MaintenanceCategory.OTHER))
                         .build();
-                maintenanceRepository.save(req);
+                req = maintenanceRepository.save(req);
+                notificationService.create(
+                        saved.getProperty().getOwner().getId(),
+                        "Phòng chuyển sang bảo trì",
+                        "Đã tạo phiếu " + req.getTicketCode() + " cho phòng " + saved.getRoomNumber(),
+                        "MAINTENANCE",
+                        req.getId()
+                );
+                notificationService.publishEvent(
+                        saved.getProperty().getOwner().getId(),
+                        "maintenance-update",
+                        chez1s.htrbackend.dto.response.MaintenanceRequestResponse.from(req)
+                );
             }
         }
         return saved;
