@@ -1,8 +1,8 @@
 # HowsTheRent
+Hệ thống quản lý nhà trọ — theo dõi phòng, hợp đồng, hóa đơn, bảo trì, và cấu hình phí cho nhiều tòa nhà.
 
 <img width="1229" height="690" alt="image" src="https://github.com/user-attachments/assets/a0e071d5-cc9b-4345-b60b-53c0529e0e45" />
 
-Hệ thống quản lý nhà trọ — theo dõi phòng, hợp đồng, hóa đơn, bảo trì, và cấu hình phí cho nhiều tòa nhà.
 
 ## Tech Stack
 
