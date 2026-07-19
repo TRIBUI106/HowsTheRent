@@ -18,6 +18,7 @@ import type { Invoice } from '@/types'
 export default function TenantInvoicesPage() {
   const qc = useQueryClient()
   const [paymentInvoice, setPaymentInvoice] = useState<Invoice | null>(null)
+  const [isOpeningQr, setIsOpeningQr] = useState(false)
   const { data, isLoading } = useQuery({
     queryKey: ['tenant-invoices'],
     queryFn: () => api.get('/invoices/mine').then(r => r.data),
@@ -26,11 +27,17 @@ export default function TenantInvoicesPage() {
   const invoices: Invoice[] = extractPageContent<any>(data).map(normalizeInvoice)
 
   async function handleOnlinePay(invoice: Invoice) {
-    if (invoice.checkoutUrl) {
-      window.open(invoice.checkoutUrl, '_blank')
-    } else {
-      const { data: payment } = await api.post(`/invoices/${invoice.id}/pay-online`)
-      window.open(payment.checkoutUrl, '_blank')
+    setIsOpeningQr(true)
+    try {
+      const checkoutUrl = invoice.checkoutUrl
+        ?? (await invoiceApi.createPaymentLink(invoice.id)).checkoutUrl
+      window.location.assign(checkoutUrl)
+    } catch (error: any) {
+      showToast({
+        message: error?.response?.data?.message ?? 'Không thể tạo mã QR thanh toán',
+        type: 'error',
+      })
+      setIsOpeningQr(false)
     }
   }
 
@@ -74,11 +81,14 @@ export default function TenantInvoicesPage() {
           <div className="grid gap-3 sm:grid-cols-2">
             <button
               className="rounded-xl border border-border p-4 text-left transition-colors hover:border-accent hover:bg-accent/5"
+              disabled={isOpeningQr}
               onClick={() => handleOnlinePay(paymentInvoice)}
             >
               <QrCode className="mb-3 text-accent" size={24} />
               <p className="font-semibold text-fg">QR / PayOS</p>
-              <p className="mt-1 text-xs text-fg-muted">Mở cổng thanh toán trực tuyến.</p>
+              <p className="mt-1 text-xs text-fg-muted">
+                {isOpeningQr ? 'Đang tạo mã QR...' : 'Mở mã QR thanh toán trực tuyến.'}
+              </p>
             </button>
             <button
               className="rounded-xl border border-border p-4 text-left transition-colors hover:border-accent hover:bg-accent/5 disabled:opacity-50"

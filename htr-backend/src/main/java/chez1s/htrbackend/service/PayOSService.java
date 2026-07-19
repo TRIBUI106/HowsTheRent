@@ -6,14 +6,15 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
-import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
-import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
@@ -22,7 +23,7 @@ import java.util.TreeMap;
 @Slf4j
 public class PayOSService {
 
-    private static final String PAYOS_API = "https://api.payos.vn";
+    private static final String PAYOS_API = "https://api-merchant.payos.vn";
     private final InvoiceService invoiceService;
     private final String clientId;
     private final String apiKey;
@@ -44,16 +45,20 @@ public class PayOSService {
 
     public String createPaymentLink(Invoice invoice) {
         long orderCode = Math.abs(invoice.getId().hashCode());
-        int amount = invoice.getTotalAmount().multiply(BigDecimal.valueOf(100)).intValue();
+        int amount = invoice.getTotalAmount().intValueExact();
+        if (amount <= 0) {
+            throw new BusinessException("Số tiền hóa đơn phải lớn hơn 0");
+        }
 
         Map<String, Object> body = new HashMap<>();
         body.put("orderCode", orderCode);
         body.put("amount", amount);
-        body.put("description", "Thanh toán hóa đơn " + invoice.getInvoiceMonth());
+        body.put("description", "Hoa don " + invoice.getInvoiceMonth().toString().substring(0, 7));
         body.put("buyerName", invoice.getContract().getTenant().getFullName());
         body.put("buyerEmail", invoice.getContract().getTenant().getEmail());
         body.put("returnUrl", "http://localhost:5173/payment/success");
         body.put("cancelUrl", "http://localhost:5173/payment/cancel");
+        body.put("signature", computePaymentRequestSignature(body));
 
         Map<String, Object> item = new HashMap<>();
         item.put("name", "Hóa đơn " + invoice.getInvoiceMonth());
@@ -61,16 +66,21 @@ public class PayOSService {
         item.put("price", amount);
         body.put("items", new Object[]{item});
 
-        String response = callPayOS("/payment-v1/payment/create", body);
+        String response = callPayOS("/v2/payment-requests", body);
         try {
             JsonNode root = objectMapper.readTree(response);
-            JsonNode data = root.get("data");
-            String checkoutUrl = data.get("checkoutUrl").asText();
+            JsonNode data = root.path("data");
+            String checkoutUrl = data.path("checkoutUrl").asText();
+            if (!"00".equals(root.path("code").asText()) || checkoutUrl.isBlank()) {
+                throw new BusinessException("PayOS không trả về liên kết thanh toán: " + root.path("desc").asText());
+            }
 
             invoice.setPaymentLinkId(String.valueOf(orderCode));
             invoice.setCheckoutUrl(checkoutUrl);
             invoiceService.save(invoice);
             return checkoutUrl;
+        } catch (BusinessException e) {
+            throw e;
         } catch (Exception e) {
             throw new BusinessException("PayOS error: " + response);
         }
@@ -105,14 +115,24 @@ public class PayOSService {
     private String callPayOS(String path, Map<String, Object> body) {
         try {
             String url = PAYOS_API + path;
-            String json = objectMapper.writeValueAsString(body);
-            String signature = computeHmac(new TreeMap<>(body));
-            String auth = Base64.getEncoder().encodeToString((clientId + ":" + apiKey).getBytes());
-
-            return restTemplate.postForObject(url, null, String.class);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.set("x-client-id", clientId);
+            headers.set("x-api-key", apiKey);
+            return restTemplate.postForObject(url, new HttpEntity<>(body, headers), String.class);
         } catch (Exception e) {
             throw new BusinessException("PayOS API call failed: " + e.getMessage());
         }
+    }
+
+    private String computePaymentRequestSignature(Map<String, Object> body) {
+        Map<String, Object> signatureData = new TreeMap<>();
+        signatureData.put("amount", body.get("amount"));
+        signatureData.put("cancelUrl", body.get("cancelUrl"));
+        signatureData.put("description", body.get("description"));
+        signatureData.put("orderCode", body.get("orderCode"));
+        signatureData.put("returnUrl", body.get("returnUrl"));
+        return computeHmac(signatureData);
     }
 
     private String computeHmac(Map<String, Object> data) {

@@ -1,7 +1,0 @@
-{
-  "tool_name": "Bash",
-  "tool_input_preview": "{\"command\":\"Remove-Item \\\"D:\\\\Code\\\\HowsTheRent\\\\htr-frontend\\\\src\\\\features\\\\admin\\\\pages\\\\VehicleConfigPage.tsx\\\" -Force && echo \\\"deleted VehicleConfigPage.tsx\\\"\",\"description\":\"Delete VehicleConfi...",
-  "error": "Exit code 127\n/usr/bin/bash: line 3: Remove-Item: command not found",
-  "timestamp": "2026-06-02T11:24:14.995Z",
-  "retry_count": 1
-}

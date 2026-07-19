@@ -44,6 +44,22 @@ export default function AdminInvoicesPage() {
   const [generateConfirmed, setGenerateConfirmed] = useState(false)
   const [generationResult, setGenerationResult] = useState<InvoiceGenerationResult | null>(null)
 
+  const markPaidCashMutation = useMutation({
+    mutationFn: (id: string) => api.post(`/invoices/${id}/pay-cash`),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['invoices'] })
+      qc.invalidateQueries({ queryKey: ['dashboard'] })
+      qc.invalidateQueries({ queryKey: ['tenant-invoices'] })
+      showToast({ message: 'Đã xác nhận hóa đơn thanh toán bằng tiền mặt.', type: 'success' })
+    },
+    onError: (error: any) => {
+      showToast({
+        message: error?.response?.data?.message ?? 'Không thể xác nhận thanh toán tiền mặt',
+        type: 'error',
+      })
+    },
+  })
+
   const { data, isLoading } = useQuery<Page<Invoice>>({
     queryKey: ['invoices', page, statusFilter],
     queryFn: () =>
@@ -163,7 +179,20 @@ export default function AdminInvoicesPage() {
                   <TableCell className="font-medium">{formatCurrency(invoice.totalAmount)}</TableCell>
                   <TableCell><Badge status={invoice.status} /></TableCell>
                   <TableCell>{formatDate(invoice.dueDate)}</TableCell>
-                  <TableCell>{invoice.paymentMethod || '-'}</TableCell>
+                  <TableCell>
+                    {invoice.status !== 'PAID' && invoice.paymentMethod === 'CASH' ? (
+                      <Button
+                        size="sm"
+                        loading={markPaidCashMutation.isPending && markPaidCashMutation.variables === invoice.id}
+                        disabled={markPaidCashMutation.isPending}
+                        onClick={() => markPaidCashMutation.mutate(invoice.id)}
+                      >
+                        Xác nhận đã thanh toán
+                      </Button>
+                    ) : (
+                      invoice.paymentMethod || '-'
+                    )}
+                  </TableCell>
                 </TableRow>
               ))}
 
