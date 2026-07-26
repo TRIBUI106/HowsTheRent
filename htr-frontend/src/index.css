@@ -2,11 +2,10 @@
 
 @theme {
   /* ── Fonts ──────────────────────────────────────────────────────────────── */
-  /* Display: Instrument Serif — headings, hero, section titles (roman only)  */
-  /* Body:    Geist — prose, UI, labels (replaces Inter)                      */
-  --font-display: 'Instrument Serif', ui-serif, Georgia, serif;
-  --font-body:    'Geist', ui-sans-serif, system-ui, sans-serif;
-  --font-sans:    'Geist', ui-sans-serif, system-ui, sans-serif; /* alias for Tailwind utilities */
+  /* Display + body: Be Vietnam Pro — Vietnamese-native sans, clean diacritics */
+  --font-display: 'Be Vietnam Pro', ui-sans-serif, system-ui, sans-serif;
+  --font-body:    'Be Vietnam Pro', ui-sans-serif, system-ui, sans-serif;
+  --font-sans:    'Be Vietnam Pro', ui-sans-serif, system-ui, sans-serif; /* alias for Tailwind utilities */
 
   /* ── Spacing (4pt scale) ─────────────────────────────────────────────────── */
   --space-3xs: 0.25rem;   /*  4px */

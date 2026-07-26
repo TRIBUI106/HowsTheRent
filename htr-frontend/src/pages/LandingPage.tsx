@@ -1,7 +1,7 @@
 /*
  * Hallmark · macrostructure: Split Studio · nav: N5 Floating pill · footer: Ft5 Statement
  * tone: utilitarian · anchor hue: azure 220 · genre: modern-minimal
- * theme: catalog · display: Instrument Serif · body: Geist
+ * theme: catalog · display/body: Be Vietnam Pro
  * enrichment: none (typography only)
  * contrast: pass (40–41) · nav: N5 · footer: Ft5 · slop: pass (42–45)
  * honest: pass (46) · chrome: pass (47) · tokens: pass (48) · responsive: pass (49)
