@@ -24,19 +24,24 @@ public class MinioConfig {
     @Value("${minio.bucket}")
     private String bucket;
 
+    @Value("${minio.auto-create-bucket:true}")
+    private boolean autoCreateBucket;
+
     @Bean
     public MinioClient minioClient() {
         MinioClient client = MinioClient.builder()
                 .endpoint(url)
                 .credentials(accessKey, secretKey)
                 .build();
-        try {
-            if (!client.bucketExists(BucketExistsArgs.builder().bucket(bucket).build())) {
-                client.makeBucket(MakeBucketArgs.builder().bucket(bucket).build());
-                log.info("Created MinIO bucket: {}", bucket);
+        if (autoCreateBucket) {
+            try {
+                if (!client.bucketExists(BucketExistsArgs.builder().bucket(bucket).build())) {
+                    client.makeBucket(MakeBucketArgs.builder().bucket(bucket).build());
+                    log.info("Created object storage bucket: {}", bucket);
+                }
+            } catch (Exception e) {
+                log.warn("Could not initialize object storage bucket: {}", e.getMessage());
             }
-        } catch (Exception e) {
-            log.warn("Could not initialize MinIO bucket: {}", e.getMessage());
         }
         return client;
     }

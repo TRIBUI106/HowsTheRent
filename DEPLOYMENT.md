@@ -58,11 +58,16 @@ PAYOS_CANCEL_URL=https://<your-vercel-app>.vercel.app/payment/cancel
 MAIL_USERNAME=<smtp-user>
 MAIL_PASSWORD=<smtp-app-password>
 
-MINIO_URL=<object-storage-url>
-MINIO_ACCESS_KEY=<object-storage-access-key>
-MINIO_SECRET_KEY=<object-storage-secret-key>
+# Cloudflare R2 / S3-compatible object storage
+MINIO_URL=https://<account-id>.r2.cloudflarestorage.com
+MINIO_PUBLIC_URL=https://<public-r2-domain>
+MINIO_ACCESS_KEY=<r2-access-key>
+MINIO_SECRET_KEY=<r2-secret-key>
 MINIO_BUCKET=htr
+MINIO_AUTO_CREATE_BUCKET=false
 ```
+
+Password reset OTP is stored in backend memory for this demo deployment, so no Redis service is required. OTPs expire after 15 minutes. If Render restarts or sleeps before the user submits the OTP, they should request a new code.
 
 Render provides `PORT` automatically. `application.properties` reads it via `server.port=${PORT:${SERVER_PORT:8080}}`.
 

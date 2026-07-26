@@ -24,8 +24,8 @@ public class StorageService {
     @Value("${minio.bucket}")
     private String bucket;
 
-    @Value("${minio.url}")
-    private String minioUrl;
+    @Value("${minio.public-url:${minio.url}}")
+    private String publicUrl;
 
     public String upload(String folder, MultipartFile file) {
         String originalFilename = file.getOriginalFilename();
@@ -43,10 +43,10 @@ public class StorageService {
                     .contentType(file.getContentType())
                     .build());
         } catch (Exception e) {
-            throw new RuntimeException("Failed to upload file to MinIO", e);
+            throw new RuntimeException("Failed to upload file to object storage", e);
         }
 
-        return minioUrl + "/" + bucket + "/" + objectName;
+        return buildPublicUrl(objectName);
     }
 
     public String getPresignedUrl(String objectName) {
@@ -60,5 +60,13 @@ public class StorageService {
         } catch (Exception e) {
             throw new RuntimeException("Failed to generate presigned URL", e);
         }
+    }
+
+    private String buildPublicUrl(String objectName) {
+        String baseUrl = publicUrl.endsWith("/") ? publicUrl.substring(0, publicUrl.length() - 1) : publicUrl;
+        if (baseUrl.endsWith("/" + bucket)) {
+            return baseUrl + "/" + objectName;
+        }
+        return baseUrl + "/" + bucket + "/" + objectName;
     }
 }

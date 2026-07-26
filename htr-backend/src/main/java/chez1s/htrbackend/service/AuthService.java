@@ -10,21 +10,27 @@ import chez1s.htrbackend.exception.BusinessException;
 import chez1s.htrbackend.exception.ResourceNotFoundException;
 import chez1s.htrbackend.security.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.security.SecureRandom;
 import java.time.Duration;
-import java.util.Random;
+import java.time.Instant;
+import java.util.Locale;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 @RequiredArgsConstructor
 public class AuthService {
 
+    private static final Duration PASSWORD_RESET_OTP_TTL = Duration.ofMinutes(15);
+    private static final SecureRandom OTP_RANDOM = new SecureRandom();
+    private static final Map<String, OtpEntry> PASSWORD_RESET_OTPS = new ConcurrentHashMap<>();
+
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider tokenProvider;
-    private final StringRedisTemplate redisTemplate;
     private final EmailService emailService;
 
     public AuthResponse login(LoginRequest request) {
@@ -57,18 +63,18 @@ public class AuthService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("Email không tồn tại"));
 
-        String otp = String.format("%06d", new Random().nextInt(999999));
-        String key = "pwd_reset:" + email;
-        redisTemplate.opsForValue().set(key, otp, Duration.ofMinutes(15));
+        String otp = String.format("%06d", OTP_RANDOM.nextInt(1_000_000));
+        PASSWORD_RESET_OTPS.put(normalizeEmail(email), new OtpEntry(otp, Instant.now().plus(PASSWORD_RESET_OTP_TTL)));
 
         emailService.sendPasswordResetOtp(user.getFullName(), email, otp);
     }
 
     public void resetPassword(String email, String otp, String newPassword) {
-        String key = "pwd_reset:" + email;
-        String stored = redisTemplate.opsForValue().get(key);
+        String key = normalizeEmail(email);
+        OtpEntry stored = PASSWORD_RESET_OTPS.get(key);
 
-        if (stored == null || !stored.equals(otp)) {
+        if (stored == null || stored.expiresAt().isBefore(Instant.now()) || !stored.otp().equals(otp)) {
+            PASSWORD_RESET_OTPS.remove(key);
             throw new BusinessException("OTP không hợp lệ hoặc đã hết hạn");
         }
 
@@ -77,6 +83,13 @@ public class AuthService {
 
         user.setPasswordHash(passwordEncoder.encode(newPassword));
         userRepository.save(user);
-        redisTemplate.delete(key);
+        PASSWORD_RESET_OTPS.remove(key);
+    }
+
+    private String normalizeEmail(String email) {
+        return email.trim().toLowerCase(Locale.ROOT);
+    }
+
+    private record OtpEntry(String otp, Instant expiresAt) {
     }
 }
