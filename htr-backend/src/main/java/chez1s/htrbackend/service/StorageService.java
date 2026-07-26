@@ -64,9 +64,6 @@ public class StorageService {
 
     private String buildPublicUrl(String objectName) {
         String baseUrl = publicUrl.endsWith("/") ? publicUrl.substring(0, publicUrl.length() - 1) : publicUrl;
-        if (baseUrl.endsWith("/" + bucket)) {
-            return baseUrl + "/" + objectName;
-        }
-        return baseUrl + "/" + bucket + "/" + objectName;
+        return baseUrl + "/" + objectName;
     }
 }
