@@ -2,6 +2,7 @@ services:
   - type: web
     name: hows-the-rent-api
     runtime: docker
+    region: singapore
     plan: free
     rootDir: htr-backend
     dockerfilePath: ./Dockerfile
@@ -18,7 +19,7 @@ services:
       - key: CORS_ALLOWED_ORIGINS
         value: https://hows-the-rent.vercel.app
       - key: COOKIE_SECURE
-        value: true
+        value: "true"
       - key: COOKIE_SAME_SITE
         value: Lax
       - key: PAYOS_CLIENT_ID
@@ -46,4 +47,4 @@ services:
       - key: MINIO_BUCKET
         value: htr
       - key: MINIO_AUTO_CREATE_BUCKET
-        value: false
+        value: "false"
