@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import Layout from '@/components/Layout'
 import { Card } from '@/components/ui/card'
@@ -46,7 +46,18 @@ interface HunonicSyncResult {
   message: string
 }
 
+type ApiError = {
+  response?: { data?: { message?: string } }
+  message?: string
+}
+
+function getErrorMessage(error: unknown, fallback: string) {
+  const apiError = error as ApiError
+  return apiError.response?.data?.message ?? apiError.message ?? fallback
+}
+
 const emptyForm = (): ReadingForm => ({ elecOld: '', elecNew: '', waterOld: '', waterNew: '' })
+const MAX_READING_DELTA = 100_000
 
 function currentYearMonth() {
   const now = new Date()
@@ -61,8 +72,8 @@ export default function MeterReadingsPage() {
   const qc = useQueryClient()
   const [selectedMonth, setSelectedMonth] = useState(currentYearMonth())
   const [mode, setMode] = useState<ReadingMode>('MANUAL')
-  const [forms, setForms] = useState<Record<string, ReadingForm>>({})
-  const [successRooms, setSuccessRooms] = useState<Set<string>>(new Set())
+  const [forms, setForms] = useState<Record<string, Record<string, ReadingForm>>>({})
+  const [successRooms, setSuccessRooms] = useState<Record<string, Set<string>>>({})
   const [generating, setGenerating] = useState(false)
   const [genResult, setGenResult] = useState<string | null>(null)
 
@@ -71,8 +82,10 @@ export default function MeterReadingsPage() {
     queryFn: () => api.get('/rooms/rented').then((r) => r.data),
   })
 
+  const roomIds = useMemo(() => rooms.map((room) => room.id).join(','), [rooms])
+
   const { data: previousReadings = {}, isLoading: isLoadingPrevious } = useQuery<Record<string, MeterReadingHistory | null>>({
-    queryKey: ['meter-reading-seeds', selectedMonth, rooms.map((room) => room.id).join(',')],
+    queryKey: ['meter-reading-seeds', selectedMonth, roomIds],
     enabled: rooms.length > 0,
     queryFn: async () => {
       const monthDate = getMonthDate(selectedMonth)
@@ -96,46 +109,42 @@ export default function MeterReadingsPage() {
       }).then((r) => r.data),
   })
 
-  useEffect(() => {
-    setForms({})
-    setSuccessRooms(new Set())
-  }, [selectedMonth])
-
-  useEffect(() => {
-    if (rooms.length === 0) return
-
-    setForms((previousForms) => {
-      const nextForms: Record<string, ReadingForm> = {}
-
-      for (const room of rooms) {
-        const current = previousForms[room.id] ?? emptyForm()
-        const previous = previousReadings[room.id]
-
-        nextForms[room.id] = {
-          elecOld: current.elecOld || (previous?.elecNew != null ? String(previous.elecNew) : ''),
-          elecNew: current.elecNew,
-          waterOld: current.waterOld || (previous?.waterNew != null ? String(previous.waterNew) : ''),
-          waterNew: current.waterNew,
-        }
+  const seededForms = useMemo(() => {
+    const nextForms: Record<string, ReadingForm> = {}
+    for (const room of rooms) {
+      const previous = previousReadings[room.id]
+      nextForms[room.id] = {
+        elecOld: previous?.elecNew != null ? String(previous.elecNew) : '',
+        elecNew: '',
+        waterOld: previous?.waterNew != null ? String(previous.waterNew) : '',
+        waterNew: '',
       }
-
-      return nextForms
-    })
+    }
+    return nextForms
   }, [previousReadings, rooms])
+
+  const activeForms = forms[selectedMonth] ?? seededForms
+  const activeSuccessRooms = successRooms[selectedMonth] ?? new Set<string>()
 
   const readingMutation = useMutation({
     mutationFn: ({ roomId, data }: { roomId: string; data: object }) =>
       api.post(`/rooms/${roomId}/meter-readings`, data),
     onSuccess: (_data, variables) => {
-      setSuccessRooms((previous) => new Set([...previous, variables.roomId]))
+      setSuccessRooms((previous) => {
+        const current = previous[selectedMonth] ?? new Set<string>()
+        return {
+          ...previous,
+          [selectedMonth]: new Set([...current, variables.roomId]),
+        }
+      })
       showToast({ message: 'Đã lưu chỉ số điện nước', type: 'success' })
       qc.invalidateQueries({ queryKey: ['meter-reading-seeds'] })
       qc.invalidateQueries({ queryKey: ['invoices'] })
       qc.invalidateQueries({ queryKey: ['dashboard'] })
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       showToast({
-        message: error?.response?.data?.message ?? 'Không thể lưu chỉ số điện nước',
+        message: getErrorMessage(error, 'Không thể lưu chỉ số điện nước'),
         type: 'error',
       })
     },
@@ -156,35 +165,77 @@ export default function MeterReadingsPage() {
       qc.invalidateQueries({ queryKey: ['invoices'] })
       qc.invalidateQueries({ queryKey: ['dashboard'] })
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       showToast({
-        message: error?.response?.data?.message ?? 'Không thể đọc chỉ số từ Hunonic',
+        message: getErrorMessage(error, 'Không thể đọc chỉ số từ Hunonic'),
         type: 'error',
       })
     },
   })
 
   function getForm(roomId: string): ReadingForm {
-    return forms[roomId] ?? emptyForm()
+    return activeForms[roomId] ?? emptyForm()
   }
 
   function updateForm(roomId: string, field: keyof ReadingForm, value: string) {
     setForms((previous) => ({
       ...previous,
-      [roomId]: { ...getForm(roomId), [field]: value },
+      [selectedMonth]: {
+        ...activeForms,
+        [roomId]: { ...getForm(roomId), [field]: value },
+      },
     }))
+  }
+
+  function validateReading(oldValue: number, newValue: number, label: string) {
+    if (!Number.isFinite(oldValue) || !Number.isFinite(newValue)) {
+      return `${label} phải là số hợp lệ`
+    }
+    if (oldValue < 0 || newValue < 0) {
+      return `${label} không được âm`
+    }
+    if (newValue < oldValue) {
+      return `${label} mới phải lớn hơn hoặc bằng chỉ số cũ`
+    }
+    if (newValue - oldValue > MAX_READING_DELTA) {
+      return `${label} mới chênh lệch quá lớn so với chỉ số cũ`
+    }
+    return null
   }
 
   function submitManualReading(room: Room) {
     const form = getForm(room.id)
+    const elecOld = Number(form.elecOld)
+    const elecNew = Number(form.elecNew)
+    const elecError = validateReading(elecOld, elecNew, 'Chỉ số điện')
+    if (elecError) {
+      showToast({ message: elecError, type: 'error' })
+      return
+    }
+
+    const hasWater = form.waterOld.trim() || form.waterNew.trim()
+    const waterOld = form.waterOld ? Number(form.waterOld) : null
+    const waterNew = form.waterNew ? Number(form.waterNew) : null
+    if (hasWater) {
+      if (waterOld == null || waterNew == null) {
+        showToast({ message: 'Vui lòng nhập đủ chỉ số nước cũ và mới', type: 'error' })
+        return
+      }
+      const waterError = validateReading(waterOld, waterNew, 'Chỉ số nước')
+      if (waterError) {
+        showToast({ message: waterError, type: 'error' })
+        return
+      }
+    }
+
     readingMutation.mutate({
       roomId: room.id,
       data: {
         readingMonth: getMonthDate(selectedMonth),
-        elecOld: form.elecOld ? Number(form.elecOld) : null,
-        elecNew: Number(form.elecNew),
-        waterOld: form.waterOld ? Number(form.waterOld) : null,
-        waterNew: form.waterNew ? Number(form.waterNew) : null,
+        elecOld,
+        elecNew,
+        waterOld,
+        waterNew,
         source: 'MANUAL',
       },
     })
@@ -201,8 +252,8 @@ export default function MeterReadingsPage() {
       showToast({ message, type: 'success' })
       qc.invalidateQueries({ queryKey: ['invoices'] })
       qc.invalidateQueries({ queryKey: ['dashboard'] })
-    } catch (error: any) {
-      const message = error?.response?.data?.message ?? error?.message ?? 'Không thể tạo hóa đơn'
+    } catch (error: unknown) {
+      const message = getErrorMessage(error, 'Không thể tạo hóa đơn')
       setGenResult(`Lỗi: ${message}`)
       showToast({ message, type: 'error' })
     } finally {
@@ -285,7 +336,7 @@ export default function MeterReadingsPage() {
                   {rooms.map((room) => {
                     const form = getForm(room.id)
                     const previous = previousReadings[room.id]
-                    const done = successRooms.has(room.id)
+                    const done = activeSuccessRooms.has(room.id)
 
                     return (
                       <Card key={room.id} className={`p-4 ${done ? 'border-success/40 bg-success-surface' : ''}`}>

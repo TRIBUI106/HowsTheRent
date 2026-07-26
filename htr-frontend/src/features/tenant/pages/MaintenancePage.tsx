@@ -13,6 +13,9 @@ import { formatDate, formatCurrency, priorityColor, priorityLabel, categoryLabel
 import { showToast } from '@/lib/toast'
 import type { Contract, MaintenanceRequest } from '@/types'
 
+type MaintenancePriority = NonNullable<MaintenanceRequest['priority']>
+type MaintenanceCategory = NonNullable<MaintenanceRequest['category']>
+
 const AVAILABLE_SLOTS = [
   'Sáng (08:00 - 11:30)',
   'Chiều (13:30 - 17:00)',
@@ -20,14 +23,24 @@ const AVAILABLE_SLOTS = [
   'Cuối tuần (Thứ 7 - CN)'
 ]
 
+type ApiError = {
+  response?: { data?: { message?: string } }
+  message?: string
+}
+
+function getErrorMessage(error: unknown, fallback: string) {
+  const apiError = error as ApiError
+  return apiError.response?.data?.message ?? apiError.message ?? fallback
+}
+
 export default function TenantMaintenancePage() {
   const qc = useQueryClient()
   const fileRef = useRef<HTMLInputElement>(null)
   const [showCreate, setShowCreate] = useState(false)
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
-  const [priority, setPriority] = useState<'NORMAL' | 'HIGH' | 'URGENT'>('NORMAL')
-  const [category, setCategory] = useState<'ELECTRIC' | 'PLUMBING' | 'AIR_CONDITIONER' | 'FURNITURE' | 'OTHER'>('OTHER')
+  const [priority, setPriority] = useState<MaintenancePriority>('NORMAL')
+  const [category, setCategory] = useState<MaintenanceCategory>('OTHER')
   const [preferredSlots, setPreferredSlots] = useState<string[]>([])
   const [images, setImages] = useState<File[]>([])
   const [video, setVideo] = useState<File | null>(null)
@@ -54,7 +67,7 @@ export default function TenantMaintenancePage() {
   })
 
   const requests: MaintenanceRequest[] = (data || []) as MaintenanceRequest[]
-  const activeContracts: Contract[] = extractPageContent<any>(contractsData)
+  const activeContracts: Contract[] = extractPageContent<Contract>(contractsData)
     .map(normalizeContract)
     .filter((contract) => contract.status === 'ACTIVE')
   const activeRoom = activeContracts[0]?.room
@@ -97,8 +110,8 @@ export default function TenantMaintenancePage() {
       resetForm()
       showToast({ message: 'Đã gửi yêu cầu bảo trì thành công', type: 'success' })
     },
-    onError: (err: any) => {
-      const message = err?.response?.data?.message ?? 'Lỗi khi tạo yêu cầu bảo trì'
+    onError: (err: unknown) => {
+      const message = getErrorMessage(err, 'Lỗi khi tạo yêu cầu bảo trì')
       setError(message)
       showToast({ message, type: 'error' })
     },
@@ -111,8 +124,8 @@ export default function TenantMaintenancePage() {
       qc.invalidateQueries({ queryKey: ['dashboard'] })
       showToast({ message: 'Đã nghiệm thu và hoàn thành phiếu bảo trì!', type: 'success' })
     },
-    onError: (err: any) => {
-      showToast({ message: err?.response?.data?.message ?? 'Không thể nghiệm thu', type: 'error' })
+    onError: (err: unknown) => {
+      showToast({ message: getErrorMessage(err, 'Không thể nghiệm thu'), type: 'error' })
     },
   })
 
@@ -124,8 +137,8 @@ export default function TenantMaintenancePage() {
       setComplainReason('')
       showToast({ message: 'Đã gửi phản hồi / khiếu nại thành công!', type: 'success' })
     },
-    onError: (err: any) => {
-      showToast({ message: err?.response?.data?.message ?? 'Lỗi khi khiếu nại', type: 'error' })
+    onError: (err: unknown) => {
+      showToast({ message: getErrorMessage(err, 'Lỗi khi khiếu nại'), type: 'error' })
     },
   })
 
@@ -137,8 +150,8 @@ export default function TenantMaintenancePage() {
       setReviewComment('')
       showToast({ message: 'Đã gửi đánh giá chất lượng dịch vụ bảo trì!', type: 'success' })
     },
-    onError: (err: any) => {
-      showToast({ message: err?.response?.data?.message ?? 'Không thể gửi đánh giá', type: 'error' })
+    onError: (err: unknown) => {
+      showToast({ message: getErrorMessage(err, 'Không thể gửi đánh giá'), type: 'error' })
     },
   })
 
@@ -148,8 +161,8 @@ export default function TenantMaintenancePage() {
       qc.invalidateQueries({ queryKey: ['tenant-maintenance'] })
       showToast({ message: 'Đã thanh toán chi phí vật tư!', type: 'success' })
     },
-    onError: (err: any) => {
-      showToast({ message: err?.response?.data?.message ?? 'Lỗi khi thanh toán vật tư', type: 'error' })
+    onError: (err: unknown) => {
+      showToast({ message: getErrorMessage(err, 'Lỗi khi thanh toán vật tư'), type: 'error' })
     },
   })
 
@@ -159,8 +172,8 @@ export default function TenantMaintenancePage() {
       qc.invalidateQueries({ queryKey: ['tenant-maintenance'] })
       showToast({ message: variables.confirm ? 'Đã xác nhận lịch sửa chữa!' : 'Đã từ chối lịch, KTV sẽ liên hệ sắp xếp lại', type: 'success' })
     },
-    onError: (err: any) => {
-      showToast({ message: err?.response?.data?.message ?? 'Lỗi xác nhận lịch', type: 'error' })
+    onError: (err: unknown) => {
+      showToast({ message: getErrorMessage(err, 'Lỗi xác nhận lịch'), type: 'error' })
     },
   })
 
@@ -194,6 +207,10 @@ export default function TenantMaintenancePage() {
     }
     if (!title.trim()) {
       setError('Tiêu đề không được để trống')
+      return
+    }
+    if (description.trim().length < 10) {
+      setError('Mô tả chi tiết phải có ít nhất 10 ký tự')
       return
     }
     setError('')
@@ -245,7 +262,7 @@ export default function TenantMaintenancePage() {
                     <label className="mb-1 block text-xs font-medium text-fg">Mức độ ưu tiên</label>
                     <select
                       value={priority}
-                      onChange={(e) => setPriority(e.target.value as any)}
+                      onChange={(e) => setPriority(e.target.value as MaintenancePriority)}
                       className="w-full rounded-xl border border-border/80 bg-surface px-3 py-2 text-sm text-fg focus:outline-none focus:ring-2 focus:ring-accent"
                     >
                       <option value="NORMAL">Bình thường</option>
@@ -258,7 +275,7 @@ export default function TenantMaintenancePage() {
                     <label className="mb-1 block text-xs font-medium text-fg">Danh mục sự cố</label>
                     <select
                       value={category}
-                      onChange={(e) => setCategory(e.target.value as any)}
+                      onChange={(e) => setCategory(e.target.value as MaintenanceCategory)}
                       className="w-full rounded-xl border border-border/80 bg-surface px-3 py-2 text-sm text-fg focus:outline-none focus:ring-2 focus:ring-accent"
                     >
                       <option value="ELECTRIC">Điện</option>
@@ -285,13 +302,15 @@ export default function TenantMaintenancePage() {
                 </div>
 
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-fg">Mô tả chi tiết</label>
+                  <label className="mb-1 block text-sm font-medium text-fg">Mô tả chi tiết <span className="text-error">*</span></label>
                   <textarea
                     rows={3}
                     value={description}
                     onChange={(event) => setDescription(event.target.value)}
                     className="w-full resize-none rounded-xl border border-border/80 bg-surface px-3 py-2 text-sm text-fg focus:outline-none focus:ring-2 focus:ring-accent"
                     placeholder="Mô tả cụ thể hiện tượng, xảy ra từ lúc nào, ở khu vực nào..."
+                    required
+                    minLength={10}
                   />
                 </div>
 

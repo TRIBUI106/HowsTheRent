@@ -14,6 +14,7 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
@@ -28,27 +29,31 @@ public class PayOSService {
     private final String clientId;
     private final String apiKey;
     private final String checksumKey;
+    private final String returnUrl;
+    private final String cancelUrl;
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
 
     public PayOSService(@Value("${payos.client-id}") String clientId,
                         @Value("${payos.api-key}") String apiKey,
                         @Value("${payos.checksum-key}") String checksumKey,
+                        @Value("${payos.return-url}") String returnUrl,
+                        @Value("${payos.cancel-url}") String cancelUrl,
                         InvoiceService invoiceService) {
         this.clientId = clientId;
         this.apiKey = apiKey;
         this.checksumKey = checksumKey;
+        this.returnUrl = returnUrl;
+        this.cancelUrl = cancelUrl;
         this.invoiceService = invoiceService;
         this.restTemplate = new RestTemplate();
         this.objectMapper = new ObjectMapper();
     }
 
     public String createPaymentLink(Invoice invoice) {
-        long orderCode = Math.abs(invoice.getId().hashCode());
-        int amount = invoice.getTotalAmount().intValueExact();
-        if (amount <= 0) {
-            throw new BusinessException("Số tiền hóa đơn phải lớn hơn 0");
-        }
+        validateCredentials();
+        long orderCode = createOrderCode(invoice);
+        int amount = validateAmount(invoice);
 
         Map<String, Object> body = new HashMap<>();
         body.put("orderCode", orderCode);
@@ -56,8 +61,8 @@ public class PayOSService {
         body.put("description", "Hoa don " + invoice.getInvoiceMonth().toString().substring(0, 7));
         body.put("buyerName", invoice.getContract().getTenant().getFullName());
         body.put("buyerEmail", invoice.getContract().getTenant().getEmail());
-        body.put("returnUrl", "http://localhost:5173/payment/success");
-        body.put("cancelUrl", "http://localhost:5173/payment/cancel");
+        body.put("returnUrl", returnUrl);
+        body.put("cancelUrl", cancelUrl);
         body.put("signature", computePaymentRequestSignature(body));
 
         Map<String, Object> item = new HashMap<>();
@@ -110,6 +115,33 @@ public class PayOSService {
         String transactionId = data.containsKey("reference") ? String.valueOf(data.get("reference")) : orderCode;
         invoiceService.markPaidPayOS(orderCode, transactionId);
         log.info("PayOS payment confirmed: {}", orderCode);
+    }
+
+    private void validateCredentials() {
+        if (clientId.isBlank() || apiKey.isBlank() || checksumKey.isBlank()) {
+            throw new BusinessException("PayOS credentials are not configured");
+        }
+    }
+
+    private long createOrderCode(Invoice invoice) {
+        long mixed = invoice.getId().getMostSignificantBits() ^ invoice.getId().getLeastSignificantBits();
+        long orderCode = Long.remainderUnsigned(mixed, 9_000_000_000_000_000L);
+        return orderCode == 0 ? 1 : orderCode;
+    }
+
+    private int validateAmount(Invoice invoice) {
+        BigDecimal totalAmount = invoice.getTotalAmount();
+        if (totalAmount == null || totalAmount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new BusinessException("Số tiền hóa đơn phải lớn hơn 0");
+        }
+        if (totalAmount.compareTo(BigDecimal.valueOf(Integer.MAX_VALUE)) > 0) {
+            throw new BusinessException("Số tiền hóa đơn vượt quá giới hạn PayOS");
+        }
+        try {
+            return totalAmount.intValueExact();
+        } catch (ArithmeticException e) {
+            throw new BusinessException("Số tiền hóa đơn phải là số nguyên hợp lệ");
+        }
     }
 
     private String callPayOS(String path, Map<String, Object> body) {

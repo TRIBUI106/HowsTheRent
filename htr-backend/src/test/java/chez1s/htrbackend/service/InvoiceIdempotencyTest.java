@@ -156,16 +156,17 @@ class InvoiceIdempotencyTest {
     }
 
     @Test
-    void markPaidCash_alreadyPaid_throwsBusinessException() {
+    void markPaidCash_alreadyPaid_returnsInvoiceWithoutSave() {
         Invoice invoice = Invoice.builder()
                 .id(UUID.randomUUID())
                 .status(InvoiceStatus.PAID)
                 .build();
         when(invoiceRepository.findById(invoice.getId())).thenReturn(Optional.of(invoice));
 
-        assertThatThrownBy(() -> invoiceService.markPaidCash(invoice.getId()))
-                .isInstanceOf(BusinessException.class)
-                .hasMessageContaining("already paid");
+        Invoice result = invoiceService.markPaidCash(invoice.getId());
+
+        assertThat(result).isSameAs(invoice);
+        verify(invoiceRepository, never()).save(any());
     }
 
     @Test

@@ -193,7 +193,7 @@ public class InvoiceService {
     public Invoice markPaidCash(UUID invoiceId) {
         Invoice invoice = getById(invoiceId);
         if (invoice.getStatus() == InvoiceStatus.PAID) {
-            throw new BusinessException("Invoice is already paid");
+            return invoice;
         }
         invoice.setStatus(InvoiceStatus.PAID);
         invoice.setPaymentMethod(PaymentMethod.CASH);

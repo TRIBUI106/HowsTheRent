@@ -30,6 +30,16 @@ interface InvoiceGenerationResult {
   details: string[]
 }
 
+type ApiError = {
+  response?: { data?: { message?: string } }
+  message?: string
+}
+
+function getErrorMessage(error: unknown, fallback: string) {
+  const apiError = error as ApiError
+  return apiError.response?.data?.message ?? apiError.message ?? fallback
+}
+
 function currentYearMonth() {
   const now = new Date()
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
@@ -43,19 +53,42 @@ export default function AdminInvoicesPage() {
   const [generateMonth, setGenerateMonth] = useState(currentYearMonth())
   const [generateConfirmed, setGenerateConfirmed] = useState(false)
   const [generationResult, setGenerationResult] = useState<InvoiceGenerationResult | null>(null)
+  const [pendingCashInvoiceIds, setPendingCashInvoiceIds] = useState<Set<string>>(new Set())
 
   const markPaidCashMutation = useMutation({
-    mutationFn: (id: string) => api.post(`/invoices/${id}/pay-cash`),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['invoices'] })
+    mutationFn: async (id: string) => {
+      const { data } = await api.post(`/invoices/${id}/pay-cash`)
+      return normalizeInvoice(data)
+    },
+    onMutate: (id) => {
+      setPendingCashInvoiceIds((previous) => new Set([...previous, id]))
+    },
+    onSuccess: (paidInvoice) => {
+      qc.setQueriesData<Page<Invoice> | Invoice[]>({ queryKey: ['invoices'] }, (oldData) => {
+        if (!oldData) return oldData
+        if (Array.isArray(oldData)) {
+          return oldData.map((invoice) => invoice.id === paidInvoice.id ? paidInvoice : invoice)
+        }
+        return {
+          ...oldData,
+          content: oldData.content.map((invoice) => invoice.id === paidInvoice.id ? paidInvoice : invoice),
+        }
+      })
       qc.invalidateQueries({ queryKey: ['dashboard'] })
       qc.invalidateQueries({ queryKey: ['tenant-invoices'] })
       showToast({ message: 'Đã xác nhận hóa đơn thanh toán bằng tiền mặt.', type: 'success' })
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       showToast({
-        message: error?.response?.data?.message ?? 'Không thể xác nhận thanh toán tiền mặt',
+        message: getErrorMessage(error, 'Không thể xác nhận thanh toán tiền mặt'),
         type: 'error',
+      })
+    },
+    onSettled: (_data, _error, id) => {
+      setPendingCashInvoiceIds((previous) => {
+        const next = new Set(previous)
+        next.delete(id)
+        return next
       })
     },
   })
@@ -95,9 +128,9 @@ export default function AdminInvoicesPage() {
       setStatusFilter('')
       setGenerateConfirmed(false)
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       showToast({
-        message: error?.response?.data?.message ?? error?.message ?? 'Không thể tạo hóa đơn',
+        message: getErrorMessage(error, 'Không thể tạo hóa đơn'),
         type: 'error',
       })
     },
@@ -121,9 +154,9 @@ export default function AdminInvoicesPage() {
         anchor.click()
         URL.revokeObjectURL(url)
       })
-      .catch((error: any) => {
+      .catch((error: unknown) => {
         showToast({
-          message: error?.response?.data?.message ?? 'Không thể xuất Excel hóa đơn',
+          message: getErrorMessage(error, 'Không thể xuất Excel hóa đơn'),
           type: 'error',
         })
       })
@@ -183,8 +216,8 @@ export default function AdminInvoicesPage() {
                     {invoice.status !== 'PAID' && invoice.paymentMethod === 'CASH' ? (
                       <Button
                         size="sm"
-                        loading={markPaidCashMutation.isPending && markPaidCashMutation.variables === invoice.id}
-                        disabled={markPaidCashMutation.isPending}
+                        loading={pendingCashInvoiceIds.has(invoice.id)}
+                        disabled={pendingCashInvoiceIds.has(invoice.id)}
                         onClick={() => markPaidCashMutation.mutate(invoice.id)}
                       >
                         Xác nhận đã thanh toán

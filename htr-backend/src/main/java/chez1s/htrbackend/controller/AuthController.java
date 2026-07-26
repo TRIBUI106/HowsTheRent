@@ -10,6 +10,7 @@ import chez1s.htrbackend.service.AuthService;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +24,12 @@ import java.util.Map;
 public class AuthController {
 
     private final AuthService authService;
+
+    @Value("${app.cookie.secure:false}")
+    private boolean secureCookies;
+
+    @Value("${app.cookie.same-site:Lax}")
+    private String cookieSameSite;
 
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request, HttpServletResponse response) {
@@ -67,8 +74,8 @@ public class AuthController {
     private ResponseCookie buildCookie(String name, String value, long maxAgeSeconds, String path) {
         return ResponseCookie.from(name, value)
                 .httpOnly(true)
-                .secure(false)
-                .sameSite("Lax")
+                .secure(secureCookies)
+                .sameSite(cookieSameSite)
                 .path(path)
                 .maxAge(maxAgeSeconds)
                 .build();

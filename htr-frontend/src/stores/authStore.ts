@@ -7,8 +7,17 @@ interface AuthState {
   clearAuth: () => void
 }
 
+function getStoredUser() {
+  try {
+    return JSON.parse(localStorage.getItem('user') || 'null') as User | null
+  } catch {
+    localStorage.removeItem('user')
+    return null
+  }
+}
+
 export const useAuthStore = create<AuthState>((set) => ({
-  user: JSON.parse(localStorage.getItem('user') || 'null'),
+  user: getStoredUser(),
   setUser: (user) => {
     localStorage.setItem('user', JSON.stringify(user))
     set({ user })

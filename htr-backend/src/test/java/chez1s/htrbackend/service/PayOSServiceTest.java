@@ -30,7 +30,8 @@ class PayOSServiceTest {
 
     @BeforeEach
     void setUp() {
-        payOSService = new PayOSService("client-id", "api-key", CHECKSUM_KEY, invoiceService);
+        payOSService = new PayOSService("client-id", "api-key", CHECKSUM_KEY,
+                "http://localhost:5173/payment/success", "http://localhost:5173/payment/cancel", invoiceService);
     }
 
     private String computeExpectedHmac(Map<String, Object> data) throws Exception {

@@ -3,6 +3,7 @@ package chez1s.htrbackend.dto.request;
 import chez1s.htrbackend.domain.enums.MaintenanceCategory;
 import chez1s.htrbackend.domain.enums.MaintenancePriority;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -14,6 +15,8 @@ public class CreateMaintenanceRequest {
     private UUID roomId;
     @NotBlank
     private String title;
+    @NotBlank
+    @Size(min = 10)
     private String description;
     private List<String> images;
     private MaintenancePriority priority;
