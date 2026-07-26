@@ -42,7 +42,7 @@ export default function LoginPage() {
     e.preventDefault()
     setError('')
     setLoading(true)
-    try {
+  try {
       const { user } = await authApi.login(email, password)
       setUser(user)
       const role = user.role.toLowerCase()

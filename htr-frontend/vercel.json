@@ -3,6 +3,10 @@
     {
       "source": "/api/:path*",
       "destination": "https://hows-the-rent-api.onrender.com/api/:path*"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ]
 }
