@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
-  "lastScanned": 1779362792012,
-  "projectRoot": "D:\\Code\\HowsTheRent\\htr-frontend",
+  "lastScanned": 1785320981227,
+  "projectRoot": "/home/chez1s/Desktop/code/HowsTheRent/htr-frontend",
   "techStack": {
     "languages": [
       {
@@ -33,6 +33,11 @@
         "category": "frontend"
       },
       {
+        "name": "@playwright/test",
+        "version": "1.60.0",
+        "category": "testing"
+      },
+      {
         "name": "vite",
         "version": "8.0.10",
         "category": "build"
@@ -42,7 +47,7 @@
     "runtime": null
   },
   "build": {
-    "buildCommand": "cd D:/Code/HowsTheRent/htr-frontend && npx tsc --noEmit 2>&1 | head -20",
+    "buildCommand": "npm run build",
     "testCommand": null,
     "lintCommand": "npm run lint",
     "devCommand": "npm run dev",
@@ -57,7 +62,7 @@
     "namingStyle": null,
     "importStyle": null,
     "testPattern": null,
-    "fileOrganization": "type-based"
+    "fileOrganization": "feature-based"
   },
   "structure": {
     "isMonorepo": false,
@@ -76,29 +81,31 @@
     "dist": {
       "path": "dist",
       "purpose": "Distribution/build output",
-      "fileCount": 3,
-      "lastAccessed": 1779362791993,
+      "fileCount": 4,
+      "lastAccessed": 1785320981204,
       "keyFiles": [
         "favicon.svg",
         "icons.svg",
-        "index.html"
+        "index.html",
+        "logo-htr.png"
       ]
     },
     "public": {
       "path": "public",
       "purpose": "Public files",
-      "fileCount": 2,
-      "lastAccessed": 1779362791993,
+      "fileCount": 3,
+      "lastAccessed": 1785320981205,
       "keyFiles": [
         "favicon.svg",
-        "icons.svg"
+        "icons.svg",
+        "logo-htr.png"
       ]
     },
     "src": {
       "path": "src",
       "purpose": "Source code",
       "fileCount": 4,
-      "lastAccessed": 1779362791997,
+      "lastAccessed": 1785320981210,
       "keyFiles": [
         "App.css",
         "App.tsx",
@@ -106,369 +113,61 @@
         "main.tsx"
       ]
     },
-    "dist\\assets": {
-      "path": "dist\\assets",
+    "dist/assets": {
+      "path": "dist/assets",
       "purpose": "Static assets",
-      "fileCount": 2,
-      "lastAccessed": 1779362791998,
+      "fileCount": 5,
+      "lastAccessed": 1785320981215,
       "keyFiles": [
-        "index-BHF6tW-j.js",
-        "index-DTARdKUI.css"
+        "index-5O4sp2Ue.js",
+        "index-BoKG76OZ.js",
+        "index-KWVqL2jM.css"
       ]
     },
-    "src\\api": {
-      "path": "src\\api",
+    "src/api": {
+      "path": "src/api",
       "purpose": "API routes",
-      "fileCount": 11,
-      "lastAccessed": 1779362791998,
+      "fileCount": 14,
+      "lastAccessed": 1785320981221,
       "keyFiles": [
         "authApi.ts",
         "contractApi.ts",
         "dashboardApi.ts"
       ]
     },
-    "src\\assets": {
-      "path": "src\\assets",
+    "src/assets": {
+      "path": "src/assets",
       "purpose": "Static assets",
-      "fileCount": 3,
-      "lastAccessed": 1779362791998,
+      "fileCount": 4,
+      "lastAccessed": 1785320981221,
       "keyFiles": [
         "hero.png",
-        "react.svg",
-        "vite.svg"
+        "logo-htr.png",
+        "react.svg"
       ]
     },
-    "src\\components": {
-      "path": "src\\components",
+    "src/components": {
+      "path": "src/components",
       "purpose": "UI components",
-      "fileCount": 1,
-      "lastAccessed": 1779362791999,
+      "fileCount": 2,
+      "lastAccessed": 1785320981221,
       "keyFiles": [
-        "Layout.tsx"
+        "Layout.tsx",
+        "ToastViewport.tsx"
       ]
     },
-    "src\\lib": {
-      "path": "src\\lib",
+    "src/lib": {
+      "path": "src/lib",
       "purpose": "Library code",
-      "fileCount": 2,
-      "lastAccessed": 1779362791999,
+      "fileCount": 4,
+      "lastAccessed": 1785320981222,
       "keyFiles": [
         "api.ts",
-        "utils.ts"
-      ]
-    },
-    "src\\pages": {
-      "path": "src\\pages",
-      "purpose": "Page components",
-      "fileCount": 2,
-      "lastAccessed": 1779362791999,
-      "keyFiles": [
-        "LandingPage.tsx",
-        "NotFoundPage.tsx"
+        "apiMappers.ts",
+        "toast.ts"
       ]
     }
   },
-  "hotPaths": [
-    {
-      "path": "src",
-      "accessCount": 9,
-      "lastAccessed": 1779521701979,
-      "type": "directory"
-    },
-    {
-      "path": "src\\App.tsx",
-      "accessCount": 7,
-      "lastAccessed": 1779364749474,
-      "type": "file"
-    },
-    {
-      "path": "src\\components\\layout\\Sidebar.tsx",
-      "accessCount": 7,
-      "lastAccessed": 1779366290264,
-      "type": "file"
-    },
-    {
-      "path": "src\\pages\\LandingPage.tsx",
-      "accessCount": 7,
-      "lastAccessed": 1779366290988,
-      "type": "file"
-    },
-    {
-      "path": "src\\components\\ui\\feedback.tsx",
-      "accessCount": 6,
-      "lastAccessed": 1779521550576,
-      "type": "file"
-    },
-    {
-      "path": "src\\features\\auth\\pages\\LoginPage.tsx",
-      "accessCount": 5,
-      "lastAccessed": 1779366291661,
-      "type": "file"
-    },
-    {
-      "path": "src\\features\\admin\\pages\\FeeConfigPage.tsx",
-      "accessCount": 4,
-      "lastAccessed": 1779521615548,
-      "type": "file"
-    },
-    {
-      "path": "src\\components\\layout\\Layout.tsx",
-      "accessCount": 4,
-      "lastAccessed": 1779715035989,
-      "type": "file"
-    },
-    {
-      "path": "src\\pages\\admin\\MaintenancePage.tsx",
-      "accessCount": 3,
-      "lastAccessed": 1779363047626,
-      "type": "file"
-    },
-    {
-      "path": "src\\components\\layout\\Header.tsx",
-      "accessCount": 3,
-      "lastAccessed": 1779365345941,
-      "type": "file"
-    },
-    {
-      "path": "src\\features\\auth\\pages\\ForgotPasswordPage.tsx",
-      "accessCount": 3,
-      "lastAccessed": 1779366291992,
-      "type": "file"
-    },
-    {
-      "path": "src\\features\\auth\\pages\\ResetPasswordPage.tsx",
-      "accessCount": 3,
-      "lastAccessed": 1779366292319,
-      "type": "file"
-    },
-    {
-      "path": "src\\features\\admin\\pages\\UsersPage.tsx",
-      "accessCount": 3,
-      "lastAccessed": 1779521658777,
-      "type": "file"
-    },
-    {
-      "path": "src\\types\\index.ts",
-      "accessCount": 2,
-      "lastAccessed": 1779362996386,
-      "type": "file"
-    },
-    {
-      "path": "src\\api\\userApi.ts",
-      "accessCount": 2,
-      "lastAccessed": 1779363001282,
-      "type": "file"
-    },
-    {
-      "path": "src\\api\\notificationApi.ts",
-      "accessCount": 2,
-      "lastAccessed": 1779363002760,
-      "type": "file"
-    },
-    {
-      "path": "src\\api\\maintenanceApi.ts",
-      "accessCount": 2,
-      "lastAccessed": 1779363005049,
-      "type": "file"
-    },
-    {
-      "path": "src\\pages\\admin\\NotificationsPage.tsx",
-      "accessCount": 2,
-      "lastAccessed": 1779363037000,
-      "type": "file"
-    },
-    {
-      "path": "src\\pages\\admin\\UsersPage.tsx",
-      "accessCount": 2,
-      "lastAccessed": 1779363061846,
-      "type": "file"
-    },
-    {
-      "path": "src\\router\\tenantRoutes.tsx",
-      "accessCount": 2,
-      "lastAccessed": 1779363136340,
-      "type": "file"
-    },
-    {
-      "path": "src\\router\\techRoutes.tsx",
-      "accessCount": 2,
-      "lastAccessed": 1779363137391,
-      "type": "file"
-    },
-    {
-      "path": "src\\components\\Layout.tsx",
-      "accessCount": 2,
-      "lastAccessed": 1779363536149,
-      "type": "file"
-    },
-    {
-      "path": "src\\components\\ui\\card.tsx",
-      "accessCount": 2,
-      "lastAccessed": 1779365196058,
-      "type": "file"
-    },
-    {
-      "path": "src\\components\\ui\\button.tsx",
-      "accessCount": 2,
-      "lastAccessed": 1779365196362,
-      "type": "file"
-    },
-    {
-      "path": "src\\components\\ui\\table.tsx",
-      "accessCount": 2,
-      "lastAccessed": 1779365196685,
-      "type": "file"
-    },
-    {
-      "path": "src\\features\\admin\\pages\\DashboardPage.tsx",
-      "accessCount": 2,
-      "lastAccessed": 1779365346755,
-      "type": "file"
-    },
-    {
-      "path": "index.html",
-      "accessCount": 2,
-      "lastAccessed": 1779365883402,
-      "type": "file"
-    },
-    {
-      "path": "src\\features\\admin\\pages\\InvoicesPage.tsx",
-      "accessCount": 2,
-      "lastAccessed": 1779521572656,
-      "type": "file"
-    },
-    {
-      "path": "src\\features\\tenant\\pages\\InvoicesPage.tsx",
-      "accessCount": 2,
-      "lastAccessed": 1779521575728,
-      "type": "file"
-    },
-    {
-      "path": "src\\features\\tenant\\pages\\PaymentHistoryPage.tsx",
-      "accessCount": 2,
-      "lastAccessed": 1779521579108,
-      "type": "file"
-    },
-    {
-      "path": "src\\features\\tenant\\pages\\ContractDetailPage.tsx",
-      "accessCount": 2,
-      "lastAccessed": 1779521582782,
-      "type": "file"
-    },
-    {
-      "path": "src\\features\\admin\\pages\\AuditLogPage.tsx",
-      "accessCount": 2,
-      "lastAccessed": 1779521605784,
-      "type": "file"
-    },
-    {
-      "path": "src\\features\\admin\\pages\\ContractsPage.tsx",
-      "accessCount": 2,
-      "lastAccessed": 1779521608874,
-      "type": "file"
-    },
-    {
-      "path": "src\\features\\admin\\pages\\MaintenancePage.tsx",
-      "accessCount": 2,
-      "lastAccessed": 1779521651149,
-      "type": "file"
-    },
-    {
-      "path": "src\\features\\admin\\pages\\MeterReadingsPage.tsx",
-      "accessCount": 2,
-      "lastAccessed": 1779521655121,
-      "type": "file"
-    },
-    {
-      "path": "src\\features\\admin\\pages\\VehicleConfigPage.tsx",
-      "accessCount": 2,
-      "lastAccessed": 1779521662356,
-      "type": "file"
-    },
-    {
-      "path": "src\\features\\tech\\pages\\MaintenancePage.tsx",
-      "accessCount": 2,
-      "lastAccessed": 1779521683372,
-      "type": "file"
-    },
-    {
-      "path": "src\\features\\tech\\pages\\NotificationsPage.tsx",
-      "accessCount": 2,
-      "lastAccessed": 1779521686030,
-      "type": "file"
-    },
-    {
-      "path": "src\\features\\tenant\\pages\\MaintenancePage.tsx",
-      "accessCount": 2,
-      "lastAccessed": 1779521688917,
-      "type": "file"
-    },
-    {
-      "path": "src\\features\\tenant\\pages\\NotificationsPage.tsx",
-      "accessCount": 2,
-      "lastAccessed": 1779521692368,
-      "type": "file"
-    },
-    {
-      "path": "src\\components\\ui\\dialog.tsx",
-      "accessCount": 2,
-      "lastAccessed": 1779715087247,
-      "type": "file"
-    },
-    {
-      "path": "src\\api\\index.ts",
-      "accessCount": 1,
-      "lastAccessed": 1779362819296,
-      "type": "file"
-    },
-    {
-      "path": "src\\lib\\utils.ts",
-      "accessCount": 1,
-      "lastAccessed": 1779362877337,
-      "type": "file"
-    },
-    {
-      "path": "src\\router\\adminRoutes.tsx",
-      "accessCount": 1,
-      "lastAccessed": 1779363135525,
-      "type": "file"
-    },
-    {
-      "path": "src\\components\\layout\\navItems.ts",
-      "accessCount": 1,
-      "lastAccessed": 1779363519456,
-      "type": "file"
-    },
-    {
-      "path": "src\\components\\layout\\index.ts",
-      "accessCount": 1,
-      "lastAccessed": 1779363532286,
-      "type": "file"
-    },
-    {
-      "path": "C:\\Users\\chez1s\\.claude\\skills\\impeccable\\reference\\product.md",
-      "accessCount": 1,
-      "lastAccessed": 1779364882580,
-      "type": "file"
-    },
-    {
-      "path": "C:\\Users\\chez1s\\.claude\\plans\\zazzy-wishing-clarke.md",
-      "accessCount": 1,
-      "lastAccessed": 1779365086311,
-      "type": "file"
-    },
-    {
-      "path": "src\\index.css",
-      "accessCount": 1,
-      "lastAccessed": 1779365163027,
-      "type": "file"
-    },
-    {
-      "path": "src\\assets\\logo-htr.png",
-      "accessCount": 1,
-      "lastAccessed": 1779365576746,
-      "type": "file"
-    }
-  ],
+  "hotPaths": [],
   "userDirectives": []
 }
