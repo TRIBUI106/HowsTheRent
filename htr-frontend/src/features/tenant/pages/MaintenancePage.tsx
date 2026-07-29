@@ -99,9 +99,7 @@ export default function TenantMaintenancePage() {
       preferredSlots.forEach((slot) => form.append('preferredTimeSlots', slot))
       images.forEach((image) => form.append('images', image))
       if (video) form.append('video', video)
-      return api.post('/maintenance/with-images', form, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      })
+      return api.post('/maintenance/with-images', form)
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['tenant-maintenance'] })

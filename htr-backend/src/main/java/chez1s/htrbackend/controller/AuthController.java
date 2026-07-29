@@ -16,12 +16,26 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
 public class AuthController {
+
+    private static final String ACCESS_TOKEN_COOKIE = "accessToken";
+    private static final String REFRESH_TOKEN_COOKIE = "refreshToken";
+    private static final String ROOT_PATH = "/";
+    private static final String REFRESH_TOKEN_PATH = "/api/auth/refresh";
+    private static final long ACCESS_TOKEN_MAX_AGE_SECONDS = 15 * 60;
+    private static final long REFRESH_TOKEN_MAX_AGE_SECONDS = 7 * 24 * 60 * 60;
+    private static final List<String> LEGACY_ACCESS_TOKEN_PATHS = List.of(
+            "/api",
+            "/api/",
+            "/api/maintenance",
+            "/api/maintenance/"
+    );
 
     private final AuthService authService;
 
@@ -82,12 +96,20 @@ public class AuthController {
     }
 
     private void setTokenCookies(HttpServletResponse response, String accessToken, String refreshToken) {
-        response.addHeader(HttpHeaders.SET_COOKIE, buildCookie("accessToken", accessToken, 15 * 60, "/").toString());
-        response.addHeader(HttpHeaders.SET_COOKIE, buildCookie("refreshToken", refreshToken, 7 * 24 * 60 * 60, "/api/auth/refresh").toString());
+        clearLegacyAccessTokenCookies(response);
+        response.addHeader(HttpHeaders.SET_COOKIE, buildCookie(ACCESS_TOKEN_COOKIE, accessToken, ACCESS_TOKEN_MAX_AGE_SECONDS, ROOT_PATH).toString());
+        response.addHeader(HttpHeaders.SET_COOKIE, buildCookie(REFRESH_TOKEN_COOKIE, refreshToken, REFRESH_TOKEN_MAX_AGE_SECONDS, REFRESH_TOKEN_PATH).toString());
     }
 
     private void clearTokenCookies(HttpServletResponse response) {
-        response.addHeader(HttpHeaders.SET_COOKIE, buildCookie("accessToken", "", 0, "/").toString());
-        response.addHeader(HttpHeaders.SET_COOKIE, buildCookie("refreshToken", "", 0, "/api/auth/refresh").toString());
+        response.addHeader(HttpHeaders.SET_COOKIE, buildCookie(ACCESS_TOKEN_COOKIE, "", 0, ROOT_PATH).toString());
+        clearLegacyAccessTokenCookies(response);
+        response.addHeader(HttpHeaders.SET_COOKIE, buildCookie(REFRESH_TOKEN_COOKIE, "", 0, REFRESH_TOKEN_PATH).toString());
+    }
+
+    private void clearLegacyAccessTokenCookies(HttpServletResponse response) {
+        for (String path : LEGACY_ACCESS_TOKEN_PATHS) {
+            response.addHeader(HttpHeaders.SET_COOKIE, buildCookie(ACCESS_TOKEN_COOKIE, "", 0, path).toString());
+        }
     }
 }

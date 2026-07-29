@@ -42,4 +42,34 @@ class JwtAuthFilterTest {
         assertThat(SecurityContextHolder.getContext().getAuthentication()).isNotNull();
         assertThat(SecurityContextHolder.getContext().getAuthentication().getPrincipal()).isEqualTo(userId);
     }
+
+    @Test
+    void authenticatesTenantFromRootAccessTokenWhenStaleMaintenanceCookieArrivesFirst() throws Exception {
+        JwtTokenProvider tokenProvider = mock(JwtTokenProvider.class);
+        JwtAuthFilter filter = new JwtAuthFilter(tokenProvider);
+        UUID tenantId = UUID.randomUUID();
+
+        when(tokenProvider.validateToken("stale-maintenance-token")).thenReturn(false);
+        when(tokenProvider.validateToken("current-root-token")).thenReturn(true);
+        when(tokenProvider.getUserId("current-root-token")).thenReturn(tenantId);
+        when(tokenProvider.getRole("current-root-token")).thenReturn("TENANT");
+
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setRequestURI("/api/maintenance/mine");
+        request.setCookies(
+                new Cookie("accessToken", "stale-maintenance-token"),
+                new Cookie("accessToken", "current-root-token")
+        );
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        FilterChain chain = (_request, _response) -> { };
+
+        filter.doFilter(request, response, chain);
+
+        var auth = SecurityContextHolder.getContext().getAuthentication();
+        assertThat(auth).isNotNull();
+        assertThat(auth.getPrincipal()).isEqualTo(tenantId);
+        assertThat(auth.getAuthorities())
+                .extracting("authority")
+                .containsExactly("ROLE_TENANT");
+    }
 }
