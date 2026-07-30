@@ -95,6 +95,17 @@ jobs:
           BACKEND_RESULT: ${{ needs.backend-verify.result }}
           DOCKER_RESULT: ${{ needs.backend-docker-build.result }}
         run: |
-          test "$FRONTEND_RESULT" = success
-          test "$BACKEND_RESULT" = success
-          test "$DOCKER_RESULT" = success
+          if [ "$FRONTEND_RESULT" != success ]; then
+            echo "Frontend quality result was $FRONTEND_RESULT"
+            exit 1
+          fi
+
+          if [ "$BACKEND_RESULT" != success ]; then
+            echo "Backend verify result was $BACKEND_RESULT"
+            exit 1
+          fi
+
+          if [ "$DOCKER_RESULT" != success ]; then
+            echo "Backend Docker build result was $DOCKER_RESULT"
+            exit 1
+          fi

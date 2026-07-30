@@ -18,9 +18,8 @@ const emptyForm = { roomNumber: '', floor: '', areaM2: '', maxPeople: '', rentOv
 export default function RoomsPage() {
   const qc = useQueryClient()
   const navigate = useNavigate()
-  const [searchParams] = useSearchParams()
+  const [searchParams, setSearchParams] = useSearchParams()
   const user = useAuthStore((state) => state.user)
-  const [selectedProperty, setSelectedProperty] = useState('')
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [deletingRoom, setDeletingRoom] = useState<Room | null>(null)
@@ -45,7 +44,12 @@ export default function RoomsPage() {
 
   const queryProperty = searchParams.get('propertyId')
   const queryPropertyExists = !!queryProperty && !!properties?.some((property) => property.id === queryProperty)
-  const effectiveSelectedProperty = selectedProperty || (queryPropertyExists ? queryProperty : properties?.[0]?.id) || ''
+  const effectiveSelectedProperty = (queryPropertyExists ? queryProperty : properties?.[0]?.id) || ''
+
+  const selectProperty = (propertyId: string) => {
+    setSearchParams(propertyId ? { propertyId } : {})
+    resetForm()
+  }
 
   const { data: rooms, isLoading } = useQuery<Room[]>({
     queryKey: ['rooms', effectiveSelectedProperty],
@@ -121,10 +125,7 @@ export default function RoomsPage() {
         <select
           className="rounded-lg border border-border bg-surface px-3 py-2 text-sm text-fg"
           value={effectiveSelectedProperty}
-          onChange={(event) => {
-            setSelectedProperty(event.target.value)
-            resetForm()
-          }}
+          onChange={(event) => selectProperty(event.target.value)}
         >
           {properties?.map((property) => (
             <option key={property.id} value={property.id}>{property.name}</option>
