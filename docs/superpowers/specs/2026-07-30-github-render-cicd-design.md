@@ -1,7 +1,7 @@
 # Thiết kế CI/CD với GitHub Actions, Vercel và Render
 
 **Ngày:** 2026-07-30  
-**Trạng thái:** Chờ duyệt đặc tả  
+**Trạng thái:** Đã duyệt; còn residual risk production-gate được ghi rõ
 **Nhánh phát hành:** `master`
 
 ## 1. Mục tiêu
@@ -60,7 +60,9 @@ Native Git integrations
 Production branch/domain
 ```
 
-Đây là **application-wide gate** có chủ đích: lỗi frontend có thể chặn backend release và lỗi backend có thể chặn frontend promotion. Cách này ưu tiên một commit ứng dụng nhất quán hơn tốc độ phát hành riêng từng phần.
+Đây là **shared application eligibility gate** có chủ đích: lỗi frontend có thể chặn backend release và lỗi backend có thể chặn frontend promotion. Gate chỉ xác nhận cùng một commit đủ điều kiện bắt đầu hai release; nó **không tạo atomic deployment xuyên Vercel và Render**. Hai nền tảng build, health-check và chuyển traffic độc lập, nên có thể tạm thời live ở hai SHA khác nhau nếu một rollout chậm hoặc thất bại.
+
+Vì vậy, mọi thay đổi API trong phạm vi pipeline này phải backward/forward compatible ít nhất một release window: frontend mới phải chịu được backend production hiện tại, và backend mới không được phá frontend production hiện tại. Khi chỉ một nền tảng release thành công, ưu tiên fix-forward nhanh; nếu không an toàn, rollback nền tảng đã thành công về SHA ghép cặp với nền tảng đang production sau khi kiểm tra database compatibility.
 
 GitHub Actions không gọi Render Deploy Hook/API hoặc Vercel Deploy Hook/CLI. Nhờ vậy không có hai nguồn cùng deploy một SHA và không cần lưu credential nền tảng trong GitHub.
 
@@ -176,6 +178,8 @@ Cập nhật backend service trong `render.yaml`:
 
 Render `checksPass` không cho chọn allowlist ba job như Vercel. Render chờ **mọi GitHub check mà nó phát hiện trên commit**. Theo tài liệu Render, `success`, `neutral` và `skipped` được coi là pass; nếu Render không phát hiện check nào hoặc phát hiện kết quả không đạt, nó không auto-deploy.
 
+Tài liệu chính thức không xác nhận Render có tính GitHub **Commit Status** do Vercel tạo vào tập “detected checks” hay chỉ tính GitHub Check Runs/Checks API. Vì vậy không được giả định rằng hai native integrations chắc chắn không tương tác. Lần rollout đầu phải quan sát check-runs, commit statuses và thứ tự deploy theo SHA; nếu Render bị pending hoặc có dependency vòng/mơ hồ, dừng native Render gate và chuyển sang fallback GitHub-controlled Render deploy trong một thiết kế được duyệt riêng.
+
 `Release gate` khắc phục trường hợp một dependency bắt buộc bị skip: gate tổng hợp vẫn được tạo và tự fail. Tuy nhiên, thêm một workflow/check mới trong tương lai vẫn có thể ảnh hưởng Render vì Render xét toàn bộ detected checks.
 
 Không tạo path filter làm ba job bắt buộc biến mất theo loại thay đổi. Mọi commit vào `master` phải tạo `Release gate`.
@@ -190,7 +194,15 @@ Service đang dùng Render Free, nên có thể sleep sau thời gian không có
 
 PostgreSQL không có Git build để deploy. Backend kết nối bằng environment variables do Render quản lý. CI không nhận database credential.
 
-Hibernate hiện cập nhật schema khi backend khởi động. Nếu startup hoặc health check thất bại, release backend mới thất bại. Versioned migration và schema rollback không thuộc thay đổi này.
+Hibernate hiện cập nhật schema và repository còn có startup migration có thể chạy `ALTER`/`DROP` trước khi health check hoàn tất. Render rollback chỉ khôi phục application image/config; nó **không rollback database schema**. Vì vậy không được rollback image một cách mù quáng sau startup failure.
+
+Cho đến khi có Flyway/Liquibase, pipeline này cấm schema-breaking change trong một release đơn. Mọi thay đổi schema phải theo expand/contract:
+
+1. Mở rộng schema theo cách code production cũ vẫn hoạt động.
+2. Phát hành code sử dụng schema mới.
+3. Chỉ drop/rename/cleanup trong một release window riêng sau khi xác nhận không còn code cũ phụ thuộc.
+
+Nếu startup/health check fail, trước tiên kiểm tra logs và schema mutation. Chỉ rollback application khi schema vẫn tương thích với image cũ; nếu schema đã đổi không tương thích, dùng documented database recovery hoặc fix-forward. Versioned migration và automated schema rollback không thuộc thay đổi này.
 
 ## 7. Thiết kế Vercel CD
 
@@ -243,8 +255,9 @@ Thứ tự này ngăn chính commit cài CI/CD bị deploy theo cấu hình `aut
 5. Trên Render, xác nhận đúng service/branch và Blueprint Auto Sync. Chuyển dashboard sang **After CI Checks Pass** trước khi merge. Nếu Blueprint-managed service không cho sửa trực tiếp, tạm tắt auto-deploy và không merge cho đến khi có thể áp dụng gate an toàn.
 6. Merge PR.
 7. Xác nhận Blueprint sync giữ `autoDeployTrigger: checksPass` và `/api/health`.
-8. Đối chiếu cùng commit SHA: `Release gate` hoàn tất trước Vercel production promotion và trước Render deploy start.
-9. Chạy smoke checks ở mục 12.
+8. Đối chiếu cùng commit SHA: `Release gate` hoàn tất trước Vercel production promotion và trước Render deploy start. Đồng thời kiểm tra GitHub Check Runs và Commit Statuses của SHA để phát hiện Vercel status có làm Render chờ ngoài dự kiến hay không.
+9. Nếu Render pending hoặc không bắt đầu deploy sau CI trong cutoff vận hành đã đặt, giữ production hiện tại, tắt native auto-deploy thay vì bypass và thiết kế fallback GitHub-controlled Render deploy.
+10. Chạy smoke checks ở mục 12.
 
 Nếu check name sai hoặc gate bị pending, không Force Promote và không bật lại `autoDeploy: true`; sửa cấu hình/tên check hoặc revert commit cấu hình bằng PR đã qua gate.
 
@@ -256,18 +269,28 @@ Nếu check name sai hoặc gate bị pending, không Force Promote và không b
 | Backend verify fail | Docker job bị skip, `Release gate` fail | Sửa test/backend và push commit mới |
 | Backend Docker build fail | `Release gate` fail | Sửa Docker build path và push commit mới |
 | Workflow bị cancel | `Release gate` không đạt | Chờ commit mới hoặc re-run cùng SHA |
-| Render build/start/health fail | Backend release mới fail; xem logs | Push bản sửa; rollback về deployment tốt gần nhất nếu cần |
-| Vercel candidate build fail | Candidate không được promote | Xem logs và push bản sửa |
+| Render build fail trước startup | Backend release mới fail | Push bản sửa; nếu frontend cùng SHA đã live và không tương thích backend cũ, rollback frontend về paired SHA hoặc fix-forward backend |
+| Render startup/health fail | Backend release mới fail nhưng schema chung có thể đã bị mutate | Kiểm tra schema compatibility trước; fix-forward hoặc documented DB recovery; chỉ rollback image khi schema còn tương thích |
+| Vercel candidate build fail | Candidate không được promote; Render cùng SHA vẫn có thể deploy độc lập | Fix Vercel; nếu backend mới không tương thích frontend cũ, rollback backend sau khi kiểm tra schema hoặc fix-forward frontend |
 | Gate treo do đổi/trùng tên | Production promotion dừng | Khôi phục tên duy nhất hoặc cập nhật dashboard/ruleset có kiểm soát |
 | GitHub Actions outage | Không có approval tự động | Chờ dịch vụ hồi phục; không bypass trong vận hành thường |
+
+### Phối hợp khi hai nền tảng lệch release
+
+| Vercel SHA X | Render SHA X | Hành động |
+|---|---|---|
+| Thành công | Thành công | Chạy smoke checks và ghi nhận paired production SHA |
+| Thành công | Thất bại | Nếu tương thích, giữ frontend và fix-forward backend; nếu không, rollback Vercel về frontend paired với backend đang live |
+| Thất bại | Thành công | Nếu tương thích, giữ backend và fix-forward frontend; nếu không, kiểm tra schema rồi rollback backend hoặc fix-forward frontend |
+| Thất bại | Thất bại | Giữ paired production release trước đó; kiểm tra schema mutation trước mọi backend rollback |
 
 Break-glass chỉ dành cho owner/admin khi outage hoặc incident nghiêm trọng:
 
 - Vercel Force Promote hoặc rollback về deployment tốt gần nhất.
-- Render manual deploy/rollback về deployment tốt gần nhất.
+- Render manual deploy/rollback về deployment tốt gần nhất, nhưng chỉ sau khi kiểm tra schema compatibility.
 - Thay đổi ruleset hoặc deployment setting tạm thời.
 
-Mỗi lần break-glass phải ghi SHA, người thao tác, lý do và kết quả. Sau sự cố phải khôi phục gate native và xác minh bằng commit tiếp theo.
+Mỗi lần break-glass phải ghi frontend SHA, backend SHA, người thao tác, lý do và kết quả. Sau sự cố phải khôi phục gate native và xác minh bằng commit tiếp theo.
 
 ## 12. Verification và acceptance criteria
 
@@ -290,7 +313,9 @@ Mỗi lần break-glass phải ghi SHA, người thao tác, lý do và kết qu�
 7. Xác nhận không có deploy hook hoặc CLI deployment nào tạo candidate thứ hai cho cùng SHA. Platform retry nội bộ không bị tính là nguồn deploy trùng.
 8. Nếu có staging/shadow Render và Vercel environment, chạy thêm negative gate test ở đó với failed/cancelled check. Không cố tình đưa commit CI-failing vào production `master` chỉ để thử gate.
 
-Do không có staging trong scope hiện tại, negative test trên PR chứng minh logic CI/aggregate gate; cấu hình dashboard và timestamp của lần phát hành pass chứng minh wiring production. Kiểm thử end-to-end negative production-equivalent cần staging riêng và được ghi nhận là follow-up, không được tuyên bố đã chạy nếu chưa có môi trường đó.
+Do không có staging trong scope hiện tại, negative test trên PR chỉ chứng minh logic CI/aggregate gate. Audit dashboard và timestamp của lần phát hành pass chỉ chứng minh cấu hình cùng happy path; chúng **không chứng minh nhân quả fail-closed** khi production check fail, missing, cancelled hoặc đổi tên. Negative production-equivalent behavior vẫn là residual risk bắt buộc follow-up và không được tuyên bố là đã verified nếu chưa có shadow/staging environment.
+
+Ngoài ra, trong lần deploy đầu phải ghi lại frontend production SHA và backend production SHA. Nếu hai SHA không trùng hoặc một rollout fail, áp dụng ma trận phối hợp ở mục 11.
 
 ### Smoke checks sau deploy
 
@@ -299,24 +324,27 @@ Do không có staging trong scope hiện tại, negative test trên PR chứng m
 - Frontend gọi `/api` qua Vercel rewrite tới Render backend.
 - Đăng nhập và một luồng đọc API chính hoạt động mà không lặp 401.
 
-### Definition of done
+### Definition of done cho phạm vi này
 
 - Mỗi PR vào `master` và mỗi push trên `master` tạo đủ bốn check.
 - `Release gate` chỉ pass khi ba job bắt buộc đều `success`.
-- GitHub ruleset require `Release gate` và chặn direct push bình thường.
-- Vercel chỉ auto-promote production candidate sau `Release gate`.
-- Render dùng `checksPass`, hiểu rằng nó xét mọi detected check chứ không có allowlist riêng.
+- GitHub ruleset được audit là require `Release gate` và chặn direct push bình thường.
+- Vercel Deployment Checks được audit là chọn `Release gate`; automatic aliasing bật; happy path cùng SHA/timestamp đã quan sát.
+- Render được audit là dùng `checksPass`, liên kết `master`, có `/api/health` và hiểu rằng nó xét mọi detected check chứ không có allowlist riêng.
+- Negative production-equivalent fail-closed behavior được ghi rõ là **chưa verified** cho đến khi có shadow/staging test; đây là residual risk, không phải completion claim.
 - GitHub Actions không chứa deploy token, hook hoặc lệnh deploy nền tảng.
 - Mỗi platform chỉ có một nguồn deploy tự động là native Git integration; retry/rollback nội bộ được ghi nhận riêng.
 - Backend Maven verify pass trên runner sạch với H2 test profile.
-- Backend release mới pass `/api/health`.
+- Review checklist chặn schema-breaking one-step changes và yêu cầu expand/contract plan cho thay đổi entity, `ddl-auto`, `ALTER`, `DROP` hoặc startup migration.
+- Backend release mới pass `/api/health` và production SHA của cả hai nền tảng được ghi nhận.
 
 ## 13. Ngoài phạm vi và follow-up
 
 - Frontend unit/component/E2E test suite thật
 - Chuẩn hóa npm và Bun trên local, Docker và docs
 - Flyway/Liquibase và thay production `ddl-auto=update`
-- Staging/shadow environments để thử negative release gate đầy đủ
+- Staging/shadow environments để thử negative release gate đầy đủ; đây là follow-up bắt buộc để nâng production gate từ configured/audited lên behaviorally verified
+- Probe an toàn xem Render có tính Vercel-generated GitHub Commit Status vào “all detected checks” hay không; tài liệu chính thức hiện không xác nhận. Nếu probe cho thấy pending/circular dependency hoặc kết quả mơ hồ, fallback là tắt Render native auto-deploy và để GitHub Actions trigger Render sau CI
 - Deep health check cho database và external services
 - Automated post-deploy end-to-end smoke tests
 - Production SLA hoặc nâng Render Free plan
