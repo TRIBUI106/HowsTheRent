@@ -63,12 +63,12 @@ public class MaintenanceController {
     @PreAuthorize("hasRole('TECHNICIAN')")
     public ResponseEntity<List<MaintenanceRequestResponse>> listAssigned(Authentication auth) {
         UUID techId = (UUID) auth.getPrincipal();
-        return ResponseEntity.ok(maintenanceService.listByTechnician(techId).stream().map(MaintenanceRequestResponse::from).toList());
+        return ResponseEntity.ok(maintenanceService.listByTechnician(techId));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<MaintenanceRequestResponse> getById(@PathVariable UUID id) {
-        return ResponseEntity.ok(MaintenanceRequestResponse.from(maintenanceService.getById(id)));
+        return ResponseEntity.ok(maintenanceService.getResponseById(id));
     }
 
     @PostMapping
@@ -76,80 +76,80 @@ public class MaintenanceController {
     public ResponseEntity<MaintenanceRequestResponse> create(Authentication auth,
                                                              @Valid @RequestBody CreateMaintenanceRequest req) {
         UUID tenantId = (UUID) auth.getPrincipal();
-        return ResponseEntity.status(HttpStatus.CREATED).body(MaintenanceRequestResponse.from(maintenanceService.create(tenantId, req)));
+        return ResponseEntity.status(HttpStatus.CREATED).body(responseOf(maintenanceService.create(tenantId, req)));
     }
 
     @PostMapping("/{id}/assign")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<MaintenanceRequestResponse> assign(@PathVariable UUID id, @RequestParam UUID technicianId) {
-        return ResponseEntity.ok(MaintenanceRequestResponse.from(maintenanceService.assign(id, technicianId)));
+        return ResponseEntity.ok(responseOf(maintenanceService.assign(id, technicianId)));
     }
 
     @RequestMapping(value = "/{id}/start", method = {RequestMethod.POST, RequestMethod.PUT})
     @PreAuthorize("hasAnyRole('ADMIN','TECHNICIAN')")
     public ResponseEntity<MaintenanceRequestResponse> startWork(@PathVariable UUID id) {
-        return ResponseEntity.ok(MaintenanceRequestResponse.from(maintenanceService.startWork(id)));
+        return ResponseEntity.ok(responseOf(maintenanceService.startWork(id)));
     }
 
     @PostMapping("/{id}/submit-review")
     @PreAuthorize("hasAnyRole('ADMIN','TECHNICIAN')")
     public ResponseEntity<MaintenanceRequestResponse> submitWork(@PathVariable UUID id,
                                                                  @RequestParam(required = false) BigDecimal materialCost) {
-        return ResponseEntity.ok(MaintenanceRequestResponse.from(maintenanceService.submitWork(id, materialCost)));
+        return ResponseEntity.ok(responseOf(maintenanceService.submitWork(id, materialCost)));
     }
 
     @PostMapping("/{id}/cancel")
     @PreAuthorize("hasAnyRole('ADMIN','TENANT')")
     public ResponseEntity<MaintenanceRequestResponse> cancel(@PathVariable UUID id,
                                                              @RequestParam("reason") String reason) {
-        return ResponseEntity.ok(MaintenanceRequestResponse.from(maintenanceService.cancel(id, reason)));
+        return ResponseEntity.ok(responseOf(maintenanceService.cancel(id, reason)));
     }
 
     @PostMapping("/{id}/update-status")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<MaintenanceRequestResponse> updateStatus(@PathVariable UUID id,
                                                                    @RequestParam("status") MaintenanceStatus status) {
-        return ResponseEntity.ok(MaintenanceRequestResponse.from(maintenanceService.updateStatus(id, status)));
+        return ResponseEntity.ok(responseOf(maintenanceService.updateStatus(id, status)));
     }
 
     @PostMapping("/{id}/resolve")
     @PreAuthorize("hasAnyRole('ADMIN','TENANT')")
     public ResponseEntity<MaintenanceRequestResponse> resolve(@PathVariable UUID id) {
-        return ResponseEntity.ok(MaintenanceRequestResponse.from(maintenanceService.resolve(id)));
+        return ResponseEntity.ok(responseOf(maintenanceService.resolve(id)));
     }
 
     @PatchMapping("/{id}/sla")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<MaintenanceRequestResponse> updateSla(@PathVariable UUID id,
                                                                 @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime expectedResolvedAt) {
-        return ResponseEntity.ok(MaintenanceRequestResponse.from(maintenanceService.updateSla(id, expectedResolvedAt)));
+        return ResponseEntity.ok(responseOf(maintenanceService.updateSla(id, expectedResolvedAt)));
     }
 
     @PostMapping("/{id}/confirm-slot")
     @PreAuthorize("hasAnyRole('ADMIN','TECHNICIAN')")
     public ResponseEntity<MaintenanceRequestResponse> confirmSlot(@PathVariable UUID id,
                                                                   @RequestParam("slot") String slot) {
-        return ResponseEntity.ok(MaintenanceRequestResponse.from(maintenanceService.confirmSlot(id, slot)));
+        return ResponseEntity.ok(responseOf(maintenanceService.confirmSlot(id, slot)));
     }
 
     @PostMapping("/{id}/tenant-confirm-slot")
     @PreAuthorize("hasRole('TENANT')")
     public ResponseEntity<MaintenanceRequestResponse> tenantConfirmSlot(@PathVariable UUID id,
                                                                         @RequestParam("confirm") boolean confirm) {
-        return ResponseEntity.ok(MaintenanceRequestResponse.from(maintenanceService.tenantConfirmSlot(id, confirm)));
+        return ResponseEntity.ok(responseOf(maintenanceService.tenantConfirmSlot(id, confirm)));
     }
 
     @PostMapping("/{id}/complain")
     @PreAuthorize("hasRole('TENANT')")
     public ResponseEntity<MaintenanceRequestResponse> complain(@PathVariable UUID id,
                                                                @RequestParam("reason") String reason) {
-        return ResponseEntity.ok(MaintenanceRequestResponse.from(maintenanceService.complain(id, reason)));
+        return ResponseEntity.ok(responseOf(maintenanceService.complain(id, reason)));
     }
 
     @PostMapping("/{id}/pay-material")
     @PreAuthorize("hasAnyRole('TENANT','ADMIN')")
     public ResponseEntity<MaintenanceRequestResponse> payMaterial(Authentication auth, @PathVariable UUID id) {
-        return ResponseEntity.ok(MaintenanceRequestResponse.from(maintenanceService.payMaterial(id, (UUID) auth.getPrincipal())));
+        return ResponseEntity.ok(responseOf(maintenanceService.payMaterial(id, (UUID) auth.getPrincipal())));
     }
 
     // Materials endpoints
@@ -200,7 +200,7 @@ public class MaintenanceController {
             String url = storageService.upload("maintenance/" + id + "/completion", image);
             maintenanceService.addCompletionImage(id, url);
         }
-        return ResponseEntity.ok(MaintenanceRequestResponse.from(maintenanceService.getById(id)));
+        return ResponseEntity.ok(responseOf(maintenanceService.getById(id)));
     }
 
     @PostMapping(value = "/with-images", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -239,6 +239,10 @@ public class MaintenanceController {
             maintenanceService.setAttachmentVideo(created.getId(), url);
         }
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(MaintenanceRequestResponse.from(maintenanceService.getById(created.getId())));
+                .body(responseOf(maintenanceService.getById(created.getId())));
+    }
+
+    private MaintenanceRequestResponse responseOf(MaintenanceRequest request) {
+        return maintenanceService.getResponseById(request.getId());
     }
 }

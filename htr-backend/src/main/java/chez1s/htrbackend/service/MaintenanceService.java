@@ -44,6 +44,7 @@ public class MaintenanceService {
         return maintenanceRepository.findAll();
     }
 
+    @Transactional(readOnly = true)
     public PageResponse<MaintenanceRequestResponse> listAllByOwner(UUID ownerId, Pageable pageable) {
         boolean isAdmin = userRepository.findById(ownerId)
                 .map(u -> u.getRole() == UserRole.ADMIN)
@@ -54,6 +55,7 @@ public class MaintenanceService {
         return PageResponse.from(maintenanceRepository.findByRoomPropertyOwnerId(ownerId, pageable).map(MaintenanceRequestResponse::from));
     }
 
+    @Transactional(readOnly = true)
     public PageResponse<MaintenanceRequestResponse> listFiltered(UUID ownerId, List<MaintenanceStatus> statuses, Pageable pageable) {
         boolean isAdmin = userRepository.findById(ownerId)
                 .map(u -> u.getRole() == UserRole.ADMIN)
@@ -71,17 +73,26 @@ public class MaintenanceService {
         return maintenanceRepository.findByTenantIdOrderByCreatedAtDesc(tenantId);
     }
 
+    @Transactional(readOnly = true)
     public PageResponse<MaintenanceRequestResponse> listByTenant(UUID tenantId, Pageable pageable) {
         return PageResponse.from(maintenanceRepository.findByTenantId(tenantId, pageable).map(MaintenanceRequestResponse::from));
     }
 
-    public List<MaintenanceRequest> listByTechnician(UUID techId) {
-        return maintenanceRepository.findByAssignedToIdOrderByCreatedAtDesc(techId);
+    @Transactional(readOnly = true)
+    public List<MaintenanceRequestResponse> listByTechnician(UUID techId) {
+        return maintenanceRepository.findByAssignedToIdOrderByCreatedAtDesc(techId).stream()
+                .map(MaintenanceRequestResponse::from)
+                .toList();
     }
 
     public MaintenanceRequest getById(UUID id) {
         return maintenanceRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("MaintenanceRequest", id));
+    }
+
+    @Transactional(readOnly = true)
+    public MaintenanceRequestResponse getResponseById(UUID id) {
+        return MaintenanceRequestResponse.from(getById(id));
     }
 
     private String generateTicketCode() {

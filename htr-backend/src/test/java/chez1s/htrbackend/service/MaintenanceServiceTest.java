@@ -1,13 +1,16 @@
 package chez1s.htrbackend.service;
 
 import chez1s.htrbackend.domain.entity.*;
+import chez1s.htrbackend.controller.MaintenanceController;
 import chez1s.htrbackend.domain.enums.MaintenanceStatus;
 import chez1s.htrbackend.domain.enums.MaintenanceCategory;
 import chez1s.htrbackend.domain.enums.MaintenancePriority;
+import chez1s.htrbackend.domain.enums.UserRole;
 import chez1s.htrbackend.domain.repository.*;
 import chez1s.htrbackend.dto.request.CreateMaintenanceMaterial;
 import chez1s.htrbackend.dto.request.CreateMaintenanceRequest;
 import chez1s.htrbackend.exception.BadRequestException;
+import chez1s.htrbackend.service.StorageService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,9 +18,20 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.aop.framework.ProxyFactory;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.security.core.Authentication;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.annotation.AnnotationTransactionAttributeSource;
+import org.springframework.transaction.interceptor.TransactionInterceptor;
+import org.springframework.transaction.support.AbstractPlatformTransactionManager;
+import org.springframework.transaction.support.DefaultTransactionStatus;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -82,6 +96,214 @@ class MaintenanceServiceTest {
                 .preferredTimeSlots(new ArrayList<>())
                 .build();
         lenient().when(slaService.calculateExpectedResolvedAt(any(), any())).thenReturn(java.time.LocalDateTime.now().plusHours(1));
+    }
+
+    @Test
+    void listByTenant_MaterializesLazyCollectionsWithinReadOnlyTransaction() {
+        sampleRequest.setImages(transactionBoundList("request.jpg"));
+        sampleRequest.setPreferredTimeSlots(transactionBoundList("Sáng"));
+        sampleRequest.setCompletionImages(transactionBoundList("completed.jpg"));
+        var pageable = PageRequest.of(0, 20);
+        when(maintenanceRepository.findByTenantId(tenantId, pageable))
+                .thenReturn(new PageImpl<>(List.of(sampleRequest), pageable, 1));
+
+        var transactionManager = new TestTransactionManager();
+        var interceptor = new TransactionInterceptor(
+                transactionManager,
+                new AnnotationTransactionAttributeSource()
+        );
+        ProxyFactory proxyFactory = new ProxyFactory(maintenanceService);
+        proxyFactory.addAdvice(interceptor);
+        MaintenanceService proxiedService = (MaintenanceService) proxyFactory.getProxy();
+
+        var response = proxiedService.listByTenant(tenantId, pageable);
+
+        assertEquals(List.of("request.jpg"), response.content().getFirst().images());
+        assertEquals(List.of("Sáng"), response.content().getFirst().preferredTimeSlots());
+        assertEquals(List.of("completed.jpg"), response.content().getFirst().completionImages());
+        assertFalse(response.content().getFirst().images() instanceof TransactionBoundList);
+        assertFalse(response.content().getFirst().preferredTimeSlots() instanceof TransactionBoundList);
+        assertFalse(response.content().getFirst().completionImages() instanceof TransactionBoundList);
+        assertTrue(transactionManager.isReadOnly());
+    }
+
+    @Test
+    void listAllByOwner_MaterializesLazyCollectionsWithinReadOnlyTransaction() {
+        UUID adminId = UUID.randomUUID();
+        sampleRequest.setImages(transactionBoundList("request.jpg"));
+        sampleRequest.setPreferredTimeSlots(transactionBoundList("Sáng"));
+        sampleRequest.setCompletionImages(transactionBoundList("completed.jpg"));
+        var pageable = PageRequest.of(0, 20);
+        when(userRepository.findById(adminId))
+                .thenReturn(Optional.of(User.builder().id(adminId).role(UserRole.ADMIN).build()));
+        when(maintenanceRepository.findAll(pageable))
+                .thenReturn(new PageImpl<>(List.of(sampleRequest), pageable, 1));
+
+        var transactionManager = new TestTransactionManager();
+        MaintenanceService proxiedService = transactionalProxy(transactionManager);
+
+        var response = proxiedService.listAllByOwner(adminId, pageable);
+
+        assertEquals(List.of("request.jpg"), response.content().getFirst().images());
+        assertEquals(List.of("Sáng"), response.content().getFirst().preferredTimeSlots());
+        assertEquals(List.of("completed.jpg"), response.content().getFirst().completionImages());
+        assertTrue(transactionManager.isReadOnly());
+    }
+
+    @Test
+    void listFiltered_MaterializesLazyCollectionsWithinReadOnlyTransaction() {
+        UUID adminId = UUID.randomUUID();
+        sampleRequest.setImages(transactionBoundList("request.jpg"));
+        sampleRequest.setPreferredTimeSlots(transactionBoundList("Sáng"));
+        sampleRequest.setCompletionImages(transactionBoundList("completed.jpg"));
+        var pageable = PageRequest.of(0, 20);
+        var statuses = List.of(MaintenanceStatus.OPEN);
+        when(userRepository.findById(adminId))
+                .thenReturn(Optional.of(User.builder().id(adminId).role(UserRole.ADMIN).build()));
+        when(maintenanceRepository.findByStatusIn(statuses, pageable))
+                .thenReturn(new PageImpl<>(List.of(sampleRequest), pageable, 1));
+
+        var transactionManager = new TestTransactionManager();
+        MaintenanceService proxiedService = transactionalProxy(transactionManager);
+
+        var response = proxiedService.listFiltered(adminId, statuses, pageable);
+
+        assertEquals(List.of("request.jpg"), response.content().getFirst().images());
+        assertEquals(List.of("Sáng"), response.content().getFirst().preferredTimeSlots());
+        assertEquals(List.of("completed.jpg"), response.content().getFirst().completionImages());
+        assertTrue(transactionManager.isReadOnly());
+    }
+
+    @Test
+    void listAssigned_MaterializesLazyCollectionsWithinReadOnlyTransaction() {
+        sampleRequest.setImages(transactionBoundList("request.jpg"));
+        sampleRequest.setPreferredTimeSlots(transactionBoundList("Sáng"));
+        sampleRequest.setCompletionImages(transactionBoundList("completed.jpg"));
+        when(maintenanceRepository.findByAssignedToIdOrderByCreatedAtDesc(techId))
+                .thenReturn(List.of(sampleRequest));
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getPrincipal()).thenReturn(techId);
+
+        var transactionManager = new TestTransactionManager();
+        MaintenanceService proxiedService = transactionalProxy(transactionManager);
+        MaintenanceController controller = new MaintenanceController(proxiedService, mock(StorageService.class));
+
+        var response = controller.listAssigned(authentication).getBody();
+
+        assertNotNull(response);
+        assertEquals(List.of("request.jpg"), response.getFirst().images());
+        assertEquals(List.of("Sáng"), response.getFirst().preferredTimeSlots());
+        assertEquals(List.of("completed.jpg"), response.getFirst().completionImages());
+        assertTrue(transactionManager.isReadOnly());
+    }
+
+    @Test
+    void actionResponse_MaterializesLazyCollectionsAfterWriteTransaction() {
+        sampleRequest.setStatus(MaintenanceStatus.ASSIGNED);
+        sampleRequest.setImages(transactionBoundList("request.jpg"));
+        sampleRequest.setPreferredTimeSlots(transactionBoundList("Sáng"));
+        sampleRequest.setCompletionImages(transactionBoundList("completed.jpg"));
+        when(maintenanceRepository.findById(requestId)).thenReturn(Optional.of(sampleRequest));
+        when(maintenanceRepository.save(sampleRequest)).thenReturn(sampleRequest);
+        when(noteRepository.save(any(MaintenanceNote.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        var transactionManager = new TestTransactionManager();
+        MaintenanceService proxiedService = transactionalProxy(transactionManager);
+        MaintenanceController controller = new MaintenanceController(proxiedService, mock(StorageService.class));
+
+        var response = controller.startWork(requestId).getBody();
+
+        assertNotNull(response);
+        assertEquals(List.of("request.jpg"), response.images());
+        assertEquals(List.of("Sáng"), response.preferredTimeSlots());
+        assertEquals(List.of("completed.jpg"), response.completionImages());
+    }
+
+    @Test
+    void getById_MaterializesLazyCollectionsWithinReadOnlyTransaction() {
+        sampleRequest.setImages(transactionBoundList("request.jpg"));
+        sampleRequest.setPreferredTimeSlots(transactionBoundList("Sáng"));
+        sampleRequest.setCompletionImages(transactionBoundList("completed.jpg"));
+        when(maintenanceRepository.findById(requestId)).thenReturn(Optional.of(sampleRequest));
+
+        var transactionManager = new TestTransactionManager();
+        MaintenanceService proxiedService = transactionalProxy(transactionManager);
+        MaintenanceController controller = new MaintenanceController(proxiedService, mock(StorageService.class));
+
+        var response = controller.getById(requestId).getBody();
+
+        assertNotNull(response);
+        assertEquals(List.of("request.jpg"), response.images());
+        assertEquals(List.of("Sáng"), response.preferredTimeSlots());
+        assertEquals(List.of("completed.jpg"), response.completionImages());
+        assertTrue(transactionManager.isReadOnly());
+    }
+
+    private MaintenanceService transactionalProxy(TestTransactionManager transactionManager) {
+        var interceptor = new TransactionInterceptor(
+                transactionManager,
+                new AnnotationTransactionAttributeSource()
+        );
+        ProxyFactory proxyFactory = new ProxyFactory(maintenanceService);
+        proxyFactory.addAdvice(interceptor);
+        return (MaintenanceService) proxyFactory.getProxy();
+    }
+
+    private static List<String> transactionBoundList(String value) {
+        return new TransactionBoundList(value);
+    }
+
+    private static final class TransactionBoundList extends AbstractList<String> {
+        private final String value;
+
+        private TransactionBoundList(String value) {
+            this.value = value;
+        }
+
+        @Override
+        public String get(int index) {
+            if (!TransactionSynchronizationManager.isActualTransactionActive()) {
+                throw new IllegalStateException("Lazy collection accessed outside transaction");
+            }
+            if (index != 0) {
+                throw new IndexOutOfBoundsException(index);
+            }
+            return value;
+        }
+
+        @Override
+        public int size() {
+            if (!TransactionSynchronizationManager.isActualTransactionActive()) {
+                throw new IllegalStateException("Lazy collection accessed outside transaction");
+            }
+            return 1;
+        }
+    }
+
+    private static final class TestTransactionManager extends AbstractPlatformTransactionManager {
+        private boolean readOnly;
+
+        private boolean isReadOnly() {
+            return readOnly;
+        }
+
+        @Override
+        protected Object doGetTransaction() {
+            return new Object();
+        }
+
+        @Override
+        protected void doBegin(Object transaction, TransactionDefinition definition) {
+            readOnly = definition.isReadOnly();
+        }
+
+        @Override
+        protected void doCommit(DefaultTransactionStatus status) {
+        }
+
+        @Override
+        protected void doRollback(DefaultTransactionStatus status) {
+        }
     }
 
     @Test

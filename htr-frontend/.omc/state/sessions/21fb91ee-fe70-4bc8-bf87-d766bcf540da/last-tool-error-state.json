@@ -1,0 +1,7 @@
+{
+  "tool_name": "Bash",
+  "tool_input_preview": "{\"command\":\"/home/chez1s/Desktop/code/HowsTheRent/htr-backend/mvnw -f /home/chez1s/Desktop/code/HowsTheRent/htr-backend/pom.xml test -Dtest=MaintenanceServiceTest#actionResponse_MaterializesLazyCollec...",
+  "error": "Exit code 1\n[INFO] Scanning for projects...\n[INFO] \n[INFO] -------------------------< chez1s:htr-backend >-------------------------\n[INFO] Building htr-backend 0.0.1-SNAPSHOT\n[INFO]   from pom.xml\n[INFO] --------------------------------[ jar ]---------------------------------\n[INFO] \n[INFO] --- resources:3.3.1:resources (default-resources) @ htr-backend ---\n[INFO] Copying 1 resource from src/main/resources to target/classes\n[INFO] Copying 2 resources from src/main/resources to target/classes\n[IN...",
+  "timestamp": "2026-07-30T04:13:18.773Z",
+  "retry_count": 1
+}
