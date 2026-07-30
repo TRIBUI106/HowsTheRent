@@ -55,7 +55,11 @@ export default function FeeConfigPage() {
   const feeMutation = useMutation({
     mutationFn: (data: Partial<FeeConfig>) =>
       api.put(`/properties/${selectedProp}/fee-config`, data),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['fee-config', selectedProp] }),
+    onSuccess: async () => {
+      await qc.invalidateQueries({ queryKey: ['fee-config', selectedProp] })
+      setFeeForm({})
+      setMoneyForm({})
+    },
   })
 
   const handleFeeSubmit = (e: React.FormEvent) => {
