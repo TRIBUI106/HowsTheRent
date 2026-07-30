@@ -1,8 +1,10 @@
+import { getErrorMessage } from '@/lib/apiError'
 import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import api from '@/lib/api'
 import { invoiceApi } from '@/api/invoiceApi'
 import { extractPageContent, normalizeInvoice } from '@/lib/apiMappers'
+import type { FlatInvoiceLike, PagedData } from '@/lib/apiMappers'
 import Layout from '@/components/Layout'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -19,12 +21,12 @@ export default function TenantInvoicesPage() {
   const qc = useQueryClient()
   const [paymentInvoice, setPaymentInvoice] = useState<Invoice | null>(null)
   const [isOpeningQr, setIsOpeningQr] = useState(false)
-  const { data, isLoading } = useQuery({
+  const { data, isLoading } = useQuery<PagedData<FlatInvoiceLike>>({
     queryKey: ['tenant-invoices'],
-    queryFn: () => api.get('/invoices/mine').then(r => r.data),
+    queryFn: () => api.get<PagedData<FlatInvoiceLike>>('/invoices/mine').then(r => r.data),
   })
 
-  const invoices: Invoice[] = extractPageContent<any>(data).map(normalizeInvoice)
+  const invoices: Invoice[] = extractPageContent<FlatInvoiceLike>(data).map(normalizeInvoice)
 
   async function handleOnlinePay(invoice: Invoice) {
     setIsOpeningQr(true)
@@ -32,9 +34,9 @@ export default function TenantInvoicesPage() {
       const checkoutUrl = invoice.checkoutUrl
         ?? (await invoiceApi.createPaymentLink(invoice.id)).checkoutUrl
       window.location.assign(checkoutUrl)
-    } catch (error: any) {
+    } catch (error: unknown) {
       showToast({
-        message: error?.response?.data?.message ?? 'Không thể tạo mã QR thanh toán',
+        message: getErrorMessage(error, 'Không thể tạo mã QR thanh toán'),
         type: 'error',
       })
       setIsOpeningQr(false)
@@ -48,7 +50,7 @@ export default function TenantInvoicesPage() {
       setPaymentInvoice(null)
       showToast({ message: 'Đã đăng ký thanh toán tiền mặt. Vui lòng thanh toán với quản lý.', type: 'success' })
     },
-    onError: (error: any) => showToast({ message: error?.response?.data?.message ?? 'Không thể đăng ký thanh toán tiền mặt', type: 'error' }),
+    onError: (error: unknown) => showToast({ message: getErrorMessage(error, 'Không thể đăng ký thanh toán tiền mặt'), type: 'error' }),
   })
 
   return (

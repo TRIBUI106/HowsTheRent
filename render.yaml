@@ -6,7 +6,8 @@ services:
     plan: free
     rootDir: htr-backend
     dockerfilePath: ./Dockerfile
-    autoDeploy: true
+    autoDeployTrigger: checksPass
+    healthCheckPath: /api/health
     envVars:
       - key: DB_URL
         sync: false

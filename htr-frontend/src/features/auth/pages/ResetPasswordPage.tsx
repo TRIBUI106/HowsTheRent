@@ -8,7 +8,8 @@ import logoHtr from '@/assets/logo-htr.png'
 export default function ResetPasswordPage() {
   const navigate = useNavigate()
   const location = useLocation()
-  const prefillEmail = (location.state as any)?.email ?? ''
+  const state = location.state as { email?: string } | null
+  const prefillEmail = state?.email ?? ''
 
   const [form, setForm] = useState({ email: prefillEmail, otp: '', newPassword: '', confirm: '' })
   const [loading, setLoading] = useState(false)

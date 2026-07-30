@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import api from '@/lib/api'
 import { extractPageContent, normalizeContract } from '@/lib/apiMappers'
+import type { FlatContractLike } from '@/lib/apiMappers'
 import Layout from '@/components/Layout'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -8,12 +9,12 @@ import { DetailSkeleton } from '@/components/ui/feedback'
 import { formatDate, formatCurrency } from '@/lib/utils'
 
 export default function ContractDetailPage() {
-  const { data, isLoading } = useQuery({
+  const { data, isLoading } = useQuery<FlatContractLike[]>({
     queryKey: ['tenant-contracts'],
-    queryFn: () => api.get('/contracts/mine').then(r => r.data),
+    queryFn: () => api.get<FlatContractLike[]>('/contracts/mine').then(r => r.data),
   })
 
-  const contract = extractPageContent<any>(data).map(normalizeContract)[0]
+  const contract = extractPageContent<FlatContractLike>(data).map(normalizeContract)[0]
 
   if (isLoading) {
     return (

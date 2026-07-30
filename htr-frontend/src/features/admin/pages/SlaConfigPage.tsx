@@ -1,3 +1,4 @@
+import { getErrorMessage } from '@/lib/apiError'
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import Layout from '@/components/Layout'
@@ -31,8 +32,8 @@ export default function SlaConfigPage() {
       setErrorMsg('')
       setTimeout(() => setSuccessMsg(''), 3000)
     },
-    onError: (err: any) => {
-      setErrorMsg(err?.response?.data?.message ?? 'Đã xảy ra lỗi khi lưu quy tắc SLA.')
+    onError: (err: unknown) => {
+      setErrorMsg(getErrorMessage(err, 'Đã xảy ra lỗi khi lưu quy tắc SLA.'))
       setSuccessMsg('')
     },
   })
@@ -44,8 +45,8 @@ export default function SlaConfigPage() {
       setSuccessMsg('Đã xóa quy tắc SLA!')
       setTimeout(() => setSuccessMsg(''), 3000)
     },
-    onError: (err: any) => {
-      setErrorMsg(err?.response?.data?.message ?? 'Không thể xóa quy tắc này.')
+    onError: (err: unknown) => {
+      setErrorMsg(getErrorMessage(err, 'Không thể xóa quy tắc này.'))
     },
   })
 

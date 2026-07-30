@@ -1,6 +1,6 @@
 import api from "@/lib/api";
 import { extractPageContent, normalizeMaintenanceRequest } from "@/lib/apiMappers";
-import type { MaintenanceRequest, Page } from "@/types";
+import type { MaintenanceMaterial, MaintenanceNote, MaintenanceRequest, Page } from "@/types";
 
 export const maintenanceApi = {
   listAll: () =>
@@ -76,15 +76,15 @@ export const maintenanceApi = {
       .post<MaintenanceRequest>(`/maintenance/${id}/pay-material`)
       .then((r) => normalizeMaintenanceRequest(r.data)),
   listMaterials: (id: string) =>
-    api.get<any[]>(`/maintenance/${id}/materials`).then((r) => r.data ?? []),
+    api.get<MaintenanceMaterial[]>(`/maintenance/${id}/materials`).then((r) => r.data ?? []),
   addMaterial: (id: string, data: { name: string; quantity?: number; unit?: string; unitPrice: number; isFreeInContract?: boolean }) =>
-    api.post<any>(`/maintenance/${id}/materials`, data).then((r) => r.data),
+    api.post<MaintenanceMaterial>(`/maintenance/${id}/materials`, data).then((r) => r.data),
   deleteMaterial: (id: string, materialId: string) =>
     api.delete(`/maintenance/${id}/materials/${materialId}`),
   listNotes: (id: string) =>
-    api.get<any[]>(`/maintenance/${id}/notes`).then((r) => r.data ?? []),
+    api.get<MaintenanceNote[]>(`/maintenance/${id}/notes`).then((r) => r.data ?? []),
   addNote: (id: string, note: string) =>
-    api.post<any>(`/maintenance/${id}/notes`, null, { params: { note } }).then((r) => r.data),
+    api.post<MaintenanceNote>(`/maintenance/${id}/notes`, null, { params: { note } }).then((r) => r.data),
   addCompletionImages: (id: string, images: File[]) => {
     const form = new FormData()
     images.forEach((image) => form.append('images', image))

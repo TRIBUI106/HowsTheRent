@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { propertyApi, roomApi, userApi } from '@/api'
@@ -18,9 +18,8 @@ const emptyForm = { roomNumber: '', floor: '', areaM2: '', maxPeople: '', rentOv
 export default function RoomsPage() {
   const qc = useQueryClient()
   const navigate = useNavigate()
-  const [searchParams] = useSearchParams()
+  const [searchParams, setSearchParams] = useSearchParams()
   const user = useAuthStore((state) => state.user)
-  const [selectedProperty, setSelectedProperty] = useState('')
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [deletingRoom, setDeletingRoom] = useState<Room | null>(null)
@@ -43,24 +42,19 @@ export default function RoomsPage() {
     enabled: !!user && !!sessionUser && sessionUser.role === 'ADMIN',
   })
 
-  useEffect(() => {
-    if (!properties?.length) return
+  const queryProperty = searchParams.get('propertyId')
+  const queryPropertyExists = !!queryProperty && !!properties?.some((property) => property.id === queryProperty)
+  const effectiveSelectedProperty = (queryPropertyExists ? queryProperty : properties?.[0]?.id) || ''
 
-    const fromQuery = searchParams.get('propertyId')
-    if (!selectedProperty && fromQuery && properties.some((property) => property.id === fromQuery)) {
-      setSelectedProperty(fromQuery)
-      return
-    }
-
-    if (!selectedProperty) {
-      setSelectedProperty(properties[0].id)
-    }
-  }, [properties, searchParams, selectedProperty])
+  const selectProperty = (propertyId: string) => {
+    setSearchParams(propertyId ? { propertyId } : {})
+    resetForm()
+  }
 
   const { data: rooms, isLoading } = useQuery<Room[]>({
-    queryKey: ['rooms', selectedProperty],
-    queryFn: () => roomApi.listByProperty(selectedProperty),
-    enabled: !!user && !!sessionUser && sessionUser.role === 'ADMIN' && !!selectedProperty,
+    queryKey: ['rooms', effectiveSelectedProperty],
+    queryFn: () => roomApi.listByProperty(effectiveSelectedProperty),
+    enabled: !!user && !!sessionUser && sessionUser.role === 'ADMIN' && !!effectiveSelectedProperty,
   })
 
   const resetForm = () => {
@@ -71,7 +65,7 @@ export default function RoomsPage() {
 
   const save = useMutation({
     mutationFn: async () => {
-      const payload = {
+        const payload = {
         roomNumber: form.roomNumber,
         floor: form.floor ? Number(form.floor) : null,
         areaM2: form.areaM2 ? Number(form.areaM2) : null,
@@ -80,17 +74,17 @@ export default function RoomsPage() {
       }
 
       const room = editingId
-        ? await roomApi.update(selectedProperty, editingId, payload)
-        : await roomApi.create(selectedProperty, payload)
+        ? await roomApi.update(effectiveSelectedProperty, editingId, payload)
+        : await roomApi.create(effectiveSelectedProperty, payload)
 
       if (editingId && form.status !== room.status) {
-        await roomApi.updateStatus(selectedProperty, editingId, form.status)
+        await roomApi.updateStatus(effectiveSelectedProperty, editingId, form.status)
       }
 
       return room
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['rooms', selectedProperty] })
+      qc.invalidateQueries({ queryKey: ['rooms', effectiveSelectedProperty] })
       qc.invalidateQueries({ queryKey: ['maintenance'] })
       qc.invalidateQueries({ queryKey: ['dashboard'] })
       resetForm()
@@ -98,9 +92,9 @@ export default function RoomsPage() {
   })
 
   const remove = useMutation({
-    mutationFn: (id: string) => roomApi.remove(selectedProperty, id),
+    mutationFn: (id: string) => roomApi.remove(effectiveSelectedProperty, id),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['rooms', selectedProperty] })
+      qc.invalidateQueries({ queryKey: ['rooms', effectiveSelectedProperty] })
       setDeletingRoom(null)
     },
   })
@@ -130,17 +124,14 @@ export default function RoomsPage() {
       <div className="mb-6 flex items-center justify-between">
         <select
           className="rounded-lg border border-border bg-surface px-3 py-2 text-sm text-fg"
-          value={selectedProperty}
-          onChange={(event) => {
-            setSelectedProperty(event.target.value)
-            resetForm()
-          }}
+          value={effectiveSelectedProperty}
+          onChange={(event) => selectProperty(event.target.value)}
         >
           {properties?.map((property) => (
             <option key={property.id} value={property.id}>{property.name}</option>
           ))}
         </select>
-        <Button onClick={startCreate} disabled={!selectedProperty}>
+        <Button onClick={startCreate} disabled={!effectiveSelectedProperty}>
           {showForm && !editingId ? 'Đóng' : '+ Thêm phòng'}
         </Button>
       </div>
@@ -198,7 +189,7 @@ export default function RoomsPage() {
                 <TableCell><Badge status={room.status} /></TableCell>
                 <TableCell>
                   <div className="flex gap-2">
-                    <Button type="button" variant="secondary" size="sm" onClick={() => navigate(`/admin/rooms/${selectedProperty}/${room.id}`)}>Xem</Button>
+                    <Button type="button" variant="secondary" size="sm" onClick={() => navigate(`/admin/rooms/${effectiveSelectedProperty}/${room.id}`)}>Xem</Button>
                     <Button type="button" variant="secondary" size="sm" onClick={() => startEdit(room)}>Sửa</Button>
                     <Button type="button" variant="danger" size="sm" onClick={() => setDeletingRoom(room)}>Xóa</Button>
                   </div>

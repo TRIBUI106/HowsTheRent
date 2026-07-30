@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import Layout from '@/components/Layout'
 import { Card } from '@/components/ui/card'
@@ -44,27 +44,22 @@ export default function FeeConfigPage() {
   const [feeForm, setFeeForm] = useState<Partial<FeeConfig>>({})
   const [moneyForm, setMoneyForm] = useState<Partial<Record<keyof FeeConfig, string>>>({})
 
-  useEffect(() => {
-    if (!feeConfig) {
-      setMoneyForm({})
-      return
-    }
+  const getMoneyValue = (field: keyof FeeConfig) => {
+    const dirtyValue = moneyForm[field]
+    if (dirtyValue !== undefined) return dirtyValue
 
-    setMoneyForm({
-      rentDefault: formatCurrencyInput(feeConfig.rentDefault),
-      elecPrice: formatCurrencyInput(feeConfig.elecPrice),
-      waterPrice: formatCurrencyInput(feeConfig.waterPrice),
-      serviceFee: formatCurrencyInput(feeConfig.serviceFee),
-      motorbikePrice: formatCurrencyInput(feeConfig.motorbikePrice),
-      carPrice: formatCurrencyInput(feeConfig.carPrice),
-      bicyclePrice: formatCurrencyInput(feeConfig.bicyclePrice),
-    })
-  }, [feeConfig])
+    const value = feeConfig?.[field]
+    return typeof value === 'number' ? formatCurrencyInput(value) : ''
+  }
 
   const feeMutation = useMutation({
     mutationFn: (data: Partial<FeeConfig>) =>
       api.put(`/properties/${selectedProp}/fee-config`, data),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['fee-config', selectedProp] }),
+    onSuccess: async () => {
+      await qc.invalidateQueries({ queryKey: ['fee-config', selectedProp] })
+      setFeeForm({})
+      setMoneyForm({})
+    },
   })
 
   const handleFeeSubmit = (e: React.FormEvent) => {
@@ -108,7 +103,7 @@ export default function FeeConfigPage() {
                     <Input
                       type="text"
                       inputMode="numeric"
-                      value={moneyForm.rentDefault ?? ''}
+                      value={getMoneyValue('rentDefault')}
                       onChange={e => setMoneyField('rentDefault', e.target.value)}
                     />
                   </div>
@@ -117,7 +112,7 @@ export default function FeeConfigPage() {
                     <Input
                       type="text"
                       inputMode="numeric"
-                      value={moneyForm.elecPrice ?? ''}
+                      value={getMoneyValue('elecPrice')}
                       onChange={e => setMoneyField('elecPrice', e.target.value)}
                     />
                   </div>
@@ -137,7 +132,7 @@ export default function FeeConfigPage() {
                     <Input
                       type="text"
                       inputMode="numeric"
-                      value={moneyForm.waterPrice ?? ''}
+                      value={getMoneyValue('waterPrice')}
                       onChange={e => setMoneyField('waterPrice', e.target.value)}
                     />
                   </div>
@@ -146,7 +141,7 @@ export default function FeeConfigPage() {
                     <Input
                       type="text"
                       inputMode="numeric"
-                      value={moneyForm.serviceFee ?? ''}
+                      value={getMoneyValue('serviceFee')}
                       onChange={e => setMoneyField('serviceFee', e.target.value)}
                     />
                   </div>
@@ -168,7 +163,7 @@ export default function FeeConfigPage() {
                     <Input
                       type="text"
                       inputMode="numeric"
-                      value={moneyForm.motorbikePrice ?? ''}
+                      value={getMoneyValue('motorbikePrice')}
                       onChange={e => setMoneyField('motorbikePrice', e.target.value)}
                     />
                   </div>
@@ -177,7 +172,7 @@ export default function FeeConfigPage() {
                     <Input
                       type="text"
                       inputMode="numeric"
-                      value={moneyForm.carPrice ?? ''}
+                      value={getMoneyValue('carPrice')}
                       onChange={e => setMoneyField('carPrice', e.target.value)}
                     />
                   </div>
@@ -186,7 +181,7 @@ export default function FeeConfigPage() {
                     <Input
                       type="text"
                       inputMode="numeric"
-                      value={moneyForm.bicyclePrice ?? ''}
+                      value={getMoneyValue('bicyclePrice')}
                       onChange={e => setMoneyField('bicyclePrice', e.target.value)}
                     />
                   </div>
