@@ -1,0 +1,100 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - master
+  push:
+    branches:
+      - master
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  frontend-quality:
+    name: Frontend quality
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: htr-frontend
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: htr-frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Lint frontend
+        run: npm run lint
+
+      - name: Build frontend
+        run: npm run build
+
+  backend-verify:
+    name: Backend verify
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: htr-backend
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: maven
+          cache-dependency-path: htr-backend/pom.xml
+
+      - name: Verify backend
+        env:
+          SPRING_PROFILES_ACTIVE: test
+        run: ./mvnw --batch-mode verify
+
+  backend-docker-build:
+    name: Backend Docker build
+    runs-on: ubuntu-latest
+    needs:
+      - backend-verify
+    defaults:
+      run:
+        working-directory: htr-backend
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Build backend image
+        run: docker build --tag htr-backend:ci .
+
+  release-gate:
+    name: Release gate
+    runs-on: ubuntu-latest
+    if: ${{ always() }}
+    needs:
+      - frontend-quality
+      - backend-verify
+      - backend-docker-build
+    steps:
+      - name: Require all CI jobs to pass
+        env:
+          FRONTEND_RESULT: ${{ needs.frontend-quality.result }}
+          BACKEND_RESULT: ${{ needs.backend-verify.result }}
+          DOCKER_RESULT: ${{ needs.backend-docker-build.result }}
+        run: |
+          test "$FRONTEND_RESULT" = success
+          test "$BACKEND_RESULT" = success
+          test "$DOCKER_RESULT" = success
