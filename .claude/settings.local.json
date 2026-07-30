@@ -82,7 +82,8 @@
       "Bash(grep *)",
       "Bash(command -v tmux)",
       "Bash(command -v node)",
-      "Bash(command -v npx)"
+      "Bash(command -v npx)",
+      "Bash(git *)"
     ]
   }
 }
