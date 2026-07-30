@@ -20,13 +20,15 @@
 - Do not add placeholder frontend tests, skipped/only tests, Flyway/Liquibase, staging, or a production probe.
 - Schema changes must remain expand/contract compatible; Render image rollback does not rollback PostgreSQL schema.
 - Negative production-equivalent gate behavior remains an explicitly documented residual risk until a separate staging/shadow project is approved.
+- Each command block is independent and must start from the active worktree's repository root; do not rely on `cd` from a prior step.
+- The four implementation commits in this plan require explicit user authorization before execution. The user selected subagent-driven implementation after the first plan draft, which authorizes these local implementation commits but does not authorize pushing or changing external dashboard settings.
 
 ---
 
 ## File Structure
 
 - Create `.github/workflows/ci.yml`: owns CI triggers, four stable checks, job dependency order, and fail-closed aggregate gate.
-- Modify `.gitignore`: stops ignoring `.github/` so the workflow is versioned; no other ignore behavior changes.
+- Modify `.gitignore`: selectively exposes only `.github/workflows/ci.yml` while keeping other `.github` operational artifacts ignored.
 - Create `htr-backend/src/test/resources/application-test.properties`: owns isolated H2 and disabled MinIO bucket initialization for the `test` profile.
 - Modify `render.yaml`: owns Render's native `checksPass` trigger and shallow HTTP health-check path.
 - Modify `DEPLOYMENT.md`: owns external GitHub/Vercel/Render setup, activation order, paired-SHA recovery, break-glass policy, and residual-risk disclosure.
@@ -95,10 +97,12 @@ Why each non-obvious line exists:
 - [ ] **Step 3: Run backend verification from the working tree**
 
 ```bash
-cd htr-backend
-env -u DB_URL -u DB_USER -u DB_PASSWORD \
-  SPRING_PROFILES_ACTIVE=test \
-  ./mvnw --batch-mode verify
+(
+  cd "$(git rev-parse --show-toplevel)/htr-backend"
+  env -u DB_URL -u DB_USER -u DB_PASSWORD \
+    SPRING_PROFILES_ACTIVE=test \
+    ./mvnw --batch-mode verify
+)
 ```
 
 Expected: exit code `0`, including `HtrBackendApplicationTests.contextLoads`.
@@ -106,9 +110,9 @@ Expected: exit code `0`, including `HtrBackendApplicationTests.contextLoads`.
 - [ ] **Step 4: Stage the profile so the tracked-snapshot test includes it**
 
 ```bash
-cd ..
-git add htr-backend/src/test/resources/application-test.properties
-git diff --cached --check
+repo="$(git rev-parse --show-toplevel)"
+git -C "$repo" add htr-backend/src/test/resources/application-test.properties
+git -C "$repo" diff --cached --check
 ```
 
 Expected: no output from `git diff --cached --check`.
@@ -133,8 +137,13 @@ docker run --rm \
       ./mvnw --batch-mode verify >/tmp/backend-verify.log 2>&1
     rc=$?
     cat /tmp/backend-verify.log
-    test "$rc" -eq 0
-    ! grep -Eiq "jdbc:postgresql://localhost|type_uuid" /tmp/backend-verify.log
+    if [ "$rc" -ne 0 ]; then
+      exit "$rc"
+    fi
+    if grep -Eiq "jdbc:postgresql://localhost|type_uuid" /tmp/backend-verify.log; then
+      echo "unexpected production datasource or destructive migration SQL" >&2
+      exit 1
+    fi
   '
 ```
 
@@ -143,6 +152,8 @@ Expected: exit code `0`; no PostgreSQL localhost connection and no destructive `
 If the command fails because H2 reports `properties.type` as a non-UUID type and the migration runs its PostgreSQL-specific SQL, stop this task. Do not suppress or edit the migration opportunistically; revise the design/plan with a narrow, tested PostgreSQL-only migration guard.
 
 - [ ] **Step 6: Commit the isolated backend profile**
+
+This step is authorized only after the user explicitly approves implementation with commits. Otherwise stop before executing it.
 
 ```bash
 git diff --cached --name-only
@@ -182,7 +193,7 @@ Expected before implementation:
 .gitignore:2:/.github/ .github/workflows/ci.yml
 ```
 
-- [ ] **Step 2: Remove only the `.github` ignore rule**
+- [ ] **Step 2: Selectively expose only the CI workflow**
 
 Change `.gitignore` from:
 
@@ -196,10 +207,14 @@ to:
 
 ```gitignore
 /.omc/
+/.github/*
+!/.github/workflows/
+/.github/workflows/*
+!/.github/workflows/ci.yml
 /.claude/
 ```
 
-Do not modify any other ignore rule.
+This keeps `.github/modernize/` and any future non-workflow operational artifacts ignored while versioning only `ci.yml`. Do not modify any other ignore rule.
 
 - [ ] **Step 3: Create the complete workflow**
 
@@ -310,7 +325,7 @@ jobs:
 
 The Maven wrapper is already executable in git; do not add a chmod step unless an actual clean-runner failure proves it is necessary.
 
-- [ ] **Step 4: Verify the workflow is trackable**
+- [ ] **Step 4: Verify the workflow is trackable and operational artifacts remain ignored**
 
 ```bash
 if git check-ignore -q .github/workflows/ci.yml; then
@@ -318,10 +333,15 @@ if git check-ignore -q .github/workflows/ci.yml; then
   exit 1
 fi
 
-git status --short -- .gitignore .github/workflows/ci.yml
+if ! git check-ignore -q .github/modernize/java-upgrade/.gitignore; then
+  echo ".github/modernize artifacts are unexpectedly exposed" >&2
+  exit 1
+fi
+
+git status --short -- .gitignore .github/workflows/ci.yml .github/modernize
 ```
 
-Expected: `.gitignore` modified and `.github/workflows/ci.yml` untracked, not ignored.
+Expected: `.gitignore` modified and `.github/workflows/ci.yml` untracked, not ignored; `.github/modernize/` remains absent from status.
 
 - [ ] **Step 5: Lint the workflow**
 
@@ -369,7 +389,7 @@ Expected: the first command succeeds; all three negated commands observe a failu
 
 ```bash
 if grep -nE \
-  'VERCEL_TOKEN|RENDER_DEPLOY_HOOK|RENDER_API_KEY|vercel deploy|deploy hook|workflow_dispatch' \
+  '\$\{\{[[:space:]]*secrets\.|VERCEL_TOKEN[[:space:]]*[:=]|RENDER_(API_KEY|DEPLOY_HOOK)[[:space:]]*[:=]|(^|[[:space:]])vercel[[:space:]]+deploy|render[[:space:]]+deploy|workflow_dispatch' \
   .github/workflows/ci.yml; then
   echo "forbidden deploy behavior or credential found" >&2
   exit 1
@@ -379,6 +399,8 @@ fi
 Expected: no matches.
 
 - [ ] **Step 8: Commit the CI gate**
+
+This local commit is covered by the user's selected subagent-driven implementation mode; do not push it.
 
 ```bash
 git add .gitignore .github/workflows/ci.yml
@@ -474,6 +496,8 @@ Expected: one match from each file.
 
 - [ ] **Step 4: Commit the Render Blueprint change**
 
+This local commit is covered by the user's selected subagent-driven implementation mode; do not push it.
+
 ```bash
 git add render.yaml
 git diff --cached --check
@@ -516,7 +540,29 @@ GitHub Actions validates the application but never stores deployment credentials
 
 Retain the existing cookie/rewrite explanation and environment-variable details.
 
-- [ ] **Step 2: Add a `CI/CD dashboard bootstrap` section**
+- [ ] **Step 2: Replace the database topology section**
+
+Replace the existing Neon/Supabase instructions under `## 1. Database` with:
+
+````markdown
+## 1. Database
+
+Use the existing Render PostgreSQL instance. It is managed outside this repository's `render.yaml`; do not add a second Blueprint database.
+
+Keep these values in the Render backend service environment:
+
+```env
+DB_URL=jdbc:postgresql://<render-host>/<database>?sslmode=require
+DB_USER=<username>
+DB_PASSWORD=<password>
+```
+
+The backend currently uses `spring.jpa.hibernate.ddl-auto=update`. Schema-breaking changes are not safe in a single release; follow the expand/contract policy in the recovery section.
+````
+
+Do not leave instructions to create Neon or Supabase in this guide. Those providers may remain valid alternatives in the separate provider-agnostic `docs/DEPLOYMENT.md`, which this plan does not modify.
+
+- [ ] **Step 3: Add a `CI/CD dashboard bootstrap` section**
 
 Add the following exact operational requirements:
 
@@ -550,7 +596,7 @@ Complete these settings before merging the CI/CD implementation PR.
 - Render evaluates every CI check it detects; it does not provide the Vercel-style allowlist.
 ```
 
-- [ ] **Step 3: Add the first-rollout runbook**
+- [ ] **Step 4: Add the first-rollout runbook**
 
 Add:
 
@@ -573,7 +619,7 @@ If Render remains pending or does not start within 30 minutes after the CI gate 
 
 The 30-minute value is an operator cutoff, not a claimed Render timeout.
 
-- [ ] **Step 4: Add non-atomic release and schema-safe recovery guidance**
+- [ ] **Step 5: Add non-atomic release and schema-safe recovery guidance**
 
 Add:
 
@@ -591,7 +637,7 @@ Render rollback restores application image/config only. It does not restore Post
 Only owners/admins may use Vercel Force Promote, Render manual deploy/rollback, or temporary ruleset changes. Record both SHAs, the operator, reason, action, and result, then restore the normal gate.
 ```
 
-- [ ] **Step 5: Add the residual-risk statement without overstating verification**
+- [ ] **Step 6: Add the residual-risk statement without overstating verification**
 
 Add:
 
@@ -601,7 +647,7 @@ Add:
 This change configures and audits the production gates and observes the passing path. Without a separate staging/shadow environment, it does not behaviorally prove that failed, missing, cancelled, or renamed production-equivalent checks remain fail-closed. That negative test and the Render/Vercel status interaction probe are follow-up work; do not claim they ran as part of this rollout.
 ```
 
-- [ ] **Step 6: Verify documentation consistency**
+- [ ] **Step 7: Verify documentation consistency**
 
 ```bash
 grep -nE \
@@ -609,16 +655,23 @@ grep -nE \
   DEPLOYMENT.md
 
 if grep -nE \
-  'VERCEL_TOKEN|RENDER_API_KEY|render deploy hook|vercel deploy --prod' \
-  DEPLOYMENT.md; then
-  echo "unexpected credential-driven deployment instruction" >&2
+  '\$\{\{[[:space:]]*secrets\.|VERCEL_TOKEN[[:space:]]*[:=]|RENDER_(API_KEY|DEPLOY_HOOK)[[:space:]]*[:=]|(^|[[:space:]])vercel[[:space:]]+deploy|render[[:space:]]+deploy' \
+  .github/workflows/ci.yml; then
+  echo "unexpected deployment secret or deploy command in CI" >&2
+  exit 1
+fi
+
+if grep -nE 'Neon|Supabase' DEPLOYMENT.md; then
+  echo "obsolete production database provider remains in root guide" >&2
   exit 1
 fi
 ```
 
-Expected: all required concepts appear; forbidden deployment instructions do not.
+Expected: all required concepts appear; no credential/deploy command usage appears in CI; root deployment guide no longer names Neon/Supabase as the active database topology.
 
-- [ ] **Step 7: Commit the operator runbook**
+- [ ] **Step 8: Commit the operator runbook**
+
+This local commit is covered by the user's selected subagent-driven implementation mode; do not push it.
 
 ```bash
 git add DEPLOYMENT.md
@@ -648,8 +701,11 @@ Expected staged path before commit: `DEPLOYMENT.md` only.
 
 - [ ] **Step 1: Run static and scope checks**
 
+Capture the pre-implementation base once; when following the exact four local commits above, it is `HEAD~4` at this point:
+
 ```bash
-git diff --check HEAD~4..HEAD
+base_ref="HEAD~4"
+git diff --check "$base_ref"..HEAD
 
 if command -v actionlint >/dev/null 2>&1; then
   actionlint .github/workflows/ci.yml
@@ -666,7 +722,12 @@ if git check-ignore -q .github/workflows/ci.yml; then
   exit 1
 fi
 
-changed_files="$(git diff --name-only HEAD~4..HEAD)"
+if ! git check-ignore -q .github/modernize/java-upgrade/.gitignore; then
+  echo ".github/modernize artifacts are unexpectedly exposed" >&2
+  exit 1
+fi
+
+changed_files="$(git diff --name-only "$base_ref"..HEAD)"
 printf '%s\n' "$changed_files"
 ```
 
@@ -716,8 +777,13 @@ docker run --rm \
       ./mvnw --batch-mode verify >/tmp/backend-verify.log 2>&1
     rc=$?
     cat /tmp/backend-verify.log
-    test "$rc" -eq 0
-    ! grep -Eiq "jdbc:postgresql://localhost|type_uuid" /tmp/backend-verify.log
+    if [ "$rc" -ne 0 ]; then
+      exit "$rc"
+    fi
+    if grep -Eiq "jdbc:postgresql://localhost|type_uuid" /tmp/backend-verify.log; then
+      echo "unexpected production datasource or destructive migration SQL" >&2
+      exit 1
+    fi
   '
 ```
 
@@ -757,7 +823,8 @@ Expected: Blueprint expression is `true`; gate truth table behaves fail-closed.
 - [ ] **Step 6: Scan changed files for placeholders and prohibited shortcuts**
 
 ```bash
-changed_files="$(git diff --name-only HEAD~4..HEAD)"
+base_ref="HEAD~4"
+changed_files="$(git diff --name-only "$base_ref"..HEAD)"
 
 if grep -nE \
   'test\.(skip|only)|it\.(skip|only)|describe\.(skip|only)|PLACEHOLDER_MARKER' \
@@ -767,7 +834,7 @@ if grep -nE \
 fi
 
 if grep -nE \
-  'VERCEL_TOKEN|RENDER_DEPLOY_HOOK|RENDER_API_KEY|vercel deploy|workflow_dispatch' \
+  '\$\{\{[[:space:]]*secrets\.|VERCEL_TOKEN[[:space:]]*[:=]|RENDER_(API_KEY|DEPLOY_HOOK)[[:space:]]*[:=]|(^|[[:space:]])vercel[[:space:]]+deploy|render[[:space:]]+deploy|workflow_dispatch' \
   .github/workflows/ci.yml; then
   echo "out-of-scope deployment behavior found" >&2
   exit 1
