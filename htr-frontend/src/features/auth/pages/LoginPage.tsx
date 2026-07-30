@@ -47,7 +47,7 @@ export default function LoginPage() {
       setUser(user)
       const role = user.role.toLowerCase()
       navigate(role === 'admin' ? '/admin' : role === 'tenant' ? '/tenant' : '/tech')
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(getLoginErrorMessage(err))
     } finally {
       setLoading(false)

@@ -1,24 +1,25 @@
 import { useQuery } from '@tanstack/react-query'
 import api from '@/lib/api'
 import { extractPageContent, normalizeInvoice, normalizeMaintenanceRequest } from '@/lib/apiMappers'
+import type { FlatInvoiceLike, FlatMaintenanceLike, PagedData } from '@/lib/apiMappers'
 import Layout from '@/components/Layout'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import type { Invoice, MaintenanceRequest } from '@/types'
 
 export default function TenantDashboard() {
-  const { data: invoicesData } = useQuery({
+  const { data: invoicesData } = useQuery<PagedData<FlatInvoiceLike>>({
     queryKey: ['tenant-invoices'],
-    queryFn: () => api.get('/invoices/mine').then(r => r.data),
+    queryFn: () => api.get<PagedData<FlatInvoiceLike>>('/invoices/mine').then(r => r.data),
   })
 
-  const { data: maintenanceData } = useQuery({
+  const { data: maintenanceData } = useQuery<PagedData<FlatMaintenanceLike>>({
     queryKey: ['tenant-maintenance'],
-    queryFn: () => api.get('/maintenance/mine').then(r => r.data),
+    queryFn: () => api.get<PagedData<FlatMaintenanceLike>>('/maintenance/mine').then(r => r.data),
   })
 
-  const invoices: Invoice[] = extractPageContent<any>(invoicesData).map(normalizeInvoice)
-  const maintenance: MaintenanceRequest[] = extractPageContent<any>(maintenanceData).map(normalizeMaintenanceRequest)
+  const invoices: Invoice[] = extractPageContent<FlatInvoiceLike>(invoicesData).map(normalizeInvoice)
+  const maintenance: MaintenanceRequest[] = extractPageContent<FlatMaintenanceLike>(maintenanceData).map(normalizeMaintenanceRequest)
 
   const pending = invoices.filter(i => i.status === 'PENDING')
   const overdue = invoices.filter(i => i.status === 'OVERDUE')

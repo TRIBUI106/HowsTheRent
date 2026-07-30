@@ -1,3 +1,4 @@
+import { getErrorMessage } from '@/lib/apiError'
 import { useRef, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Camera, CheckCircle, Play, FileText, Clock, Plus, Trash2, Send, CheckSquare, Package } from 'lucide-react'
@@ -57,8 +58,8 @@ export default function TechMaintenancePage() {
       qc.invalidateQueries({ queryKey: ['maintenance'] })
       showToast({ message: 'Đã chuyển trạng thái sang Đang xử lý', type: 'success' })
     },
-    onError: (err: any) => {
-      showToast({ message: err?.response?.data?.message ?? 'Không thể bắt đầu xử lý', type: 'error' })
+    onError: (err: unknown) => {
+      showToast({ message: getErrorMessage(err, 'Không thể bắt đầu xử lý'), type: 'error' })
     },
   })
 
@@ -68,8 +69,8 @@ export default function TechMaintenancePage() {
       qc.invalidateQueries({ queryKey: ['tech-maintenance'] })
       showToast({ message: 'Đã xác nhận khung giờ làm việc với khách!', type: 'success' })
     },
-    onError: (err: any) => {
-      showToast({ message: err?.response?.data?.message ?? 'Lỗi xác nhận giờ', type: 'error' })
+    onError: (err: unknown) => {
+      showToast({ message: getErrorMessage(err, 'Lỗi xác nhận giờ'), type: 'error' })
     },
   })
 
@@ -93,8 +94,8 @@ export default function TechMaintenancePage() {
       setMatFree(false)
       showToast({ message: 'Đã thêm vật tư', type: 'success' })
     },
-    onError: (err: any) => {
-      showToast({ message: err?.response?.data?.message ?? 'Lỗi thêm vật tư', type: 'error' })
+    onError: (err: unknown) => {
+      showToast({ message: getErrorMessage(err, 'Lỗi thêm vật tư'), type: 'error' })
     },
   })
 
@@ -108,8 +109,8 @@ export default function TechMaintenancePage() {
       qc.invalidateQueries({ queryKey: ['tech-maintenance'] })
       showToast({ message: 'Đã xóa vật tư', type: 'success' })
     },
-    onError: (err: any) => {
-      showToast({ message: err?.response?.data?.message ?? 'Lỗi xóa vật tư', type: 'error' })
+    onError: (err: unknown) => {
+      showToast({ message: getErrorMessage(err, 'Lỗi xóa vật tư'), type: 'error' })
     },
   })
 
@@ -123,8 +124,8 @@ export default function TechMaintenancePage() {
       setNoteText('')
       showToast({ message: 'Đã ghi nhận nhật ký công việc', type: 'success' })
     },
-    onError: (err: any) => {
-      showToast({ message: err?.response?.data?.message ?? 'Lỗi thêm nhật ký', type: 'error' })
+    onError: (err: unknown) => {
+      showToast({ message: getErrorMessage(err, 'Lỗi thêm nhật ký'), type: 'error' })
     },
   })
 
@@ -136,8 +137,8 @@ export default function TechMaintenancePage() {
       setSelectedRequestId(null)
       showToast({ message: 'Đã hoàn tất thi công & gửi yêu cầu nghiệm thu!', type: 'success' })
     },
-    onError: (err: any) => {
-      showToast({ message: err?.response?.data?.message ?? 'Không thể gửi yêu cầu nghiệm thu', type: 'error' })
+    onError: (err: unknown) => {
+      showToast({ message: getErrorMessage(err, 'Không thể gửi yêu cầu nghiệm thu'), type: 'error' })
     },
   })
 
@@ -147,8 +148,8 @@ export default function TechMaintenancePage() {
       qc.invalidateQueries({ queryKey: ['tech-maintenance'] })
       showToast({ message: 'Đã tải ảnh hoàn thành', type: 'success' })
     },
-    onError: (err: any) => {
-      showToast({ message: err?.response?.data?.message ?? 'Không thể tải ảnh hoàn thành', type: 'error' })
+    onError: (err: unknown) => {
+      showToast({ message: getErrorMessage(err, 'Không thể tải ảnh hoàn thành'), type: 'error' })
     },
   })
 

@@ -1,3 +1,4 @@
+import { getErrorMessage } from '@/lib/apiError'
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import Layout from '@/components/Layout'
@@ -90,7 +91,7 @@ export default function ContractsPage() {
       setRenewForm({ newEndDate: '', newDepositAmount: '' })
       setRenewError('')
     },
-    onError: (e: any) => setRenewError(e?.response?.data?.message ?? 'Lỗi'),
+    onError: (e: unknown) => setRenewError(getErrorMessage(e, 'Lỗi')),
   })
 
   const createMutation = useMutation({
@@ -102,8 +103,8 @@ export default function ContractsPage() {
       setForm(emptyForm())
       setFormError(null)
     },
-    onError: (e: any) => {
-      setFormError(e?.response?.data?.message ?? 'Không thể tạo hợp đồng')
+    onError: (e: unknown) => {
+      setFormError(getErrorMessage(e, 'Không thể tạo hợp đồng'))
     },
   })
 

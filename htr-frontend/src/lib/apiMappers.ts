@@ -1,6 +1,6 @@
 import type { Contract, Invoice, MaintenanceRequest, Page, Room, User } from '@/types'
 
-type PagedData<T> = T[] | Page<T> | { content?: T[] } | null | undefined
+export type PagedData<T> = T[] | Page<T> | { content?: T[] } | null | undefined
 
 type FlatRoomLike = {
   id?: string
@@ -19,7 +19,7 @@ type FlatRoomLike = {
   status?: string
 }
 
-type FlatInvoiceLike = Partial<Omit<Invoice, 'room' | 'contract' | 'status'>> & {
+export type FlatInvoiceLike = Partial<Omit<Invoice, 'room' | 'contract' | 'status'>> & {
   room?: Room
   contract?: Contract
   roomId?: string
@@ -28,7 +28,7 @@ type FlatInvoiceLike = Partial<Omit<Invoice, 'room' | 'contract' | 'status'>> & 
   status?: Invoice['status']
 }
 
-type FlatMaintenanceLike = Partial<Omit<MaintenanceRequest, 'room' | 'tenant' | 'status'>> & {
+export type FlatMaintenanceLike = Partial<Omit<MaintenanceRequest, 'room' | 'tenant' | 'status'>> & {
   room?: Room
   tenant?: User
   roomId?: string
@@ -55,7 +55,7 @@ type FlatMaintenanceLike = Partial<Omit<MaintenanceRequest, 'room' | 'tenant' | 
   materialCost?: number
 }
 
-type FlatContractLike = Partial<Omit<Contract, 'room' | 'tenant' | 'status'>> & {
+export type FlatContractLike = Partial<Omit<Contract, 'room' | 'tenant' | 'status'>> & {
   room?: Room
   tenant?: User
   roomId?: string

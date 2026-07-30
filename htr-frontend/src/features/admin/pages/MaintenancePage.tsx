@@ -1,3 +1,4 @@
+import { getErrorMessage } from '@/lib/apiError'
 import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { CheckCircle, XCircle, Search, AlertTriangle, ShieldAlert, FileText, Package } from 'lucide-react'
@@ -63,8 +64,8 @@ export default function AdminMaintenancePage() {
       showToast({ message: 'Đã phân công Kỹ thuật viên thành công', type: 'success' })
       setAssigningId(null)
     },
-    onError: (err: any) => {
-      showToast({ message: err?.response?.data?.message ?? 'Không thể phân công', type: 'error' })
+    onError: (err: unknown) => {
+      showToast({ message: getErrorMessage(err, 'Không thể phân công'), type: 'error' })
     },
   })
 
@@ -77,8 +78,8 @@ export default function AdminMaintenancePage() {
       showToast({ message: 'Đã hủy phiếu bảo trì', type: 'success' })
       setCancelingId(null)
     },
-    onError: (err: any) => {
-      showToast({ message: err?.response?.data?.message ?? 'Không thể hủy phiếu', type: 'error' })
+    onError: (err: unknown) => {
+      showToast({ message: getErrorMessage(err, 'Không thể hủy phiếu'), type: 'error' })
     },
   })
 
@@ -90,8 +91,8 @@ export default function AdminMaintenancePage() {
       qc.invalidateQueries({ queryKey: ['dashboard'] })
       showToast({ message: 'Đã hoàn thành / nghiệm thu phiếu bảo trì', type: 'success' })
     },
-    onError: (err: any) => {
-      showToast({ message: err?.response?.data?.message ?? 'Không thể hoàn thành phiếu', type: 'error' })
+    onError: (err: unknown) => {
+      showToast({ message: getErrorMessage(err, 'Không thể hoàn thành phiếu'), type: 'error' })
     },
   })
 
@@ -102,8 +103,8 @@ export default function AdminMaintenancePage() {
       showToast({ message: 'Đã cập nhật mốc thời gian SLA', type: 'success' })
       setSlaDateInput('')
     },
-    onError: (err: any) => {
-      showToast({ message: err?.response?.data?.message ?? 'Lỗi cập nhật SLA', type: 'error' })
+    onError: (err: unknown) => {
+      showToast({ message: getErrorMessage(err, 'Lỗi cập nhật SLA'), type: 'error' })
     },
   })
 

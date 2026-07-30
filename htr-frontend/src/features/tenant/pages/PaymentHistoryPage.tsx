@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import api from '@/lib/api'
 import { extractPageContent, normalizeInvoice } from '@/lib/apiMappers'
+import type { FlatInvoiceLike, PagedData } from '@/lib/apiMappers'
 import Layout from '@/components/Layout'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -9,12 +10,12 @@ import { formatDate, formatCurrency, formatMonth } from '@/lib/utils'
 import type { Invoice } from '@/types'
 
 export default function PaymentHistoryPage() {
-  const { data, isLoading } = useQuery({
+  const { data, isLoading } = useQuery<PagedData<FlatInvoiceLike>>({
     queryKey: ['tenant-invoices'],
-    queryFn: () => api.get('/invoices/mine').then(r => r.data),
+    queryFn: () => api.get<PagedData<FlatInvoiceLike>>('/invoices/mine').then(r => r.data),
   })
 
-  const invoices: Invoice[] = extractPageContent<any>(data).map(normalizeInvoice)
+  const invoices: Invoice[] = extractPageContent<FlatInvoiceLike>(data).map(normalizeInvoice)
   const paid = invoices
     .filter(i => i.status === 'PAID')
     .sort((a, b) => new Date(b.paidAt ?? b.invoiceMonth).getTime() - new Date(a.paidAt ?? a.invoiceMonth).getTime())
