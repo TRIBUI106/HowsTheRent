@@ -210,6 +210,12 @@
       "accessCount": 1,
       "lastAccessed": 1785483180536,
       "type": "file"
+    },
+    {
+      "path": "src/router/RequireRole.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1785487304562,
+      "type": "file"
     }
   ],
   "userDirectives": []

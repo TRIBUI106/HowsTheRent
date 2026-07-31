@@ -42,6 +42,11 @@ api.interceptors.response.use(
       return Promise.reject(error)
     }
 
+    if (error.response?.status === 401 && original._retry && !sessionExpired) {
+      expireSession('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.')
+      return Promise.reject(error)
+    }
+
     if (
       error.response?.status === 401 &&
       !original._retry &&
