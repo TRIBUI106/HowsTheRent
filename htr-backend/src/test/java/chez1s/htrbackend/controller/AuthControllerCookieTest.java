@@ -29,6 +29,13 @@ class AuthControllerCookieTest {
             "/api/maintenance",
             "/api/maintenance/"
     };
+    private static final String[] LEGACY_CAPITALIZED_ACCESS_TOKEN_PATHS = {
+            "/",
+            "/api",
+            "/api/",
+            "/api/maintenance",
+            "/api/maintenance/"
+    };
 
     private AuthService authService;
     private AuthController controller;
@@ -52,6 +59,7 @@ class AuthControllerCookieTest {
         assertThat(cookies).anySatisfy(cookie -> assertActiveCookie(cookie, "accessToken", ACCESS_TOKEN, "/"));
         assertThat(cookies).anySatisfy(cookie -> assertActiveCookie(cookie, "refreshToken", REFRESH_TOKEN, "/api/auth/refresh"));
         assertLegacyAccessTokenCookiesExpired(cookies);
+        assertLegacyCapitalizedAccessTokenCookiesExpired(cookies);
     }
 
     @Test
@@ -65,6 +73,7 @@ class AuthControllerCookieTest {
         assertThat(cookies).anySatisfy(cookie -> assertActiveCookie(cookie, "accessToken", ACCESS_TOKEN, "/"));
         assertThat(cookies).anySatisfy(cookie -> assertActiveCookie(cookie, "refreshToken", REFRESH_TOKEN, "/api/auth/refresh"));
         assertLegacyAccessTokenCookiesExpired(cookies);
+        assertLegacyCapitalizedAccessTokenCookiesExpired(cookies);
     }
 
     @Test
@@ -77,6 +86,7 @@ class AuthControllerCookieTest {
         assertThat(cookies).anySatisfy(cookie -> assertExpiredCookie(cookie, "accessToken", "/"));
         assertThat(cookies).anySatisfy(cookie -> assertExpiredCookie(cookie, "refreshToken", "/api/auth/refresh"));
         assertLegacyAccessTokenCookiesExpired(cookies);
+        assertLegacyCapitalizedAccessTokenCookiesExpired(cookies);
     }
 
     private static AuthResponse authResponse() {
@@ -95,6 +105,12 @@ class AuthControllerCookieTest {
     private static void assertLegacyAccessTokenCookiesExpired(Collection<String> cookies) {
         for (String path : LEGACY_ACCESS_TOKEN_PATHS) {
             assertThat(cookies).anySatisfy(cookie -> assertExpiredCookie(cookie, "accessToken", path));
+        }
+    }
+
+    private static void assertLegacyCapitalizedAccessTokenCookiesExpired(Collection<String> cookies) {
+        for (String path : LEGACY_CAPITALIZED_ACCESS_TOKEN_PATHS) {
+            assertThat(cookies).anySatisfy(cookie -> assertExpiredCookie(cookie, "AccessToken", path));
         }
     }
 

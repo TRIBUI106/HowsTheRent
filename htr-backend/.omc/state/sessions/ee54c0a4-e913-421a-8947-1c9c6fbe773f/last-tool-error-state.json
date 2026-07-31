@@ -1,0 +1,7 @@
+{
+  "tool_name": "Bash",
+  "tool_input_preview": "{\"command\":\"./mvnw -q test\",\"timeout\":600000,\"description\":\"Run full backend tests quietly\",\"run_in_background\":false,\"dangerouslyDisableSandbox\":false}",
+  "error": "Exit code 1\nMockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3\nWARNING: A Java agent has been loaded dynamically (/home/chez1s/.m2/repository/net/bytebuddy/byte-buddy-agent/1.17.8/byte-buddy-agent-1.17.8.jar)\nWARNING: If a serviceability tool i...",
+  "timestamp": "2026-07-31T07:46:51.389Z",
+  "retry_count": 2
+}

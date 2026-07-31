@@ -72,4 +72,63 @@ class JwtAuthFilterTest {
                 .extracting("authority")
                 .containsExactly("ROLE_TENANT");
     }
+
+    @Test
+    void authenticatesUsingLegacyCapitalizedAccessTokenCookie() throws Exception {
+        JwtTokenProvider tokenProvider = mock(JwtTokenProvider.class);
+        JwtAuthFilter filter = new JwtAuthFilter(tokenProvider);
+        UUID technicianId = UUID.randomUUID();
+
+        when(tokenProvider.validateToken("legacy-capitalized-token")).thenReturn(true);
+        when(tokenProvider.getUserId("legacy-capitalized-token")).thenReturn(technicianId);
+        when(tokenProvider.getRole("legacy-capitalized-token")).thenReturn("TECHNICIAN");
+
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setRequestURI("/api/maintenance/8721cde2-53f1-478e-842d-63cef0d8e17a/notes");
+        request.setCookies(new Cookie("AccessToken", "legacy-capitalized-token"));
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        FilterChain chain = (_request, _response) -> { };
+
+        filter.doFilter(request, response, chain);
+
+        var auth = SecurityContextHolder.getContext().getAuthentication();
+        assertThat(auth).isNotNull();
+        assertThat(auth.getPrincipal()).isEqualTo(technicianId);
+        assertThat(auth.getAuthorities())
+                .extracting("authority")
+                .containsExactly("ROLE_TECHNICIAN");
+    }
+
+    @Test
+    void prefersCanonicalAccessTokenOverLegacyCapitalizedCookie() throws Exception {
+        JwtTokenProvider tokenProvider = mock(JwtTokenProvider.class);
+        JwtAuthFilter filter = new JwtAuthFilter(tokenProvider);
+        UUID legacyTenantId = UUID.randomUUID();
+        UUID currentTechnicianId = UUID.randomUUID();
+
+        when(tokenProvider.validateToken("legacy-tenant-token")).thenReturn(true);
+        when(tokenProvider.validateToken("current-technician-token")).thenReturn(true);
+        when(tokenProvider.getUserId("legacy-tenant-token")).thenReturn(legacyTenantId);
+        when(tokenProvider.getRole("legacy-tenant-token")).thenReturn("TENANT");
+        when(tokenProvider.getUserId("current-technician-token")).thenReturn(currentTechnicianId);
+        when(tokenProvider.getRole("current-technician-token")).thenReturn("TECHNICIAN");
+
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setRequestURI("/api/maintenance/8721cde2-53f1-478e-842d-63cef0d8e17a/notes");
+        request.setCookies(
+                new Cookie("AccessToken", "legacy-tenant-token"),
+                new Cookie("accessToken", "current-technician-token")
+        );
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        FilterChain chain = (_request, _response) -> { };
+
+        filter.doFilter(request, response, chain);
+
+        var auth = SecurityContextHolder.getContext().getAuthentication();
+        assertThat(auth).isNotNull();
+        assertThat(auth.getPrincipal()).isEqualTo(currentTechnicianId);
+        assertThat(auth.getAuthorities())
+                .extracting("authority")
+                .containsExactly("ROLE_TECHNICIAN");
+    }
 }

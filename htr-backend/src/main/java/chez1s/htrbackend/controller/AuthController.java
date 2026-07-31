@@ -36,6 +36,13 @@ public class AuthController {
             "/api/maintenance",
             "/api/maintenance/"
     );
+    private static final List<String> LEGACY_CAPITALIZED_ACCESS_TOKEN_PATHS = List.of(
+            ROOT_PATH,
+            "/api",
+            "/api/",
+            "/api/maintenance",
+            "/api/maintenance/"
+    );
 
     private final AuthService authService;
 
@@ -110,6 +117,9 @@ public class AuthController {
     private void clearLegacyAccessTokenCookies(HttpServletResponse response) {
         for (String path : LEGACY_ACCESS_TOKEN_PATHS) {
             response.addHeader(HttpHeaders.SET_COOKIE, buildCookie(ACCESS_TOKEN_COOKIE, "", 0, path).toString());
+        }
+        for (String path : LEGACY_CAPITALIZED_ACCESS_TOKEN_PATHS) {
+            response.addHeader(HttpHeaders.SET_COOKIE, buildCookie("AccessToken", "", 0, path).toString());
         }
     }
 }

@@ -20,6 +20,9 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class JwtAuthFilter extends OncePerRequestFilter {
 
+    private static final String ACCESS_TOKEN_COOKIE = "accessToken";
+    private static final String LEGACY_CAPITALIZED_ACCESS_TOKEN_COOKIE = "AccessToken";
+
     private final JwtTokenProvider tokenProvider;
 
     @Override
@@ -54,7 +57,13 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         }
 
         for (Cookie cookie : cookies) {
-            if ("accessToken".equals(cookie.getName()) && tokenProvider.validateToken(cookie.getValue())) {
+            if (ACCESS_TOKEN_COOKIE.equals(cookie.getName()) && tokenProvider.validateToken(cookie.getValue())) {
+                return cookie.getValue();
+            }
+        }
+
+        for (Cookie cookie : cookies) {
+            if (LEGACY_CAPITALIZED_ACCESS_TOKEN_COOKIE.equals(cookie.getName()) && tokenProvider.validateToken(cookie.getValue())) {
                 return cookie.getValue();
             }
         }

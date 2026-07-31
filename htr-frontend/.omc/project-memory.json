@@ -168,6 +168,49 @@
       ]
     }
   },
-  "hotPaths": [],
+  "hotPaths": [
+    {
+      "path": "src/features/tenant/pages/MaintenancePage.tsx",
+      "accessCount": 4,
+      "lastAccessed": 1785482041014,
+      "type": "file"
+    },
+    {
+      "path": "src/features/tech/pages/MaintenancePage.tsx",
+      "accessCount": 4,
+      "lastAccessed": 1785482288541,
+      "type": "file"
+    },
+    {
+      "path": "src/api/notificationApi.ts",
+      "accessCount": 1,
+      "lastAccessed": 1785481759738,
+      "type": "file"
+    },
+    {
+      "path": "src/features/tenant/pages/NotificationsPage.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1785481783946,
+      "type": "file"
+    },
+    {
+      "path": "src/features/admin/pages/NotificationsPage.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1785481804315,
+      "type": "file"
+    },
+    {
+      "path": "src/features/tech/pages/NotificationsPage.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1785481813362,
+      "type": "file"
+    },
+    {
+      "path": "src/stores/authStore.ts",
+      "accessCount": 1,
+      "lastAccessed": 1785483180536,
+      "type": "file"
+    }
+  ],
   "userDirectives": []
 }
