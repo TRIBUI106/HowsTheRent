@@ -9,7 +9,6 @@ const baseURL = import.meta.env.DEV
 
 const api = axios.create({
   baseURL,
-  headers: { 'Content-Type': 'application/json' },
   withCredentials: true,
 })
 
