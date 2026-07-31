@@ -239,6 +239,68 @@ class MaintenanceServiceTest {
         assertTrue(transactionManager.isReadOnly());
     }
 
+    @Test
+    void listMaterials_MapsLazyRequestWithinReadOnlyTransaction() {
+        MaintenanceMaterial material = mock(MaintenanceMaterial.class);
+        when(materialRepository.findByRequestIdOrderByCreatedAtAsc(requestId))
+                .thenReturn(List.of(material));
+        when(material.getId()).thenReturn(UUID.randomUUID());
+        when(material.getRequest()).thenAnswer(invocation -> {
+            if (!TransactionSynchronizationManager.isActualTransactionActive()) {
+                throw new IllegalStateException("Lazy request accessed outside transaction");
+            }
+            return sampleRequest;
+        });
+        when(material.getName()).thenReturn("Filter");
+        when(material.getQuantity()).thenReturn(1);
+        when(material.getUnit()).thenReturn("cái");
+        when(material.getUnitPrice()).thenReturn(BigDecimal.TEN);
+        when(material.getTotalPrice()).thenReturn(BigDecimal.TEN);
+        when(material.getIsFreeInContract()).thenReturn(false);
+        when(material.getCreatedAt()).thenReturn(LocalDateTime.now());
+
+        var transactionManager = new TestTransactionManager();
+        MaintenanceService proxiedService = transactionalProxy(transactionManager);
+
+        var response = proxiedService.listMaterials(requestId);
+
+        assertEquals(requestId, response.getFirst().requestId());
+        assertTrue(transactionManager.isReadOnly());
+    }
+
+    @Test
+    void listNotes_MapsLazyRequestAndActorWithinReadOnlyTransaction() {
+        MaintenanceNote note = mock(MaintenanceNote.class);
+        when(noteRepository.findByRequestIdOrderByCreatedAtDesc(requestId))
+                .thenReturn(List.of(note));
+        when(note.getId()).thenReturn(UUID.randomUUID());
+        when(note.getRequest()).thenAnswer(invocation -> {
+            if (!TransactionSynchronizationManager.isActualTransactionActive()) {
+                throw new IllegalStateException("Lazy request accessed outside transaction");
+            }
+            return sampleRequest;
+        });
+        when(note.getActor()).thenAnswer(invocation -> {
+            if (!TransactionSynchronizationManager.isActualTransactionActive()) {
+                throw new IllegalStateException("Lazy actor accessed outside transaction");
+            }
+            return tech;
+        });
+        when(note.getStatus()).thenReturn(MaintenanceStatus.OPEN);
+        when(note.getNote()).thenReturn("Đã kiểm tra phiếu bảo trì");
+        when(note.getCreatedAt()).thenReturn(LocalDateTime.now());
+
+        var transactionManager = new TestTransactionManager();
+        MaintenanceService proxiedService = transactionalProxy(transactionManager);
+
+        var response = proxiedService.listNotes(requestId);
+
+        assertEquals(requestId, response.getFirst().requestId());
+        assertEquals(techId, response.getFirst().actorId());
+        assertEquals("Tech Name", response.getFirst().actorName());
+        assertTrue(transactionManager.isReadOnly());
+    }
+
     private MaintenanceService transactionalProxy(TestTransactionManager transactionManager) {
         var interceptor = new TransactionInterceptor(
                 transactionManager,

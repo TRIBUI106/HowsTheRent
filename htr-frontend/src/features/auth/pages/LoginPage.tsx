@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import axios from 'axios'
 import { authApi } from '@/api'
+import { consumeSessionExpiryReason } from '@/lib/sessionExpiryMessage'
 import { useAuthStore } from '@/stores/authStore'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -33,7 +34,7 @@ function getLoginErrorMessage(error: unknown) {
 export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
+  const [error, setError] = useState(() => consumeSessionExpiryReason() ?? '')
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
   const { setUser } = useAuthStore()

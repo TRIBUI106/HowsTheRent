@@ -425,6 +425,7 @@ public class MaintenanceService {
     }
 
     // Materials Management
+    @Transactional(readOnly = true)
     public List<MaintenanceMaterialResponse> listMaterials(UUID requestId) {
         return materialRepository.findByRequestIdOrderByCreatedAtAsc(requestId)
                 .stream().map(MaintenanceMaterialResponse::from).toList();
@@ -476,6 +477,7 @@ public class MaintenanceService {
     }
 
     // Notes / Timeline Logs
+    @Transactional(readOnly = true)
     public List<MaintenanceNoteResponse> listNotes(UUID requestId) {
         return noteRepository.findByRequestIdOrderByCreatedAtDesc(requestId)
                 .stream().map(MaintenanceNoteResponse::from).toList();
