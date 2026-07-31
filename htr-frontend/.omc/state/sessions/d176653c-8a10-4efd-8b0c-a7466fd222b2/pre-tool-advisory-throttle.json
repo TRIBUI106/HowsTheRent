@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "entries": {
+    "79a93d4a2f8f50b95f852280616242fee1855dc99a3c75211917f55e72e95fae": {
+      "last_emitted_at_ms": 1785508796417,
+      "message": "Use parallel execution for independent tasks. Use run_in_background for long operations (npm install, builds, tests)."
+    },
+    "5192e9cad43c3cd82c56832868437aba32354c72181ca48fed1c735e2d0dd6de": {
+      "last_emitted_at_ms": 1785507949861,
+      "message": "Spawning agent: oh-my-claudecode:code-reviewer (sonnet) | Task: Review auth redirect changes"
+    },
+    "466399dafa2d20f60587180bad0a07358eb7f2bce724df0ff682f038ad33f5ad": {
+      "last_emitted_at_ms": 1785507801437,
+      "message": "Read multiple files in parallel when possible for faster analysis."
+    },
+    "445ed27a3872b681d98190bae61ccb84954e1bc4e140df5370be958dee776b3a": {
+      "last_emitted_at_ms": 1785507523760,
+      "message": "Verify changes work after editing. Test functionality before marking complete."
+    }
+  },
+  "updated_at": "2026-07-31T14:39:56.417Z"
+}

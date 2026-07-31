@@ -1,0 +1,7 @@
+{
+  "tool_name": "Bash",
+  "tool_input_preview": "{\"command\":\"cd /home/chez1s/Desktop/code/HowsTheRent/htr-frontend && bun test tests/sessionExpiryMessage.test.ts\",\"timeout\":120000,\"description\":\"Run session expiry message test red\",\"run_in_backgroun...",
+  "error": "Exit code 1\nbun test v1.3.14 (0d9b296a)\n\ntests/sessionExpiryMessage.test.ts:\n\n# Unhandled error between tests\n-------------------------------\nerror: Cannot find module '../src/lib/sessionExpiryMessage' from '/home/chez1s/Desktop/code/HowsTheRent/htr-frontend/tests/sessionExpiryMessage.test.ts'\n-------------------------------\n\n\n 0 pass\n 1 fail\n 1 error\nRan 1 test across 1 file. [35.00ms]",
+  "timestamp": "2026-07-31T13:29:12.155Z",
+  "retry_count": 1
+}

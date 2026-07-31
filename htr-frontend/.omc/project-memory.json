@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "lastScanned": 1785320981227,
+  "lastScanned": 1785487580989,
   "projectRoot": "/home/chez1s/Desktop/code/HowsTheRent/htr-frontend",
   "techStack": {
     "languages": [
@@ -82,7 +82,7 @@
       "path": "dist",
       "purpose": "Distribution/build output",
       "fileCount": 4,
-      "lastAccessed": 1785320981204,
+      "lastAccessed": 1785487580983,
       "keyFiles": [
         "favicon.svg",
         "icons.svg",
@@ -94,7 +94,7 @@
       "path": "public",
       "purpose": "Public files",
       "fileCount": 3,
-      "lastAccessed": 1785320981205,
+      "lastAccessed": 1785487580984,
       "keyFiles": [
         "favicon.svg",
         "icons.svg",
@@ -105,7 +105,7 @@
       "path": "src",
       "purpose": "Source code",
       "fileCount": 4,
-      "lastAccessed": 1785320981210,
+      "lastAccessed": 1785487580986,
       "keyFiles": [
         "App.css",
         "App.tsx",
@@ -116,19 +116,19 @@
     "dist/assets": {
       "path": "dist/assets",
       "purpose": "Static assets",
-      "fileCount": 5,
-      "lastAccessed": 1785320981215,
+      "fileCount": 3,
+      "lastAccessed": 1785487580988,
       "keyFiles": [
-        "index-5O4sp2Ue.js",
-        "index-BoKG76OZ.js",
-        "index-KWVqL2jM.css"
+        "index-BoGNUNum.js",
+        "index-WBUFOmFV.css",
+        "logo-htr-CnfLhZjn.png"
       ]
     },
     "src/api": {
       "path": "src/api",
       "purpose": "API routes",
       "fileCount": 14,
-      "lastAccessed": 1785320981221,
+      "lastAccessed": 1785487580988,
       "keyFiles": [
         "authApi.ts",
         "contractApi.ts",
@@ -139,7 +139,7 @@
       "path": "src/assets",
       "purpose": "Static assets",
       "fileCount": 4,
-      "lastAccessed": 1785320981221,
+      "lastAccessed": 1785487580988,
       "keyFiles": [
         "hero.png",
         "logo-htr.png",
@@ -150,7 +150,7 @@
       "path": "src/components",
       "purpose": "UI components",
       "fileCount": 2,
-      "lastAccessed": 1785320981221,
+      "lastAccessed": 1785487580988,
       "keyFiles": [
         "Layout.tsx",
         "ToastViewport.tsx"
@@ -159,12 +159,12 @@
     "src/lib": {
       "path": "src/lib",
       "purpose": "Library code",
-      "fileCount": 4,
-      "lastAccessed": 1785320981222,
+      "fileCount": 5,
+      "lastAccessed": 1785487580988,
       "keyFiles": [
         "api.ts",
-        "apiMappers.ts",
-        "toast.ts"
+        "apiError.ts",
+        "apiMappers.ts"
       ]
     }
   },
@@ -179,6 +179,18 @@
       "path": "src/features/tech/pages/MaintenancePage.tsx",
       "accessCount": 4,
       "lastAccessed": 1785482288541,
+      "type": "file"
+    },
+    {
+      "path": "src/lib/api.ts",
+      "accessCount": 2,
+      "lastAccessed": 1785507559017,
+      "type": "file"
+    },
+    {
+      "path": "src/features/auth/pages/LoginPage.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1785507578015,
       "type": "file"
     },
     {
@@ -215,6 +227,12 @@
       "path": "src/router/RequireRole.tsx",
       "accessCount": 1,
       "lastAccessed": 1785487304562,
+      "type": "file"
+    },
+    {
+      "path": "src/lib/sessionExpiryMessage.ts",
+      "accessCount": 1,
+      "lastAccessed": 1785504633002,
       "type": "file"
     }
   ],

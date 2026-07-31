@@ -1,0 +1,7 @@
+{
+  "tool_name": "Bash",
+  "tool_input_preview": "{\"command\":\"/home/chez1s/Desktop/code/HowsTheRent/htr-backend/mvnw -f /home/chez1s/Desktop/code/HowsTheRent/htr-backend/pom.xml test > /tmp/htr-backend-verify.log 2>&1\\nrc=$?\\nprintf 'BACKEND_TEST_EXI...",
+  "error": "Exit code 1\nBACKEND_TEST_EXIT:1\n\tat org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:331) ~[spring-beans-7.0.7.jar:7.0.7]\n\tat org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:196) ~[spring-beans-7.0.7.jar:7.0.7]\n\tat org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:309) ~[spring-beans-7.0.7.jar:7.0.7]\n\t... 101 common frames omitted\nCaused by: org.springfram...",
+  "timestamp": "2026-07-31T14:23:53.418Z",
+  "retry_count": 1
+}
