@@ -1,7 +1,7 @@
 {
   "tool_name": "Bash",
-  "tool_input_preview": "{\"command\":\"cd /home/chez1s/Desktop/code/HowsTheRent/htr-backend && ./mvnw -Dtest=JwtAuthFilterTest test\",\"timeout\":600000,\"description\":\"Run JwtAuthFilterTest red check\",\"run_in_background\":false,\"da...",
+  "tool_input_preview": "{\"command\":\"cd /home/chez1s/Desktop/code/HowsTheRent/htr-backend && ./mvnw -Dtest=StorageServiceTest,GlobalExceptionHandlerTest test\",\"timeout\":600000,\"description\":\"Run red storage error tests\",\"run_...",
   "error": "Exit code 1\n[INFO] Scanning for projects...\n[INFO] \n[INFO] -------------------------< chez1s:htr-backend >-------------------------\n[INFO] Building htr-backend 0.0.1-SNAPSHOT\n[INFO]   from pom.xml\n[INFO] --------------------------------[ jar ]---------------------------------\n[INFO] \n[INFO] --- resources:3.3.1:resources (default-resources) @ htr-backend ---\n[INFO] Copying 1 resource from src/main/resources to target/classes\n[INFO] Copying 2 resources from src/main/resources to target/classes\n[IN...",
-  "timestamp": "2026-07-31T07:35:30.343Z",
+  "timestamp": "2026-07-31T08:02:52.846Z",
   "retry_count": 1
 }

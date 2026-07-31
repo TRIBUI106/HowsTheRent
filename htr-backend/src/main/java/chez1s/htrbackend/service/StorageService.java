@@ -1,5 +1,6 @@
 package chez1s.htrbackend.service;
 
+import chez1s.htrbackend.exception.StorageException;
 import io.minio.GetPresignedObjectUrlArgs;
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
@@ -43,7 +44,7 @@ public class StorageService {
                     .contentType(file.getContentType())
                     .build());
         } catch (Exception e) {
-            throw new RuntimeException("Failed to upload file to object storage", e);
+            throw new StorageException("Dịch vụ tải ảnh hiện không khả dụng. Vui lòng thử lại sau.", e);
         }
 
         return buildPublicUrl(objectName);

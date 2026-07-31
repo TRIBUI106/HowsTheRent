@@ -1,28 +1,18 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import api from '@/lib/api'
+import { useQuery } from '@tanstack/react-query'
 import { notificationApi } from '@/api'
+import { useNotificationReadMutations } from '@/hooks/useNotificationReadMutations'
 import Layout from '@/components/Layout'
 import type { Notification } from '@/types'
 import { formatDate } from '@/lib/utils'
 import { CheckCheck } from 'lucide-react'
 
 export default function AdminNotificationsPage() {
-  const queryClient = useQueryClient()
-
   const { data: notifications, isLoading } = useQuery<Notification[]>({
     queryKey: ['notifications'],
     queryFn: () => notificationApi.list(),
   })
 
-  const markOneMutation = useMutation({
-    mutationFn: (id: string) => api.post(`/notifications/${id}/read`),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['notifications'] }),
-  })
-
-  const markAllMutation = useMutation({
-    mutationFn: () => api.post('/notifications/read-all'),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['notifications'] }),
-  })
+  const { markOneMutation, markAllMutation } = useNotificationReadMutations()
 
   const unreadCount = notifications?.filter(n => !n.read).length ?? 0
 
