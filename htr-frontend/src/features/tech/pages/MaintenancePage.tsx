@@ -1,5 +1,5 @@
 import { getErrorMessage } from '@/lib/apiError'
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Camera, CheckCircle, Play, FileText, Clock, Plus, Trash2, Send, CheckSquare, Package } from 'lucide-react'
 import { maintenanceApi } from '@/api'
@@ -55,11 +55,6 @@ export default function TechMaintenancePage() {
     queryFn: () => (selectedRequestId ? maintenanceApi.listNotes(selectedRequestId) : Promise.resolve([])),
     enabled: !!selectedRequestId,
   })
-
-  useEffect(() => {
-    setPendingCompletionImages([])
-    setCompletionUploadError('')
-  }, [selectedRequestId])
 
   const startMutation = useMutation({
     mutationFn: (id: string) => maintenanceApi.startWork(id),
@@ -144,7 +139,7 @@ export default function TechMaintenancePage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['tech-maintenance'] })
       qc.invalidateQueries({ queryKey: ['maintenance'] })
-      setSelectedRequestId(null)
+      selectRequest(null)
       showToast({ message: 'Đã hoàn tất thi công & gửi yêu cầu nghiệm thu!', type: 'success' })
     },
     onError: (err: unknown) => {
@@ -181,6 +176,13 @@ export default function TechMaintenancePage() {
 
   const selectedRequest = requests.find((r) => r.id === selectedRequestId)
   const canSubmitReview = canSubmitCompletionReview(selectedRequest)
+
+  function selectRequest(requestId: string | null) {
+    if (requestId === selectedRequestId) return
+    setSelectedRequestId(requestId)
+    setPendingCompletionImages([])
+    setCompletionUploadError('')
+  }
 
   function uploadCompletionImages(images: File[]) {
     const error = getImageSelectionError(images)
@@ -269,7 +271,7 @@ export default function TechMaintenancePage() {
                 return (
                   <div
                     key={request.id}
-                    onClick={() => setSelectedRequestId(request.id)}
+                    onClick={() => selectRequest(request.id)}
                     className="cursor-pointer"
                   >
                     <Card
@@ -371,7 +373,7 @@ export default function TechMaintenancePage() {
                               <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => setSelectedRequestId(request.id)}
+                                onClick={() => selectRequest(request.id)}
                                 className="flex items-center gap-1 text-xs"
                               >
                                 <Package size={13} />
@@ -406,7 +408,7 @@ export default function TechMaintenancePage() {
                         </div>
                         <p className="text-xs text-fg-muted mt-1">Phòng {selectedRequest.room?.roomNumber} • Khách: {selectedRequest.tenant?.fullName}</p>
                       </div>
-                      <button onClick={() => setSelectedRequestId(null)} className="text-fg-subtle hover:text-fg text-xs underline">
+                      <button onClick={() => selectRequest(null)} className="text-fg-subtle hover:text-fg text-xs underline">
                         Đóng panel
                       </button>
                     </div>
