@@ -497,6 +497,18 @@ class MaintenanceServiceTest {
     }
 
     @Test
+    void addCompletionImage_PersistsServerConfirmedImageUrl() {
+        sampleRequest.setCompletionImages(new ArrayList<>());
+        when(maintenanceRepository.findById(requestId)).thenReturn(Optional.of(sampleRequest));
+        when(maintenanceRepository.save(any(MaintenanceRequest.class))).thenAnswer(i -> i.getArgument(0));
+
+        MaintenanceRequest result = maintenanceService.addCompletionImage(requestId, "https://storage/completion.jpg");
+
+        assertEquals(List.of("https://storage/completion.jpg"), result.getCompletionImages());
+        verify(maintenanceRepository).save(sampleRequest);
+    }
+
+    @Test
     void setAttachmentVideo_PersistsVideoUrl() {
         when(maintenanceRepository.findById(requestId)).thenReturn(Optional.of(sampleRequest));
         when(maintenanceRepository.save(any(MaintenanceRequest.class))).thenAnswer(i -> i.getArgument(0));

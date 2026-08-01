@@ -83,7 +83,12 @@
       "Bash(command -v tmux)",
       "Bash(command -v node)",
       "Bash(command -v npx)",
-      "Bash(git *)"
+      "Bash(git *)",
+      "Bash(command -v psql)",
+      "Bash(command -v java)",
+      "Bash(command -v bun)",
+      "Bash(command -v npm)",
+      "Bash(COOKIE_SECURE=false CORS_ALLOWED_ORIGINS=http://localhost:5173 MINIO_AUTO_CREATE_BUCKET=false ./mvnw spring-boot:run)"
     ]
   }
 }

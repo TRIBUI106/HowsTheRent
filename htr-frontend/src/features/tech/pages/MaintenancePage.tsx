@@ -1,8 +1,9 @@
 import { getErrorMessage } from '@/lib/apiError'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Camera, CheckCircle, Play, FileText, Clock, Plus, Trash2, Send, CheckSquare, Package } from 'lucide-react'
 import { maintenanceApi } from '@/api'
+import { canSubmitCompletionReview, getImageSelectionError, replaceMaintenanceRequest } from '@/features/tech/completionImageFlow'
 import Layout from '@/components/Layout'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -33,6 +34,10 @@ export default function TechMaintenancePage() {
   // New Note input state
   const [noteText, setNoteText] = useState('')
 
+  // Completion evidence upload state
+  const [pendingCompletionImages, setPendingCompletionImages] = useState<File[]>([])
+  const [completionUploadError, setCompletionUploadError] = useState('')
+
   const { data: requests = [], isLoading } = useQuery<MaintenanceRequest[]>({
     queryKey: ['tech-maintenance'],
     queryFn: () => maintenanceApi.listAssigned(),
@@ -50,6 +55,11 @@ export default function TechMaintenancePage() {
     queryFn: () => (selectedRequestId ? maintenanceApi.listNotes(selectedRequestId) : Promise.resolve([])),
     enabled: !!selectedRequestId,
   })
+
+  useEffect(() => {
+    setPendingCompletionImages([])
+    setCompletionUploadError('')
+  }, [selectedRequestId])
 
   const startMutation = useMutation({
     mutationFn: (id: string) => maintenanceApi.startWork(id),
@@ -138,18 +148,27 @@ export default function TechMaintenancePage() {
       showToast({ message: 'Đã hoàn tất thi công & gửi yêu cầu nghiệm thu!', type: 'success' })
     },
     onError: (err: unknown) => {
-      showToast({ message: getErrorMessage(err, 'Không thể gửi yêu cầu nghiệm thu'), type: 'error' })
+      const message = getErrorMessage(err, 'Không thể gửi yêu cầu nghiệm thu')
+      setCompletionUploadError(message)
+      showToast({ message, type: 'error' })
     },
   })
 
   const completionImagesMutation = useMutation({
     mutationFn: ({ id, images }: { id: string; images: File[] }) => maintenanceApi.addCompletionImages(id, images),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['tech-maintenance'] })
+    onSuccess: (uploadedRequest) => {
+      qc.setQueryData<MaintenanceRequest[]>(['tech-maintenance'], (current) =>
+        current ? replaceMaintenanceRequest(current, uploadedRequest) : [uploadedRequest],
+      )
+      qc.invalidateQueries({ queryKey: ['maintenance'] })
+      setPendingCompletionImages([])
+      setCompletionUploadError('')
       showToast({ message: 'Đã tải ảnh hoàn thành', type: 'success' })
     },
     onError: (err: unknown) => {
-      showToast({ message: getErrorMessage(err, 'Không thể tải ảnh hoàn thành'), type: 'error' })
+      const message = getErrorMessage(err, 'Không thể tải ảnh hoàn thành')
+      setCompletionUploadError(message)
+      showToast({ message, type: 'error' })
     },
   })
 
@@ -161,6 +180,41 @@ export default function TechMaintenancePage() {
   })
 
   const selectedRequest = requests.find((r) => r.id === selectedRequestId)
+  const canSubmitReview = canSubmitCompletionReview(selectedRequest)
+
+  function uploadCompletionImages(images: File[]) {
+    const error = getImageSelectionError(images)
+    if (error) {
+      setCompletionUploadError(error)
+      showToast({ message: error, type: 'error' })
+      return
+    }
+
+    if (!selectedRequest) return
+
+    setPendingCompletionImages(images)
+    setCompletionUploadError('')
+    completionImagesMutation.mutate({ id: selectedRequest.id, images })
+  }
+
+  function retryCompletionImagesUpload() {
+    if (!selectedRequest || pendingCompletionImages.length === 0) return
+    setCompletionUploadError('')
+    completionImagesMutation.mutate({ id: selectedRequest.id, images: pendingCompletionImages })
+  }
+
+  function submitReview() {
+    if (!selectedRequest) return
+
+    if (!canSubmitCompletionReview(selectedRequest)) {
+      const message = 'Vui lòng tải lên ít nhất một ảnh hoàn thành trước khi gửi nghiệm thu.'
+      setCompletionUploadError(message)
+      showToast({ message, type: 'error' })
+      return
+    }
+
+    submitReviewMutation.mutate(selectedRequest.id)
+  }
 
   return (
     <Layout title="Công việc của tôi">
@@ -529,19 +583,44 @@ export default function TechMaintenancePage() {
                           multiple
                           className="hidden"
                           onChange={(event) => {
-                            const images = Array.from(event.target.files ?? [])
-                            if (images.length) completionImagesMutation.mutate({ id: selectedRequest.id, images })
+                            uploadCompletionImages(Array.from(event.target.files ?? []))
                             event.target.value = ''
                           }}
                         />
-                        <Button variant="outline" onClick={() => completionImageRef.current?.click()} disabled={completionImagesMutation.isPending} className="w-full flex items-center justify-center gap-2">
+                        <Button
+                          variant="outline"
+                          onClick={() => completionImageRef.current?.click()}
+                          loading={completionImagesMutation.isPending}
+                          className="w-full flex items-center justify-center gap-2"
+                        >
                           <Camera size={16} />
-                          {selectedRequest.completionImages?.length ? `Ảnh hoàn thành (${selectedRequest.completionImages.length})` : 'Tải ảnh hoàn thành bắt buộc'}
+                          {canSubmitReview ? `Ảnh hoàn thành (${selectedRequest.completionImages?.length ?? 0})` : 'Tải ảnh hoàn thành bắt buộc'}
                         </Button>
+                        {pendingCompletionImages.length > 0 && !canSubmitReview && (
+                          <div className="rounded-xl border border-border bg-surface px-3 py-2 text-xs text-fg-muted">
+                            <p className="font-medium text-fg">Ảnh đã chọn: {pendingCompletionImages.map((file) => file.name).join(', ')}</p>
+                            <p className="mt-1">Ảnh này chỉ được tính sau khi server tải lên thành công.</p>
+                          </div>
+                        )}
+                        {completionUploadError && (
+                          <div className="rounded-xl border border-error/40 bg-error/10 px-3 py-2 text-xs text-error">
+                            <p>{completionUploadError}</p>
+                            {pendingCompletionImages.length > 0 && (
+                              <button
+                                type="button"
+                                onClick={retryCompletionImagesUpload}
+                                disabled={completionImagesMutation.isPending}
+                                className="mt-2 font-semibold underline disabled:cursor-not-allowed disabled:opacity-50"
+                              >
+                                Thử tải lại ảnh đã chọn
+                              </button>
+                            )}
+                          </div>
+                        )}
                         <Button
                           variant="primary"
-                          onClick={() => submitReviewMutation.mutate(selectedRequest.id)}
-                          disabled={submitReviewMutation.isPending || !(selectedRequest.completionImages?.length)}
+                          onClick={submitReview}
+                          disabled={submitReviewMutation.isPending || !canSubmitReview}
                           className="w-full flex items-center justify-center gap-2 bg-success hover:bg-success/90 text-success-fg font-semibold py-2.5"
                         >
                           <CheckCircle size={16} />

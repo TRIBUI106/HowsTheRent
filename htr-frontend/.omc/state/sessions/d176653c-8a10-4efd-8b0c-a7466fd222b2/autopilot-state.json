@@ -1,0 +1,11 @@
+{
+  "active": true,
+  "started_at": "2026-08-01T12:34:03.269Z",
+  "original_prompt": "/autopilot",
+  "session_id": "d176653c-8a10-4efd-8b0c-a7466fd222b2",
+  "project_path": "/home/chez1s/Desktop/code/HowsTheRent/htr-frontend",
+  "reinforcement_count": 0,
+  "awaiting_confirmation": true,
+  "awaiting_confirmation_set_at": "2026-08-01T12:34:03.269Z",
+  "last_checked_at": "2026-08-01T12:34:03.269Z"
+}
