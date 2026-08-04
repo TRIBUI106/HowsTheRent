@@ -183,9 +183,15 @@
   "hotPaths": [
     {
       "path": "src/features/tech/pages/MaintenancePage.tsx",
-      "accessCount": 23,
-      "lastAccessed": 1785587613700,
+      "accessCount": 32,
+      "lastAccessed": 1785856234277,
       "type": "file"
+    },
+    {
+      "path": "src",
+      "accessCount": 7,
+      "lastAccessed": 1785855931232,
+      "type": "directory"
     },
     {
       "path": "src/features/admin/pages/MaintenancePage.tsx",
@@ -200,21 +206,33 @@
       "type": "file"
     },
     {
-      "path": "src/features/tenant/pages/MaintenancePage.tsx",
-      "accessCount": 4,
-      "lastAccessed": 1785482041014,
+      "path": "src/types/index.ts",
+      "accessCount": 5,
+      "lastAccessed": 1785846474740,
       "type": "file"
     },
     {
-      "path": "src",
-      "accessCount": 3,
-      "lastAccessed": 1785809748788,
-      "type": "directory"
+      "path": "src/api/maintenanceApi.ts",
+      "accessCount": 5,
+      "lastAccessed": 1785846475920,
+      "type": "file"
+    },
+    {
+      "path": "src/features/tenant/pages/MaintenancePage.tsx",
+      "accessCount": 5,
+      "lastAccessed": 1785856012457,
+      "type": "file"
     },
     {
       "path": "src/api/notificationApi.ts",
       "accessCount": 3,
       "lastAccessed": 1785809933086,
+      "type": "file"
+    },
+    {
+      "path": "src/lib/utils.ts",
+      "accessCount": 3,
+      "lastAccessed": 1785856211832,
       "type": "file"
     },
     {
@@ -224,15 +242,33 @@
       "type": "file"
     },
     {
-      "path": "src/api/maintenanceApi.ts",
-      "accessCount": 2,
-      "lastAccessed": 1785809803255,
-      "type": "file"
-    },
-    {
       "path": "src/hooks/useNotifications.ts",
       "accessCount": 2,
       "lastAccessed": 1785809921992,
+      "type": "directory"
+    },
+    {
+      "path": "src/App.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1785846193305,
+      "type": "file"
+    },
+    {
+      "path": "src/components/layout/Sidebar.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1785846208049,
+      "type": "file"
+    },
+    {
+      "path": "src/router/techRoutes.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1785846456481,
+      "type": "file"
+    },
+    {
+      "path": "src/api/index.ts",
+      "accessCount": 2,
+      "lastAccessed": 1785846476849,
       "type": "directory"
     },
     {
@@ -270,6 +306,60 @@
       "accessCount": 1,
       "lastAccessed": 1785504633002,
       "type": "file"
+    },
+    {
+      "path": "src/lib/apiMappers.ts",
+      "accessCount": 1,
+      "lastAccessed": 1785846154922,
+      "type": "file"
+    },
+    {
+      "path": "src/components/ui/badge.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1785846155143,
+      "type": "file"
+    },
+    {
+      "path": "src/api/contractApi.ts",
+      "accessCount": 1,
+      "lastAccessed": 1785846163413,
+      "type": "file"
+    },
+    {
+      "path": "src/features/auth/pages/ProfilePage.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1785846185378,
+      "type": "file"
+    },
+    {
+      "path": "src/features/tenant/pages/DashboardPage.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1785846231925,
+      "type": "file"
+    },
+    {
+      "path": "src/api/reportApi.ts",
+      "accessCount": 1,
+      "lastAccessed": 1785846232418,
+      "type": "directory"
+    },
+    {
+      "path": "src/components/ui/feedback.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1785846239802,
+      "type": "file"
+    },
+    {
+      "path": "src/features/tech/pages/DashboardPage.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1785846271831,
+      "type": "file"
+    },
+    {
+      "path": "package.json",
+      "accessCount": 1,
+      "lastAccessed": 1785856132982,
+      "type": "directory"
     }
   ],
   "userDirectives": []
