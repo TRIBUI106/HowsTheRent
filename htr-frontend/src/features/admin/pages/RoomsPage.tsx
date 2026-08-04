@@ -11,6 +11,8 @@ import { Badge } from '@/components/ui/badge'
 import { Dialog } from '@/components/ui/dialog'
 import { formatCurrency, formatCurrencyInput, parseCurrencyInput } from '@/lib/utils'
 import { Table, TableCell, TableRow } from '@/components/ui/table'
+import { getErrorMessage } from '@/lib/apiError'
+import { showToast } from '@/lib/toast'
 import type { Property, Room } from '@/types'
 
 const emptyForm = { roomNumber: '', floor: '', areaM2: '', maxPeople: '', rentOverride: '', status: 'EMPTY' }
@@ -96,6 +98,9 @@ export default function RoomsPage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['rooms', effectiveSelectedProperty] })
       setDeletingRoom(null)
+    },
+    onError: (err: unknown) => {
+      showToast({ message: getErrorMessage(err, 'Xóa phòng thất bại'), type: 'error' })
     },
   })
 

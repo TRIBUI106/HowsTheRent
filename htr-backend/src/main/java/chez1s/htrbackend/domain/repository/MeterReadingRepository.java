@@ -20,4 +20,5 @@ public interface MeterReadingRepository extends JpaRepository<MeterReading, UUID
     Optional<MeterReading> findFirstByRoomIdAndReadingMonthLessThanOrderByReadingMonthDesc(UUID roomId, LocalDate readingMonth);
 
     boolean existsByRoomIdAndReadingMonth(UUID roomId, LocalDate readingMonth);
+    long countByRoomId(UUID roomId);
 }

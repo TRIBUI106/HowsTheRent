@@ -8,4 +8,5 @@ import java.util.UUID;
 
 public interface RoomNoteRepository extends JpaRepository<RoomNote, UUID> {
     List<RoomNote> findByRoomIdOrderByCreatedAtDesc(UUID roomId);
+    long countByRoomId(UUID roomId);
 }

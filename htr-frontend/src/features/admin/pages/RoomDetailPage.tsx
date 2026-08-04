@@ -8,6 +8,8 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { formatCurrency, formatDate } from '@/lib/utils'
+import { getErrorMessage } from '@/lib/apiError'
+import { showToast } from '@/lib/toast'
 import type { RoomTimelineEntry } from '@/types'
 import {
   ArrowLeft, User, FileText, Wrench, BarChart2, StickyNote, Trash2,
@@ -50,11 +52,17 @@ export default function RoomDetailPage() {
       setNoteText('')
       qc.invalidateQueries({ queryKey: ['room-timeline', roomId] })
     },
+    onError: (err: unknown) => {
+      showToast({ message: getErrorMessage(err, 'Lưu ghi chú thất bại'), type: 'error' })
+    },
   })
 
   const deleteNote = useMutation({
     mutationFn: (noteId: string) => roomTimelineApi.deleteNote(roomId!, noteId),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['room-timeline', roomId] }),
+    onError: (err: unknown) => {
+      showToast({ message: getErrorMessage(err, 'Xóa ghi chú thất bại'), type: 'error' })
+    },
   })
 
   if (roomLoading) {

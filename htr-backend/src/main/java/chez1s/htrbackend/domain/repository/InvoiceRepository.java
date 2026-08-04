@@ -43,4 +43,5 @@ public interface InvoiceRepository extends JpaRepository<Invoice, UUID> {
 
     long countByStatus(InvoiceStatus status);
     long countByRoomPropertyOwnerIdAndStatus(UUID ownerId, InvoiceStatus status);
+    long countByRoomId(UUID roomId);
 }

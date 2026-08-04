@@ -3,10 +3,18 @@ import { extractPageContent, normalizeMaintenanceRequest } from "@/lib/apiMapper
 import type { MaintenanceMaterial, MaintenanceNote, MaintenanceRequest, Page } from "@/types";
 
 export const maintenanceApi = {
-  listAll: () =>
-    api
-      .get<Page<MaintenanceRequest>>("/maintenance")
-      .then((r) => extractPageContent(r.data).map(normalizeMaintenanceRequest)),
+  listAll: (params?: { page?: number; size?: number; statuses?: string[] }) => {
+    const query = new URLSearchParams()
+    if (params?.page !== undefined) query.set("page", String(params.page))
+    if (params?.size !== undefined) query.set("size", String(params.size))
+    params?.statuses?.forEach((status) => query.append("statuses", status))
+    return api
+      .get<Page<MaintenanceRequest>>("/maintenance", { params: query })
+      .then((r) => ({
+        ...r.data,
+        content: extractPageContent(r.data).map(normalizeMaintenanceRequest),
+      }))
+  },
   listMine: () =>
     api
       .get<Page<MaintenanceRequest>>("/maintenance/mine")

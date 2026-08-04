@@ -8,13 +8,17 @@ import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Table, TableCell, TableRow } from '@/components/ui/table'
+import { Pagination } from '@/components/ui/pagination'
 import { TableSkeleton, ListSkeleton } from '@/components/ui/feedback'
 import { formatDate, formatCurrency, priorityColor, priorityLabel, categoryLabel } from '@/lib/utils'
 import { showToast } from '@/lib/toast'
-import type { MaintenanceMaterial, MaintenanceNote, MaintenanceRequest, User } from '@/types'
+import type { MaintenanceMaterial, MaintenanceNote, MaintenanceRequest, Page, User } from '@/types'
+
+const SIZE = 20
 
 export default function AdminMaintenancePage() {
   const qc = useQueryClient()
+  const [page, setPage] = useState(0)
   const [search, setSearch] = useState('')
   const [filterStatus, setFilterStatus] = useState<string>('ALL')
   const [filterPriority, setFilterPriority] = useState<string>('ALL')
@@ -30,10 +34,17 @@ export default function AdminMaintenancePage() {
   const [inspectRequestId, setInspectRequestId] = useState<string | null>(null)
   const [slaDateInput, setSlaDateInput] = useState('')
 
-  const { data: requests = [], isLoading } = useQuery<MaintenanceRequest[]>({
-    queryKey: ['maintenance'],
-    queryFn: () => maintenanceApi.listAll(),
+  const { data, isLoading } = useQuery<Page<MaintenanceRequest>>({
+    queryKey: ['maintenance', page, filterStatus],
+    queryFn: () => maintenanceApi.listAll({
+      page,
+      size: SIZE,
+      statuses: filterStatus !== 'ALL' ? [filterStatus] : undefined,
+    }),
   })
+
+  const requests = data?.content ?? []
+  const totalPages = data?.totalPages ?? 1
 
   const { data: users } = useQuery<User[]>({
     queryKey: ['users'],
@@ -156,7 +167,10 @@ export default function AdminMaintenancePage() {
 
             <select
               value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value)}
+              onChange={(e) => {
+                setFilterStatus(e.target.value)
+                setPage(0)
+              }}
               className="rounded-xl border border-border bg-surface px-2.5 py-1.5 text-xs text-fg focus:outline-none focus:ring-2 focus:ring-accent"
             >
               <option value="ALL">Tất cả trạng thái</option>
@@ -508,6 +522,7 @@ export default function AdminMaintenancePage() {
                 </TableRow>
               ))}
             </Table>
+            <Pagination page={page} totalPages={totalPages} onPageChange={setPage} className="px-4" />
           </Card>
         )}
       </div>

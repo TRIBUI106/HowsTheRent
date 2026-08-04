@@ -7,9 +7,15 @@ import chez1s.htrbackend.domain.enums.MaintenanceCategory;
 import chez1s.htrbackend.domain.enums.MaintenancePriority;
 import chez1s.htrbackend.domain.enums.MaintenanceStatus;
 import chez1s.htrbackend.domain.enums.RoomStatus;
+import chez1s.htrbackend.domain.repository.ContractRepository;
+import chez1s.htrbackend.domain.repository.InvoiceRepository;
 import chez1s.htrbackend.domain.repository.MaintenanceRequestRepository;
+import chez1s.htrbackend.domain.repository.MeterReadingRepository;
+import chez1s.htrbackend.domain.repository.RoomNoteRepository;
 import chez1s.htrbackend.domain.repository.RoomRepository;
+import chez1s.htrbackend.domain.repository.VehicleRecordRepository;
 import chez1s.htrbackend.dto.request.CreateRoomRequest;
+import chez1s.htrbackend.exception.BusinessException;
 import chez1s.htrbackend.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -27,6 +33,11 @@ public class RoomService {
     private final MaintenanceRequestRepository maintenanceRepository;
     private final NotificationService notificationService;
     private final SlaService slaService;
+    private final ContractRepository contractRepository;
+    private final InvoiceRepository invoiceRepository;
+    private final MeterReadingRepository meterReadingRepository;
+    private final VehicleRecordRepository vehicleRecordRepository;
+    private final RoomNoteRepository roomNoteRepository;
 
     public List<Room> listByProperty(UUID propertyId) {
         return roomRepository.findByPropertyId(propertyId);
@@ -120,7 +131,35 @@ public class RoomService {
     @Transactional
     public void delete(UUID propertyId, UUID id) {
         Room room = getById(propertyId, id);
+        assertDeletable(room.getId());
         roomRepository.delete(room);
+    }
+
+    private void assertDeletable(UUID roomId) {
+        long contracts = contractRepository.countByRoomId(roomId);
+        if (contracts > 0) {
+            throw new BusinessException("Không thể xóa phòng vì còn " + contracts + " hợp đồng liên quan");
+        }
+        long invoices = invoiceRepository.countByRoomId(roomId);
+        if (invoices > 0) {
+            throw new BusinessException("Không thể xóa phòng vì còn " + invoices + " hóa đơn liên quan");
+        }
+        long maintenanceRequests = maintenanceRepository.countByRoomId(roomId);
+        if (maintenanceRequests > 0) {
+            throw new BusinessException("Không thể xóa phòng vì còn " + maintenanceRequests + " yêu cầu bảo trì liên quan");
+        }
+        long meterReadings = meterReadingRepository.countByRoomId(roomId);
+        if (meterReadings > 0) {
+            throw new BusinessException("Không thể xóa phòng vì còn " + meterReadings + " chỉ số đồng hồ liên quan");
+        }
+        long vehicleRecords = vehicleRecordRepository.countByRoomId(roomId);
+        if (vehicleRecords > 0) {
+            throw new BusinessException("Không thể xóa phòng vì còn " + vehicleRecords + " hồ sơ xe liên quan");
+        }
+        long roomNotes = roomNoteRepository.countByRoomId(roomId);
+        if (roomNotes > 0) {
+            throw new BusinessException("Không thể xóa phòng vì còn " + roomNotes + " ghi chú liên quan");
+        }
     }
 
     @Transactional

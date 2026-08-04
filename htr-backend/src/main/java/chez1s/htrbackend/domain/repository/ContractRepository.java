@@ -31,6 +31,7 @@ public interface ContractRepository extends JpaRepository<Contract, UUID> {
 
     boolean existsByRoomIdAndStatus(UUID roomId, ContractStatus status);
     boolean existsByTenantIdAndRoomIdAndStatus(UUID tenantId, UUID roomId, ContractStatus status);
+    long countByRoomId(UUID roomId);
 
     @EntityGraph(attributePaths = {"room", "room.property", "tenant"})
     Optional<Contract> findFirstByTenantIdAndStatusOrderByCreatedAtDesc(UUID tenantId, ContractStatus status);

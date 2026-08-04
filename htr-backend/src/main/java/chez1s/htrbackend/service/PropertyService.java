@@ -4,6 +4,7 @@ import chez1s.htrbackend.domain.entity.*;
 import chez1s.htrbackend.domain.repository.*;
 import chez1s.htrbackend.dto.request.CreatePropertyRequest;
 import chez1s.htrbackend.dto.request.UpdateFeeConfigRequest;
+import chez1s.htrbackend.exception.BusinessException;
 import chez1s.htrbackend.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -84,7 +85,10 @@ public class PropertyService {
     @Transactional
     public void delete(UUID id) {
         getById(id);
-        roomRepository.deleteByPropertyId(id);
+        long roomCount = roomRepository.countByPropertyId(id);
+        if (roomCount > 0) {
+            throw new BusinessException("Không thể xóa tài sản vì còn " + roomCount + " phòng liên quan. Vui lòng xóa hết phòng trước.");
+        }
         feeConfigRepository.deleteByPropertyId(id);
         propertyRepository.deleteById(id);
     }

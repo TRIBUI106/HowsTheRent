@@ -30,6 +30,10 @@ function expireSession(reason?: string) {
   }
 }
 
+function isBackgroundRequest(url?: string) {
+  return !!url && url.startsWith('/notifications')
+}
+
 api.interceptors.response.use(
   (res) => {
     if (res.config.url === '/auth/login') {
@@ -41,6 +45,7 @@ api.interceptors.response.use(
     const original = error.config as InternalAxiosRequestConfig & { _retry?: boolean }
 
     if (
+      !isBackgroundRequest(original.url) &&
       shouldExpireSessionFromApiError({
         status: error.response?.status,
         retryAttempted: Boolean(original._retry),
@@ -88,5 +93,11 @@ api.interceptors.response.use(
 export function isUnauthorizedError(error: unknown) {
   return axios.isAxiosError(error) && error.response?.status === 401
 }
+
+setInterval(() => {
+  if (!sessionExpired) {
+    axios.post(`${baseURL}/auth/refresh`, {}, { withCredentials: true }).catch(() => {})
+  }
+}, 10 * 60 * 1000)
 
 export default api

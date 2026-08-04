@@ -11,4 +11,5 @@ import java.util.UUID;
 public interface VehicleRecordRepository extends JpaRepository<VehicleRecord, UUID> {
     List<VehicleRecord> findByRoomIdOrderByRecordMonthDesc(UUID roomId);
     Optional<VehicleRecord> findByRoomIdAndRecordMonth(UUID roomId, LocalDate recordMonth);
+    long countByRoomId(UUID roomId);
 }
