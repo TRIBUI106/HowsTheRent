@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
-  "lastScanned": 1785487580989,
-  "projectRoot": "/home/chez1s/Desktop/code/HowsTheRent/htr-frontend",
+  "lastScanned": 1785810124766,
+  "projectRoot": "D:\\Code\\HowsTheRent\\htr-frontend",
   "techStack": {
     "languages": [
       {
@@ -61,7 +61,7 @@
   "conventions": {
     "namingStyle": null,
     "importStyle": null,
-    "testPattern": null,
+    "testPattern": "*.test.ts",
     "fileOrganization": "feature-based"
   },
   "structure": {
@@ -69,7 +69,8 @@
     "workspaces": [],
     "mainDirectories": [
       "public",
-      "src"
+      "src",
+      "tests"
     ],
     "gitBranches": {
       "defaultBranch": "master",
@@ -82,7 +83,7 @@
       "path": "dist",
       "purpose": "Distribution/build output",
       "fileCount": 4,
-      "lastAccessed": 1785487580983,
+      "lastAccessed": 1785810124726,
       "keyFiles": [
         "favicon.svg",
         "icons.svg",
@@ -94,7 +95,7 @@
       "path": "public",
       "purpose": "Public files",
       "fileCount": 3,
-      "lastAccessed": 1785487580984,
+      "lastAccessed": 1785810124731,
       "keyFiles": [
         "favicon.svg",
         "icons.svg",
@@ -105,7 +106,7 @@
       "path": "src",
       "purpose": "Source code",
       "fileCount": 4,
-      "lastAccessed": 1785487580986,
+      "lastAccessed": 1785810124732,
       "keyFiles": [
         "App.css",
         "App.tsx",
@@ -113,54 +114,65 @@
         "main.tsx"
       ]
     },
-    "dist/assets": {
-      "path": "dist/assets",
+    "tests": {
+      "path": "tests",
+      "purpose": "Test files",
+      "fileCount": 3,
+      "lastAccessed": 1785810124732,
+      "keyFiles": [
+        "completionImageFlow.test.ts",
+        "sessionExpiryMessage.test.ts",
+        "sessionExpiryPolicy.test.ts"
+      ]
+    },
+    "dist\\assets": {
+      "path": "dist\\assets",
       "purpose": "Static assets",
       "fileCount": 3,
-      "lastAccessed": 1785487580988,
+      "lastAccessed": 1785810124732,
       "keyFiles": [
-        "index-BoGNUNum.js",
+        "index-Rc3z2R77.js",
         "index-WBUFOmFV.css",
         "logo-htr-CnfLhZjn.png"
       ]
     },
-    "src/api": {
-      "path": "src/api",
+    "src\\api": {
+      "path": "src\\api",
       "purpose": "API routes",
       "fileCount": 14,
-      "lastAccessed": 1785487580988,
+      "lastAccessed": 1785810124733,
       "keyFiles": [
         "authApi.ts",
         "contractApi.ts",
         "dashboardApi.ts"
       ]
     },
-    "src/assets": {
-      "path": "src/assets",
+    "src\\assets": {
+      "path": "src\\assets",
       "purpose": "Static assets",
       "fileCount": 4,
-      "lastAccessed": 1785487580988,
+      "lastAccessed": 1785810124733,
       "keyFiles": [
         "hero.png",
         "logo-htr.png",
         "react.svg"
       ]
     },
-    "src/components": {
-      "path": "src/components",
+    "src\\components": {
+      "path": "src\\components",
       "purpose": "UI components",
       "fileCount": 2,
-      "lastAccessed": 1785487580988,
+      "lastAccessed": 1785810124734,
       "keyFiles": [
         "Layout.tsx",
         "ToastViewport.tsx"
       ]
     },
-    "src/lib": {
-      "path": "src/lib",
+    "src\\lib": {
+      "path": "src\\lib",
       "purpose": "Library code",
-      "fileCount": 5,
-      "lastAccessed": 1785487580988,
+      "fileCount": 7,
+      "lastAccessed": 1785810124734,
       "keyFiles": [
         "api.ts",
         "apiError.ts",
@@ -176,15 +188,33 @@
       "type": "file"
     },
     {
+      "path": "src/features/admin/pages/MaintenancePage.tsx",
+      "accessCount": 6,
+      "lastAccessed": 1785809855049,
+      "type": "file"
+    },
+    {
+      "path": "src/lib/api.ts",
+      "accessCount": 6,
+      "lastAccessed": 1785809901634,
+      "type": "file"
+    },
+    {
       "path": "src/features/tenant/pages/MaintenancePage.tsx",
       "accessCount": 4,
       "lastAccessed": 1785482041014,
       "type": "file"
     },
     {
-      "path": "src/lib/api.ts",
-      "accessCount": 2,
-      "lastAccessed": 1785507559017,
+      "path": "src",
+      "accessCount": 3,
+      "lastAccessed": 1785809748788,
+      "type": "directory"
+    },
+    {
+      "path": "src/api/notificationApi.ts",
+      "accessCount": 3,
+      "lastAccessed": 1785809933086,
       "type": "file"
     },
     {
@@ -194,10 +224,16 @@
       "type": "file"
     },
     {
-      "path": "src/api/notificationApi.ts",
-      "accessCount": 1,
-      "lastAccessed": 1785481759738,
+      "path": "src/api/maintenanceApi.ts",
+      "accessCount": 2,
+      "lastAccessed": 1785809803255,
       "type": "file"
+    },
+    {
+      "path": "src/hooks/useNotifications.ts",
+      "accessCount": 2,
+      "lastAccessed": 1785809921992,
+      "type": "directory"
     },
     {
       "path": "src/features/tenant/pages/NotificationsPage.tsx",
