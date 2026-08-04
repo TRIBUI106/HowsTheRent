@@ -14,7 +14,7 @@ const queryClient = new QueryClient({
       staleTime: 1000 * 60,
     },
     mutations: {
-      retry: (_failureCount, error) => !isUnauthorizedError(error),
+      retry: false,
     },
   },
 })

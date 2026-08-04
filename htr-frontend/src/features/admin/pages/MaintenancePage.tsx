@@ -504,7 +504,7 @@ export default function AdminMaintenancePage() {
                                   cancelMutation.mutate({ id: request.id, reason })
                                 }}
                                 disabled={cancelMutation.isPending}
-                                className="rounded-lg bg-error px-2 py-1 text-xs font-medium text-error-fg hover:bg-error/90 disabled:opacity-50"
+                                className="rounded-lg bg-error px-2 py-1 text-xs font-medium text-white hover:bg-error/90 disabled:opacity-50"
                               >
                                 Xác nhận hủy
                               </button>

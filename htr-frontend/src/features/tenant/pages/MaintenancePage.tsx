@@ -57,7 +57,7 @@ export default function TenantMaintenancePage() {
   const [reviewComment, setReviewComment] = useState('')
 
   const { data, isLoading } = useQuery({
-    queryKey: ['tenant-maintenance'],
+    queryKey: ['tenant-maintenance-list'],
     queryFn: () => maintenanceApi.listMine(),
   })
 
@@ -102,7 +102,7 @@ export default function TenantMaintenancePage() {
       return api.post('/maintenance/with-images', form)
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['tenant-maintenance'] })
+      qc.invalidateQueries({ queryKey: ['tenant-maintenance-list'] })
       qc.invalidateQueries({ queryKey: ['dashboard'] })
       setShowCreate(false)
       resetForm()
@@ -118,7 +118,7 @@ export default function TenantMaintenancePage() {
   const resolveMutation = useMutation({
     mutationFn: (id: string) => maintenanceApi.resolve(id),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['tenant-maintenance'] })
+      qc.invalidateQueries({ queryKey: ['tenant-maintenance-list'] })
       qc.invalidateQueries({ queryKey: ['dashboard'] })
       showToast({ message: 'Đã nghiệm thu và hoàn thành phiếu bảo trì!', type: 'success' })
     },
@@ -130,7 +130,7 @@ export default function TenantMaintenancePage() {
   const complainMutation = useMutation({
     mutationFn: ({ id, reason }: { id: string; reason: string }) => maintenanceApi.complain(id, reason),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['tenant-maintenance'] })
+      qc.invalidateQueries({ queryKey: ['tenant-maintenance-list'] })
       setComplainModalId(null)
       setComplainReason('')
       showToast({ message: 'Đã gửi phản hồi / khiếu nại thành công!', type: 'success' })
@@ -143,7 +143,7 @@ export default function TenantMaintenancePage() {
   const reviewMutation = useMutation({
     mutationFn: ({ id, stars, comment }: { id: string; stars: number; comment?: string }) => reportApi.createReview(id, stars, comment),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['tenant-maintenance'] })
+      qc.invalidateQueries({ queryKey: ['tenant-maintenance-list'] })
       setReviewModalId(null)
       setReviewComment('')
       showToast({ message: 'Đã gửi đánh giá chất lượng dịch vụ bảo trì!', type: 'success' })
@@ -156,7 +156,7 @@ export default function TenantMaintenancePage() {
   const payMaterialMutation = useMutation({
     mutationFn: (id: string) => maintenanceApi.payMaterial(id),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['tenant-maintenance'] })
+      qc.invalidateQueries({ queryKey: ['tenant-maintenance-list'] })
       showToast({ message: 'Đã thanh toán chi phí vật tư!', type: 'success' })
     },
     onError: (err: unknown) => {
@@ -167,7 +167,7 @@ export default function TenantMaintenancePage() {
   const tenantConfirmSlotMutation = useMutation({
     mutationFn: ({ id, confirm }: { id: string; confirm: boolean }) => maintenanceApi.tenantConfirmSlot(id, confirm),
     onSuccess: (_, variables) => {
-      qc.invalidateQueries({ queryKey: ['tenant-maintenance'] })
+      qc.invalidateQueries({ queryKey: ['tenant-maintenance-list'] })
       showToast({ message: variables.confirm ? 'Đã xác nhận lịch sửa chữa!' : 'Đã từ chối lịch, KTV sẽ liên hệ sắp xếp lại', type: 'success' })
     },
     onError: (err: unknown) => {
@@ -356,7 +356,7 @@ export default function TenantMaintenancePage() {
                           <button
                             type="button"
                             onClick={() => removeImage(index)}
-                            className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-error text-error-fg"
+                            className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-error text-white"
                           >
                             <X size={10} />
                           </button>
@@ -432,7 +432,7 @@ export default function TenantMaintenancePage() {
                   variant="primary"
                   disabled={!complainReason.trim() || complainMutation.isPending}
                   onClick={() => complainMutation.mutate({ id: complainModalId, reason: complainReason })}
-                  className="bg-error hover:bg-error/90 text-error-fg"
+                  className="bg-error hover:bg-error/90 text-white"
                 >
                   {complainMutation.isPending ? 'Đang gửi...' : 'Xác nhận khiếu nại'}
                 </Button>

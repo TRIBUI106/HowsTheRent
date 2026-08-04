@@ -36,7 +36,7 @@ export default function Header({ title }: HeaderProps) {
           <Link to={notifPath} className="relative inline-flex h-9 w-9 items-center justify-center rounded-xl border border-border/80 bg-surface text-fg-muted hover:bg-sidebar hover:text-fg transition-colors">
             <Bell size={16} />
             {unreadCount > 0 && (
-              <span className="absolute -right-1.5 -top-1.5 flex min-w-5 h-5 items-center justify-center rounded-full bg-error px-1 text-[10px] font-bold text-error-fg">
+              <span className="absolute -right-1.5 -top-1.5 flex min-w-5 h-5 items-center justify-center rounded-full bg-error px-1 text-[10px] font-bold text-white">
                 {unreadCount > 99 ? '99+' : unreadCount}
               </span>
             )}

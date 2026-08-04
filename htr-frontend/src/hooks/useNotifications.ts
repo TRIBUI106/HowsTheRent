@@ -27,6 +27,7 @@ export function useNotifications() {
         if (notification.type === 'MAINTENANCE') {
           qc.invalidateQueries({ queryKey: ['tech-maintenance'] })
           qc.invalidateQueries({ queryKey: ['tenant-maintenance'] })
+          qc.invalidateQueries({ queryKey: ['tenant-maintenance-list'] })
           qc.invalidateQueries({ queryKey: ['maintenance'] })
           qc.invalidateQueries({ queryKey: ['dashboard'] })
         }
@@ -37,6 +38,7 @@ export function useNotifications() {
     stream.addEventListener('maintenance-update', () => {
       qc.invalidateQueries({ queryKey: ['tech-maintenance'] })
       qc.invalidateQueries({ queryKey: ['tenant-maintenance'] })
+      qc.invalidateQueries({ queryKey: ['tenant-maintenance-list'] })
       qc.invalidateQueries({ queryKey: ['maintenance'] })
       qc.invalidateQueries({ queryKey: ['dashboard'] })
     })
