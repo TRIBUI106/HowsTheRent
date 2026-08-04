@@ -9,7 +9,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { ListSkeleton } from '@/components/ui/feedback'
-import { formatDate, formatCurrency, priorityColor, priorityLabel, categoryLabel } from '@/lib/utils'
+import { formatDate, formatCurrency, priorityColor, priorityLabel, categoryLabel, nextDayLabel } from '@/lib/utils'
 import { showToast } from '@/lib/toast'
 import type { MaintenanceMaterial, MaintenanceNote, MaintenanceRequest } from '@/types'
 
@@ -42,6 +42,8 @@ export default function TechMaintenancePage() {
     queryKey: ['tech-maintenance'],
     queryFn: () => maintenanceApi.listAssigned(),
   })
+
+  const nextDay = nextDayLabel()
 
   // Selected request materials & notes
   const { data: materials = [], isLoading: loadingMats } = useQuery<MaintenanceMaterial[]>({
@@ -351,8 +353,8 @@ export default function TechMaintenancePage() {
                                   onChange={(e) => setSlotInputs((prev) => ({ ...prev, [request.id]: e.target.value }))}
                                 >
                                   <option value="">Hẹn lịch...</option>
-                                  <option value="Sáng mai (8:00 - 11:30)">Sáng mai (8:00 - 11:30)</option>
-                                  <option value="Chiều mai (13:30 - 17:00)">Chiều mai (13:30 - 17:00)</option>
+                                  <option value={`Sáng ${nextDay} (8:00 - 11:30)`}>{`Sáng ${nextDay} (8:00 - 11:30)`}</option>
+                                  <option value={`Chiều ${nextDay} (13:30 - 17:00)`}>{`Chiều ${nextDay} (13:30 - 17:00)`}</option>
                                   <option value="Tối nay (18:00 - 20:30)">Tối nay (18:00 - 20:30)</option>
                                   <option value="Thứ 7 tuần này">Thứ 7 tuần này</option>
                                 </select>

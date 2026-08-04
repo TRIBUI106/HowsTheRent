@@ -4,6 +4,8 @@ import LandingPage from '@/pages/LandingPage'
 import LoginPage from '@/features/auth/pages/LoginPage'
 import ForgotPasswordPage from '@/features/auth/pages/ForgotPasswordPage'
 import ResetPasswordPage from '@/features/auth/pages/ResetPasswordPage'
+import ChangePasswordPage from '@/features/auth/pages/ChangePasswordPage'
+import ProfilePage from '@/features/auth/pages/ProfilePage'
 import PaymentSuccessPage from '@/features/payment/pages/SuccessPage'
 import PaymentCancelPage from '@/features/payment/pages/CancelPage'
 import NotFoundPage from '@/pages/NotFoundPage'
@@ -39,6 +41,8 @@ export default function App() {
       <Route path="/" element={<Navigate to={homePath} replace />} />
       <Route path="/login" element={<Navigate to={homePath} replace />} />
       <Route path="/landing" element={<LandingPage />} />
+      <Route path="/change-password" element={<ChangePasswordPage />} />
+      <Route path="/profile" element={<ProfilePage />} />
       {adminRoutes}
       {tenantRoutes}
       {techRoutes}

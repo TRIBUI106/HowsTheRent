@@ -1,25 +1,14 @@
-import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { useAuthStore } from '@/stores/authStore'
-import { LogOut } from 'lucide-react'
 import logoHtr from '@/assets/logo-htr.png'
 import { cn } from '@/lib/utils'
 import { navItems } from './navItems'
-import api from '@/lib/api'
 
 export default function Sidebar() {
-  const { user, clearAuth } = useAuthStore()
+  const { user } = useAuthStore()
   const location = useLocation()
-  const navigate = useNavigate()
   const role = user?.role ?? ''
 
-  const handleLogout = async () => {
-    try {
-      await api.post('/auth/logout')
-    } finally {
-      clearAuth()
-      navigate('/login', { replace: true })
-    }
-  }
   const filteredNav = navItems.filter(item => item.roles.includes(role))
 
   return (
@@ -69,25 +58,18 @@ export default function Sidebar() {
       </nav>
 
       <div className="px-3 py-3 border-t border-border/80">
-        <div className="rounded-2xl border border-border/80 bg-surface/80 p-2 lg:p-3">
-          <div className="flex items-center justify-center lg:justify-start gap-2.5 mb-3">
-            <div className="w-8 h-8 bg-accent-surface text-accent rounded-full flex items-center justify-center text-xs font-semibold shrink-0">
-              {user?.fullName?.charAt(0).toUpperCase()}
-            </div>
-            <div className="hidden lg:block min-w-0">
-              <p className="text-sm font-medium text-fg truncate leading-none mb-1">{user?.fullName}</p>
-              <p className="text-xs text-fg-subtle truncate">{user?.email}</p>
-            </div>
+        <Link
+          to="/profile"
+          className="flex items-center justify-center lg:justify-start gap-2.5 rounded-2xl border border-border/80 bg-surface/80 p-2 lg:p-3 hover:bg-surface transition-colors"
+        >
+          <div className="w-8 h-8 bg-accent-surface text-accent rounded-full flex items-center justify-center text-xs font-semibold shrink-0">
+            {user?.fullName?.charAt(0).toUpperCase()}
           </div>
-          <button
-            onClick={handleLogout}
-            title="Đăng xuất"
-            className="flex items-center justify-center lg:justify-start gap-2 text-xs text-fg-subtle hover:text-error transition-colors w-full rounded-lg px-2 py-1.5 hover:bg-error-surface/80"
-          >
-            <LogOut size={13} />
-            <span className="hidden lg:block">Đăng xuất</span>
-          </button>
-        </div>
+          <div className="hidden lg:block min-w-0">
+            <p className="text-sm font-medium text-fg truncate leading-none mb-1">{user?.fullName}</p>
+            <p className="text-xs text-fg-subtle truncate">{user?.email}</p>
+          </div>
+        </Link>
       </div>
     </aside>
   )

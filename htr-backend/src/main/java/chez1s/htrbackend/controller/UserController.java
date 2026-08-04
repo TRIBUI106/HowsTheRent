@@ -1,6 +1,7 @@
 package chez1s.htrbackend.controller;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.data.domain.Pageable;
@@ -25,10 +26,12 @@ import chez1s.htrbackend.domain.enums.UserRole;
 import chez1s.htrbackend.domain.enums.MaintenanceStatus;
 import chez1s.htrbackend.domain.repository.MaintenanceRequestRepository;
 import chez1s.htrbackend.domain.repository.UserRepository;
+import chez1s.htrbackend.dto.request.ChangePasswordRequest;
 import chez1s.htrbackend.dto.response.PageResponse;
 import chez1s.htrbackend.dto.response.UserResponse;
 import chez1s.htrbackend.exception.BusinessException;
 import chez1s.htrbackend.exception.ResourceNotFoundException;
+import chez1s.htrbackend.service.AuthService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -44,6 +47,7 @@ public class UserController {
     private final UserRepository userRepository;
     private final MaintenanceRequestRepository maintenanceRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AuthService authService;
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
@@ -108,6 +112,13 @@ public class UserController {
         user.setActive(!user.isActive());
         user = userRepository.save(user);
         return ResponseEntity.ok(UserResponse.from(user));
+    }
+
+    @PostMapping("/me/change-password")
+    public ResponseEntity<Map<String, String>> changePassword(Authentication auth, @Valid @RequestBody ChangePasswordRequest req) {
+        UUID userId = (UUID) auth.getPrincipal();
+        authService.changePassword(userId, req.currentPassword(), req.newPassword());
+        return ResponseEntity.ok(Map.of("message", "Mật khẩu đã được cập nhật"));
     }
 
     @Data

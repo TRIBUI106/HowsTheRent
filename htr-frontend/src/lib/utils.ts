@@ -147,6 +147,16 @@ export function priorityLabel(priority?: string): string {
   return map[priority ?? 'NORMAL'] || 'Bình thường'
 }
 
+export function nextDayLabel(): string {
+  const tomorrow = new Date()
+  tomorrow.setDate(tomorrow.getDate() + 1)
+  const weekdayMap = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy']
+  const weekday = weekdayMap[tomorrow.getDay()]
+  const dd = String(tomorrow.getDate()).padStart(2, '0')
+  const mm = String(tomorrow.getMonth() + 1).padStart(2, '0')
+  return `${weekday} (${dd}/${mm})`
+}
+
 export function categoryLabel(category?: string): string {
   const map: Record<string, string> = {
     ELECTRIC: 'Điện',

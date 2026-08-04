@@ -10,6 +10,7 @@ import chez1s.htrbackend.exception.BusinessException;
 import chez1s.htrbackend.exception.ResourceNotFoundException;
 import chez1s.htrbackend.security.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -24,7 +25,6 @@ import java.util.concurrent.ConcurrentHashMap;
 @RequiredArgsConstructor
 public class AuthService {
 
-    private static final Duration PASSWORD_RESET_OTP_TTL = Duration.ofMinutes(15);
     private static final SecureRandom OTP_RANDOM = new SecureRandom();
     private static final Map<String, OtpEntry> PASSWORD_RESET_OTPS = new ConcurrentHashMap<>();
 
@@ -32,6 +32,9 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider tokenProvider;
     private final EmailService emailService;
+
+    @Value("${app.otp.ttl-minutes:10}")
+    private long otpTtlMinutes;
 
     public AuthResponse login(LoginRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
@@ -64,7 +67,7 @@ public class AuthService {
                 .orElseThrow(() -> new ResourceNotFoundException("Email không tồn tại"));
 
         String otp = String.format("%06d", OTP_RANDOM.nextInt(1_000_000));
-        PASSWORD_RESET_OTPS.put(normalizeEmail(email), new OtpEntry(otp, Instant.now().plus(PASSWORD_RESET_OTP_TTL)));
+        PASSWORD_RESET_OTPS.put(normalizeEmail(email), new OtpEntry(otp, Instant.now().plus(Duration.ofMinutes(otpTtlMinutes))));
 
         emailService.sendPasswordResetOtp(user.getFullName(), email, otp);
     }
@@ -73,8 +76,11 @@ public class AuthService {
         String key = normalizeEmail(email);
         OtpEntry stored = PASSWORD_RESET_OTPS.get(key);
 
-        if (stored == null || stored.expiresAt().isBefore(Instant.now()) || !stored.otp().equals(otp)) {
+        if (stored == null || stored.expiresAt().isBefore(Instant.now())) {
             PASSWORD_RESET_OTPS.remove(key);
+            throw new BusinessException("OTP không hợp lệ hoặc đã hết hạn");
+        }
+        if (!stored.otp().equals(otp)) {
             throw new BusinessException("OTP không hợp lệ hoặc đã hết hạn");
         }
 
@@ -84,6 +90,16 @@ public class AuthService {
         user.setPasswordHash(passwordEncoder.encode(newPassword));
         userRepository.save(user);
         PASSWORD_RESET_OTPS.remove(key);
+    }
+
+    public void changePassword(java.util.UUID userId, String currentPassword, String newPassword) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User", userId));
+        if (!passwordEncoder.matches(currentPassword, user.getPasswordHash())) {
+            throw new BusinessException("Mật khẩu hiện tại không đúng");
+        }
+        user.setPasswordHash(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
     }
 
     private String normalizeEmail(String email) {

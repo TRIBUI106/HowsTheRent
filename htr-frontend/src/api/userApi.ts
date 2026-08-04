@@ -23,4 +23,6 @@ export const userApi = {
   ) => api.put<User>(`/users/${id}`, data).then((r) => r.data),
   toggleActive: (id: string) =>
     api.patch<User>(`/users/${id}/toggle-active`).then((r) => r.data),
+  changePassword: (data: { currentPassword: string; newPassword: string }) =>
+    api.post<{ message: string }>("/users/me/change-password", data).then((r) => r.data),
 };
