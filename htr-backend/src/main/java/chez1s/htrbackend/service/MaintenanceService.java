@@ -368,6 +368,7 @@ public class MaintenanceService {
         MaintenanceRequest mr = getById(id);
         mr.setConfirmedTimeSlot(slot);
         mr.setConfirmSlotByTenant(false);
+        mr.setSlotDeclinedByTenant(false);
         mr = maintenanceRepository.save(mr);
         addNote(mr.getId(), null, "Đề xuất/Xác nhận khung giờ làm việc: " + slot);
         notificationService.create(
@@ -384,6 +385,7 @@ public class MaintenanceService {
     public MaintenanceRequest tenantConfirmSlot(UUID id, boolean confirm) {
         MaintenanceRequest mr = getById(id);
         mr.setConfirmSlotByTenant(confirm);
+        mr.setSlotDeclinedByTenant(!confirm);
         mr = maintenanceRepository.save(mr);
         addNote(mr.getId(), mr.getTenant().getId(), confirm ? "Cư dân đã đồng ý khung giờ hẹn" : "Cư dân từ chối khung giờ hẹn");
         if (mr.getAssignedTo() != null) {
@@ -494,6 +496,16 @@ public class MaintenanceService {
                 .note(text)
                 .build();
         note = noteRepository.save(note);
+
+        if (!mr.getTenant().getId().equals(actorId)) {
+            notificationService.create(
+                    mr.getTenant().getId(),
+                    "Ghi chú tiến độ " + mr.getTicketCode(),
+                    text,
+                    "MAINTENANCE",
+                    mr.getId()
+            );
+        }
         return MaintenanceNoteResponse.from(note);
     }
 

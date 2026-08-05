@@ -497,6 +497,18 @@ export default function TenantMaintenancePage() {
                             <span className="inline-flex items-center gap-1 rounded-full bg-success/15 px-2 py-0.5 text-[11px] font-semibold text-success">
                               <CheckCircle size={12} /> Bạn đã xác nhận
                             </span>
+                          ) : request.slotDeclinedByTenant ? (
+                            <div className="flex items-center gap-2">
+                              <span className="inline-flex items-center gap-1 rounded-full bg-error/15 px-2 py-0.5 text-[11px] font-semibold text-error">
+                                <AlertTriangle size={12} /> Bạn đã báo bận
+                              </span>
+                              <button
+                                onClick={() => tenantConfirmSlotMutation.mutate({ id: request.id, confirm: true })}
+                                className="rounded-lg bg-accent px-2.5 py-1 font-semibold text-accent-fg hover:bg-accent-hover"
+                              >
+                                Xác nhận lịch
+                              </button>
+                            </div>
                           ) : (
                             <div className="flex gap-2">
                               <button

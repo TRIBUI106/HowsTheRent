@@ -85,6 +85,10 @@ public class MaintenanceRequest extends BaseEntity {
     @Builder.Default
     private Boolean confirmSlotByTenant = false;
 
+    @Column(name = "slot_declined_by_tenant")
+    @Builder.Default
+    private Boolean slotDeclinedByTenant = false;
+
     @ElementCollection
     @CollectionTable(name = "maintenance_completion_images", joinColumns = @JoinColumn(name = "request_id"))
     @Column(name = "image_url")

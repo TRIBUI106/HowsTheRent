@@ -30,6 +30,10 @@ export function useNotifications() {
           qc.invalidateQueries({ queryKey: ['tenant-maintenance-list'] })
           qc.invalidateQueries({ queryKey: ['maintenance'] })
           qc.invalidateQueries({ queryKey: ['dashboard'] })
+        } else if (notification.type === 'INVOICE') {
+          qc.invalidateQueries({ queryKey: ['invoices'] })
+          qc.invalidateQueries({ queryKey: ['tenant-invoices'] })
+          qc.invalidateQueries({ queryKey: ['dashboard'] })
         }
       } finally {
         qc.invalidateQueries({ queryKey: ['notifications'] })

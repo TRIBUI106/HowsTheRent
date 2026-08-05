@@ -175,6 +175,7 @@ export interface MaintenanceRequest {
   preferredTimeSlots?: string[]
   confirmedTimeSlot?: string
   confirmSlotByTenant?: boolean
+  slotDeclinedByTenant?: boolean
   completionImages?: string[]
   attachmentVideo?: string
   startedAt?: string

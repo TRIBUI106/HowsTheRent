@@ -319,6 +319,7 @@ export default function TechMaintenancePage() {
                                 <CheckSquare size={13} />
                                 <span>Lịch hẹn KTV: {request.confirmedTimeSlot}</span>
                                 {request.confirmSlotByTenant && <span className="text-xs text-fg-subtle">(Khách đã duyệt)</span>}
+                                {request.slotDeclinedByTenant && <span className="text-xs text-error font-medium">(Khách báo bận)</span>}
                               </div>
                             )}
 

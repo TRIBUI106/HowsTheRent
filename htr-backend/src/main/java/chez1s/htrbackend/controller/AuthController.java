@@ -28,8 +28,8 @@ public class AuthController {
     private static final String REFRESH_TOKEN_COOKIE = "refreshToken";
     private static final String ROOT_PATH = "/";
     private static final String REFRESH_TOKEN_PATH = "/api/auth/refresh";
-    private static final long ACCESS_TOKEN_MAX_AGE_SECONDS = 15 * 60;
-    private static final long REFRESH_TOKEN_MAX_AGE_SECONDS = 7 * 24 * 60 * 60;
+    private static final long ACCESS_TOKEN_MAX_AGE_SECONDS = 30 * 60;
+    private static final long REFRESH_TOKEN_MAX_AGE_SECONDS = 30L * 24 * 60 * 60;
     private static final List<String> LEGACY_ACCESS_TOKEN_PATHS = List.of(
             "/api",
             "/api/",
