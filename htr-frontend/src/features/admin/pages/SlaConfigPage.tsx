@@ -111,9 +111,9 @@ export default function SlaConfigPage() {
                   onChange={(e) => setPriority(e.target.value)}
                   className="w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                 >
-                  <option value="URGENT">Khẩn cấp (Urgent)</option>
-                  <option value="HIGH">Cao (High)</option>
-                  <option value="NORMAL">Bình thường (Normal)</option>
+                  <option value="URGENT">Khẩn cấp</option>
+                  <option value="HIGH">Cao</option>
+                  <option value="NORMAL">Bình thường</option>
                 </select>
               </div>
 
@@ -124,11 +124,11 @@ export default function SlaConfigPage() {
                   onChange={(e) => setCategory(e.target.value)}
                   className="w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                 >
-                  <option value="ELECTRIC">Điện (Electric)</option>
-                  <option value="PLUMBING">Nước / Đường ống (Plumbing)</option>
-                  <option value="AIR_CONDITIONER">Điều hòa / Máy lạnh (Air Conditioner)</option>
-                  <option value="FURNITURE">Nội thất (Furniture)</option>
-                  <option value="OTHER">Khác (Other)</option>
+                  <option value="ELECTRIC">Điện</option>
+                  <option value="PLUMBING">Nước / Đường ống</option>
+                  <option value="AIR_CONDITIONER">Điều hòa / Máy lạnh</option>
+                  <option value="FURNITURE">Nội thất</option>
+                  <option value="OTHER">Khác</option>
                 </select>
               </div>
 
