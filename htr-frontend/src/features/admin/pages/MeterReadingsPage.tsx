@@ -205,6 +205,7 @@ export default function MeterReadingsPage() {
 
   function submitManualReading(room: Room) {
     const form = getForm(room.id)
+    const previous = previousReadings[room.id]
     const elecOld = Number(form.elecOld)
     const elecNew = Number(form.elecNew)
     const elecError = validateReading(elecOld, elecNew, 'Chỉ số điện')
@@ -228,13 +229,17 @@ export default function MeterReadingsPage() {
       }
     }
 
+    // Kỳ trước đã có chỉ số → chỉ số cũ luôn lấy từ chỉ số mới của kỳ trước, không cho tự sửa
+    const lockedElecOld = previous?.elecNew ?? elecOld
+    const lockedWaterOld = previous?.waterNew ?? waterOld
+
     readingMutation.mutate({
       roomId: room.id,
       data: {
         readingMonth: getMonthDate(selectedMonth),
-        elecOld,
+        elecOld: lockedElecOld,
         elecNew,
-        waterOld,
+        waterOld: lockedWaterOld,
         waterNew,
         source: 'MANUAL',
       },
@@ -371,6 +376,7 @@ export default function MeterReadingsPage() {
                                   type="number"
                                   placeholder="0"
                                   value={form.elecOld}
+                                  disabled={!!previous}
                                   onChange={(event) => updateForm(room.id, 'elecOld', event.target.value)}
                                 />
                               </div>
@@ -392,6 +398,7 @@ export default function MeterReadingsPage() {
                                   type="number"
                                   placeholder="Để trống nếu không dùng"
                                   value={form.waterOld}
+                                  disabled={!!previous?.waterNew}
                                   onChange={(event) => updateForm(room.id, 'waterOld', event.target.value)}
                                 />
                               </div>

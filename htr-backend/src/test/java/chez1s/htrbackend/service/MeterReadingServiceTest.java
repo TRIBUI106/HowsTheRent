@@ -85,4 +85,42 @@ class MeterReadingServiceTest {
                 .isInstanceOf(BusinessException.class)
                 .hasMessageContaining("too far");
     }
+
+    @Test
+    void create_ignoresClientElecOldWhenPreviousReadingExists() {
+        UUID roomId = UUID.randomUUID();
+        UUID recordedById = UUID.randomUUID();
+        LocalDate previousMonth = LocalDate.of(2026, 6, 1);
+        LocalDate month = LocalDate.of(2026, 7, 1);
+        MeterReading previous = MeterReading.builder()
+                .id(UUID.randomUUID())
+                .room(new Room())
+                .readingMonth(previousMonth)
+                .elecOld(50L)
+                .elecNew(150L)
+                .waterOld(10L)
+                .waterNew(20L)
+                .source(MeterReadingSource.MANUAL)
+                .build();
+
+        CreateMeterReadingRequest request = new CreateMeterReadingRequest();
+        request.setReadingMonth(month);
+        // Client attempts to send a bogus, much lower elecOld/waterOld than the actual previous reading.
+        request.setElecOld(1L);
+        request.setElecNew(200L);
+        request.setWaterOld(1L);
+        request.setWaterNew(30L);
+
+        when(meterReadingRepository.findByRoomIdAndReadingMonth(roomId, month)).thenReturn(Optional.empty());
+        when(meterReadingRepository.findFirstByRoomIdAndReadingMonthLessThanOrderByReadingMonthDesc(roomId, month)).thenReturn(Optional.of(previous));
+        when(roomService.getById(roomId)).thenReturn(new Room());
+        when(meterReadingRepository.save(org.mockito.ArgumentMatchers.any(MeterReading.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        MeterReading result = meterReadingService.create(roomId, recordedById, request);
+
+        assertThat(result.getElecOld()).isEqualTo(150L);
+        assertThat(result.getWaterOld()).isEqualTo(20L);
+    }
 }
+

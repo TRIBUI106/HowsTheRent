@@ -46,21 +46,17 @@ public class MeterReadingService {
                 .findFirstByRoomIdAndReadingMonthLessThanOrderByReadingMonthDesc(roomId, req.getReadingMonth())
                 .orElse(null);
 
-        Long elecOld = req.getElecOld() != null
-                ? req.getElecOld()
-                : previousReading != null ? previousReading.getElecNew() : existingReading.map(MeterReading::getElecOld).orElse(null);
+        Long elecOld = previousReading != null
+                ? previousReading.getElecNew()
+                : req.getElecOld() != null ? req.getElecOld() : existingReading.map(MeterReading::getElecOld).orElse(null);
         if (elecOld == null) {
             throw new BusinessException("Previous electricity reading not found. Please enter the old index for the first period.");
         }
         validateDelta(req.getElecNew(), elecOld, "electricity");
 
-        Long waterOld = req.getWaterOld();
-        if (waterOld == null && req.getWaterNew() != null && previousReading != null) {
-            waterOld = previousReading.getWaterNew();
-        }
-        if (waterOld == null && req.getWaterNew() != null) {
-            waterOld = existingReading.map(MeterReading::getWaterOld).orElse(null);
-        }
+        Long waterOld = previousReading != null
+                ? previousReading.getWaterNew()
+                : req.getWaterOld() != null ? req.getWaterOld() : existingReading.map(MeterReading::getWaterOld).orElse(null);
         if (waterOld != null && req.getWaterNew() != null) {
             validateDelta(req.getWaterNew(), waterOld, "water");
         }
