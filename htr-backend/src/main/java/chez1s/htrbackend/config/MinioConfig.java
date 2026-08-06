@@ -27,16 +27,15 @@ public class MinioConfig {
     @Value("${minio.auto-create-bucket:true}")
     private boolean autoCreateBucket;
 
+    @Value("${minio.region:auto}")
+    private String region;
+
     @Bean
     public MinioClient minioClient() {
-        // TODO: no explicit .region(...) is set here. Against non-AWS S3-compatible
-        // endpoints (e.g. Cloudflare R2 in production, per application.properties),
-        // the SDK's region auto-detection can intermittently fail signature/region
-        // validation. Needs a human to check prod Render env vars / R2 config;
-        // not verifiable from this repo alone.
         MinioClient client = MinioClient.builder()
                 .endpoint(url)
                 .credentials(accessKey, secretKey)
+                .region(region)
                 .build();
         if (autoCreateBucket) {
             try {

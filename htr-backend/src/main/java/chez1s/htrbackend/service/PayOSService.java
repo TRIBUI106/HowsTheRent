@@ -102,6 +102,7 @@ public class PayOSService {
 
         String computedSignature = computeHmac(data);
         if (!computedSignature.equals(signature)) {
+            log.warn("PayOS webhook signature mismatch: computed={}, received={}", computedSignature, signature);
             throw new BusinessException("Invalid webhook signature");
         }
 
@@ -170,7 +171,12 @@ public class PayOSService {
     private String computeHmac(Map<String, Object> data) {
         TreeMap<String, String> sorted = new TreeMap<>();
         for (Map.Entry<String, Object> e : data.entrySet()) {
-            sorted.put(e.getKey(), String.valueOf(e.getValue()));
+            Object value = e.getValue();
+            String stringValue = value == null ? "" : String.valueOf(value);
+            if ("null".equals(stringValue) || "undefined".equals(stringValue)) {
+                stringValue = "";
+            }
+            sorted.put(e.getKey(), stringValue);
         }
         StringBuilder sb = new StringBuilder();
         for (Map.Entry<String, String> e : sorted.entrySet()) {
