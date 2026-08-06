@@ -242,6 +242,12 @@
       "type": "file"
     },
     {
+      "path": "src/components/layout/Sidebar.tsx",
+      "accessCount": 3,
+      "lastAccessed": 1785982588869,
+      "type": "file"
+    },
+    {
       "path": "src/features/auth/pages/LoginPage.tsx",
       "accessCount": 2,
       "lastAccessed": 1785507578015,
@@ -251,12 +257,6 @@
       "path": "src/App.tsx",
       "accessCount": 2,
       "lastAccessed": 1785846193305,
-      "type": "file"
-    },
-    {
-      "path": "src/components/layout/Sidebar.tsx",
-      "accessCount": 2,
-      "lastAccessed": 1785846208049,
       "type": "file"
     },
     {
