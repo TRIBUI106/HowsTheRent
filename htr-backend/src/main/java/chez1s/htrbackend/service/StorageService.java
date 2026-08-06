@@ -44,6 +44,7 @@ public class StorageService {
                     .contentType(file.getContentType())
                     .build());
         } catch (Exception e) {
+            log.error("Storage upload failed for folder={}, filename={}: {}", folder, originalFilename, e.getMessage(), e);
             throw new StorageException("Dịch vụ tải ảnh hiện không khả dụng. Vui lòng thử lại sau.", e);
         }
 

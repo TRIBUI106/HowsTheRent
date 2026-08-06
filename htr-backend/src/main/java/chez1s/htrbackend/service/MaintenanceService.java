@@ -348,16 +348,16 @@ public class MaintenanceService {
     }
 
     @Transactional
-    public MaintenanceRequest addImage(UUID requestId, String imageUrl) {
+    public MaintenanceRequest addCompletionImage(UUID requestId, String imageUrl) {
         MaintenanceRequest req = getById(requestId);
-        req.getImages().add(imageUrl);
+        req.getCompletionImages().add(imageUrl);
         return maintenanceRepository.save(req);
     }
 
     @Transactional
-    public MaintenanceRequest addCompletionImage(UUID requestId, String imageUrl) {
+    public MaintenanceRequest addCompletionImages(UUID requestId, List<String> imageUrls) {
         MaintenanceRequest req = getById(requestId);
-        req.getCompletionImages().add(imageUrl);
+        req.getCompletionImages().addAll(imageUrls);
         return maintenanceRepository.save(req);
     }
 

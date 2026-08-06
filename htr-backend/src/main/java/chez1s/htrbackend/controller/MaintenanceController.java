@@ -194,12 +194,16 @@ public class MaintenanceController {
             throw new chez1s.htrbackend.exception.BadRequestException("Vui lòng chọn ít nhất một ảnh hoàn thành.");
         }
         for (MultipartFile image : images) {
-            if (image.getContentType() == null || !image.getContentType().startsWith("image/")) {
+            if (!isImageFile(image)) {
                 throw new chez1s.htrbackend.exception.BadRequestException("Minh chứng hoàn thành chỉ chấp nhận tệp hình ảnh.");
             }
-            String url = storageService.upload("maintenance/" + id + "/completion", image);
-            maintenanceService.addCompletionImage(id, url);
         }
+        // Upload all files before persisting anything, so a mid-batch failure
+        // leaves no orphaned completion-image record.
+        List<String> urls = images.stream()
+                .map(image -> storageService.upload("maintenance/" + id + "/completion", image))
+                .toList();
+        maintenanceService.addCompletionImages(id, urls);
         return ResponseEntity.ok(responseOf(maintenanceService.getById(id)));
     }
 
@@ -215,31 +219,64 @@ public class MaintenanceController {
             @RequestParam(value = "images", required = false) List<MultipartFile> images,
             @RequestParam(value = "video", required = false) MultipartFile video) {
         UUID tenantId = (UUID) auth.getPrincipal();
+
+        if (images != null) {
+            for (MultipartFile img : images) {
+                if (!isImageFile(img)) {
+                    throw new chez1s.htrbackend.exception.BadRequestException("Tệp trong danh sách hình ảnh không đúng định dạng.");
+                }
+            }
+        }
+        if (video != null && !video.isEmpty() && !isVideoFile(video)) {
+            throw new chez1s.htrbackend.exception.BadRequestException("Tệp video không đúng định dạng.");
+        }
+
+        // Upload everything first — the ticket is only created once all
+        // attachments have been stored successfully, so a failed upload
+        // never leaves behind a ticket with missing attachments.
+        String tempFolder = "maintenance/pending-" + UUID.randomUUID();
+        List<String> imageUrls = images == null ? List.of() : images.stream()
+                .map(img -> storageService.upload(tempFolder, img))
+                .toList();
+        String videoUrl = (video != null && !video.isEmpty()) ? storageService.upload(tempFolder + "/video", video) : null;
+
         CreateMaintenanceRequest req = new CreateMaintenanceRequest();
         req.setTitle(title);
         req.setDescription(description);
         if (priority != null) req.setPriority(priority);
         if (category != null) req.setCategory(category);
         if (preferredTimeSlots != null) req.setPreferredTimeSlots(preferredTimeSlots);
+        req.setImages(imageUrls);
+        req.setAttachmentVideo(videoUrl);
+
         MaintenanceRequest created = maintenanceService.create(tenantId, req);
-        if (images != null && !images.isEmpty()) {
-            for (MultipartFile img : images) {
-                if (img.getContentType() == null || !img.getContentType().startsWith("image/")) {
-                    throw new chez1s.htrbackend.exception.BadRequestException("Tệp trong danh sách hình ảnh không đúng định dạng.");
-                }
-                String url = storageService.upload("maintenance/" + created.getId(), img);
-                maintenanceService.addImage(created.getId(), url);
-            }
-        }
-        if (video != null && !video.isEmpty()) {
-            if (video.getContentType() == null || !video.getContentType().startsWith("video/")) {
-                throw new chez1s.htrbackend.exception.BadRequestException("Tệp video không đúng định dạng.");
-            }
-            String url = storageService.upload("maintenance/" + created.getId() + "/video", video);
-            maintenanceService.setAttachmentVideo(created.getId(), url);
-        }
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(responseOf(maintenanceService.getById(created.getId())));
+    }
+
+    private static final List<String> IMAGE_EXTENSIONS = List.of(".jpg", ".jpeg", ".png", ".webp", ".heic", ".heif", ".gif", ".bmp");
+    private static final List<String> VIDEO_EXTENSIONS = List.of(".mp4", ".mov", ".webm", ".avi", ".mkv", ".3gp");
+
+    private boolean isImageFile(MultipartFile file) {
+        String contentType = file.getContentType();
+        if (contentType != null && contentType.startsWith("image/")) {
+            return true;
+        }
+        return hasExtension(file.getOriginalFilename(), IMAGE_EXTENSIONS);
+    }
+
+    private boolean isVideoFile(MultipartFile file) {
+        String contentType = file.getContentType();
+        if (contentType != null && contentType.startsWith("video/")) {
+            return true;
+        }
+        return hasExtension(file.getOriginalFilename(), VIDEO_EXTENSIONS);
+    }
+
+    private boolean hasExtension(String filename, List<String> extensions) {
+        if (filename == null) return false;
+        String lower = filename.toLowerCase();
+        return extensions.stream().anyMatch(lower::endsWith);
     }
 
     private MaintenanceRequestResponse responseOf(MaintenanceRequest request) {
