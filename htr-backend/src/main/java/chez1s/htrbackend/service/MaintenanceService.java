@@ -191,6 +191,11 @@ public class MaintenanceService {
     public MaintenanceRequest startWork(UUID id) {
         MaintenanceRequest mr = getById(id);
         transitionValidator.validateTransition(mr.getStatus(), MaintenanceStatus.IN_PROGRESS);
+
+        if (!Boolean.TRUE.equals(mr.getConfirmSlotByTenant())) {
+            throw new BadRequestException("Chưa chốt lịch với khách hàng, không thể bắt đầu thi công.");
+        }
+
         mr.setStatus(MaintenanceStatus.IN_PROGRESS);
         if (mr.getStartedAt() == null) {
             mr.setStartedAt(LocalDateTime.now());

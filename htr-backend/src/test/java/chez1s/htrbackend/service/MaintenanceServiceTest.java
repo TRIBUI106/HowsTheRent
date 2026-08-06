@@ -200,6 +200,7 @@ class MaintenanceServiceTest {
     @Test
     void actionResponse_MaterializesLazyCollectionsAfterWriteTransaction() {
         sampleRequest.setStatus(MaintenanceStatus.ASSIGNED);
+        sampleRequest.setConfirmSlotByTenant(true);
         sampleRequest.setImages(transactionBoundList("request.jpg"));
         sampleRequest.setPreferredTimeSlots(transactionBoundList("Sáng"));
         sampleRequest.setCompletionImages(transactionBoundList("completed.jpg"));
@@ -434,6 +435,7 @@ class MaintenanceServiceTest {
     @Test
     void startWork_ValidTransition_SetsStartedAt() {
         sampleRequest.setStatus(MaintenanceStatus.ASSIGNED);
+        sampleRequest.setConfirmSlotByTenant(true);
         when(maintenanceRepository.findById(requestId)).thenReturn(Optional.of(sampleRequest));
         when(maintenanceRepository.save(any(MaintenanceRequest.class))).thenAnswer(i -> i.getArgument(0));
         when(noteRepository.save(any(MaintenanceNote.class))).thenAnswer(i -> {
@@ -447,6 +449,16 @@ class MaintenanceServiceTest {
         assertEquals(MaintenanceStatus.IN_PROGRESS, result.getStatus());
         assertNotNull(result.getStartedAt());
         verify(maintenanceRepository).save(argThat(request -> request.getStatus() == MaintenanceStatus.IN_PROGRESS));
+    }
+
+    @Test
+    void startWork_SlotNotConfirmedByTenant_ThrowsBadRequest() {
+        sampleRequest.setStatus(MaintenanceStatus.ASSIGNED);
+        sampleRequest.setConfirmSlotByTenant(false);
+        when(maintenanceRepository.findById(requestId)).thenReturn(Optional.of(sampleRequest));
+
+        assertThrows(BadRequestException.class, () -> maintenanceService.startWork(requestId));
+        verify(maintenanceRepository, never()).save(any());
     }
 
     @Test

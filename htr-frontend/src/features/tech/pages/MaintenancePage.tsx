@@ -338,7 +338,8 @@ export default function TechMaintenancePage() {
                                 variant="primary"
                                 size="sm"
                                 onClick={() => startMutation.mutate(request.id)}
-                                disabled={startMutation.isPending}
+                                disabled={startMutation.isPending || !request.confirmSlotByTenant}
+                                title={!request.confirmSlotByTenant ? 'Chưa chốt lịch với khách hàng' : undefined}
                                 className="flex items-center gap-1 bg-accent hover:bg-accent-hover text-accent-fg"
                               >
                                 <Play size={13} />
