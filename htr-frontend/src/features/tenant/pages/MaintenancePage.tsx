@@ -356,9 +356,9 @@ export default function TenantMaintenancePage() {
                           <button
                             type="button"
                             onClick={() => removeImage(index)}
-                            className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-error text-white"
+                            className="absolute -right-2 -top-2 flex h-8 w-8 items-center justify-center rounded-full bg-error text-white"
                           >
-                            <X size={10} />
+                            <X size={14} />
                           </button>
                         </div>
                       ))}

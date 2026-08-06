@@ -160,7 +160,7 @@ export default function ContractsPage() {
 
         {showCreate && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-            <Card className="mx-4 w-full max-w-lg p-6 animate-scale-in">
+            <Card className="mx-4 max-h-[90vh] w-full max-w-lg overflow-y-auto p-6 animate-scale-in">
               <h2 className="mb-4 text-lg font-semibold text-fg">Tạo hợp đồng mới</h2>
               <form onSubmit={handleCreate} className="space-y-4">
                 <div>
