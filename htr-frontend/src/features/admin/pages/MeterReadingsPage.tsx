@@ -22,8 +22,15 @@ interface ReadingForm {
 
 interface MeterReadingHistory {
   readingMonth: string
+  elecOld?: number | null
   elecNew: number
+  waterOld?: number | null
   waterNew?: number | null
+}
+
+interface MeterReadingSeed {
+  previous: MeterReadingHistory | null
+  current: MeterReadingHistory | null
 }
 
 interface HunonicPreview {
@@ -84,7 +91,7 @@ export default function MeterReadingsPage() {
 
   const roomIds = useMemo(() => rooms.map((room) => room.id).join(','), [rooms])
 
-  const { data: previousReadings = {}, isLoading: isLoadingPrevious } = useQuery<Record<string, MeterReadingHistory | null>>({
+  const { data: readingSeeds = {}, isLoading: isLoadingPrevious } = useQuery<Record<string, MeterReadingSeed>>({
     queryKey: ['meter-reading-seeds', selectedMonth, roomIds],
     enabled: rooms.length > 0,
     queryFn: async () => {
@@ -93,7 +100,8 @@ export default function MeterReadingsPage() {
         rooms.map(async (room) => {
           const history = await api.get(`/rooms/${room.id}/meter-readings`).then((r) => r.data as MeterReadingHistory[])
           const previous = history.find((reading) => reading.readingMonth < monthDate) ?? null
-          return [room.id, previous] as const
+          const current = history.find((reading) => reading.readingMonth === monthDate) ?? null
+          return [room.id, { previous, current }] as const
         }),
       )
       return Object.fromEntries(entries)
@@ -112,16 +120,18 @@ export default function MeterReadingsPage() {
   const seededForms = useMemo(() => {
     const nextForms: Record<string, ReadingForm> = {}
     for (const room of rooms) {
-      const previous = previousReadings[room.id]
+      const seed = readingSeeds[room.id]
+      const previous = seed?.previous
+      const current = seed?.current
       nextForms[room.id] = {
-        elecOld: previous?.elecNew != null ? String(previous.elecNew) : '',
-        elecNew: '',
-        waterOld: previous?.waterNew != null ? String(previous.waterNew) : '',
-        waterNew: '',
+        elecOld: current?.elecOld != null ? String(current.elecOld) : previous?.elecNew != null ? String(previous.elecNew) : '',
+        elecNew: current?.elecNew != null ? String(current.elecNew) : '',
+        waterOld: current?.waterOld != null ? String(current.waterOld) : previous?.waterNew != null ? String(previous.waterNew) : '',
+        waterNew: current?.waterNew != null ? String(current.waterNew) : '',
       }
     }
     return nextForms
-  }, [previousReadings, rooms])
+  }, [readingSeeds, rooms])
 
   const activeForms = forms[selectedMonth] ?? seededForms
   const activeSuccessRooms = successRooms[selectedMonth] ?? new Set<string>()
@@ -129,7 +139,20 @@ export default function MeterReadingsPage() {
   const readingMutation = useMutation({
     mutationFn: ({ roomId, data }: { roomId: string; data: object }) =>
       api.post(`/rooms/${roomId}/meter-readings`, data),
-    onSuccess: (_data, variables) => {
+    onSuccess: (response, variables) => {
+      const saved = response.data as MeterReadingHistory
+      setForms((previous) => ({
+        ...previous,
+        [selectedMonth]: {
+          ...(previous[selectedMonth] ?? seededForms),
+          [variables.roomId]: {
+            elecOld: saved.elecOld != null ? String(saved.elecOld) : '',
+            elecNew: String(saved.elecNew),
+            waterOld: saved.waterOld != null ? String(saved.waterOld) : '',
+            waterNew: saved.waterNew != null ? String(saved.waterNew) : '',
+          },
+        },
+      }))
       setSuccessRooms((previous) => {
         const current = previous[selectedMonth] ?? new Set<string>()
         return {
@@ -205,7 +228,8 @@ export default function MeterReadingsPage() {
 
   function submitManualReading(room: Room) {
     const form = getForm(room.id)
-    const previous = previousReadings[room.id]
+    const seed = readingSeeds[room.id]
+    const previous = seed?.previous
     const elecOld = Number(form.elecOld)
     const elecNew = Number(form.elecNew)
     const elecError = validateReading(elecOld, elecNew, 'Chỉ số điện')
@@ -285,7 +309,19 @@ export default function MeterReadingsPage() {
               <input
                 type="month"
                 value={selectedMonth}
-                onChange={(event) => setSelectedMonth(event.target.value)}
+                onChange={(event) => {
+                  const nextMonth = event.target.value
+                  setSelectedMonth(nextMonth)
+                  setForms((previous) => {
+                    const { [nextMonth]: existing, ...otherMonths } = previous
+                    return existing ? previous : otherMonths
+                  })
+                  setSuccessRooms((previous) => {
+                    const { [nextMonth]: existing, ...otherMonths } = previous
+                    return existing ? previous : otherMonths
+                  })
+                  setGenResult(null)
+                }}
                 className="rounded-xl border border-border/80 bg-surface px-3 py-2 text-sm text-fg focus:outline-none focus:ring-2 focus:ring-accent"
               />
             </div>
@@ -340,7 +376,8 @@ export default function MeterReadingsPage() {
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
                   {rooms.map((room) => {
                     const form = getForm(room.id)
-                    const previous = previousReadings[room.id]
+                    const seed = readingSeeds[room.id]
+                    const previous = seed?.previous
                     const done = activeSuccessRooms.has(room.id)
 
                     return (

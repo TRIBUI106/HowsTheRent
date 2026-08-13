@@ -23,7 +23,7 @@ public class MeterReadingIntegrationController {
     private final HunonicMeterService hunonicMeterService;
 
     @GetMapping("/hunonic-preview")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','PLATFORM_ADMIN','LANDLORD_ADMIN')")
     public ResponseEntity<List<HunonicMeterPreviewResponse>> previewHunonic(Authentication auth,
                                                                             @RequestParam LocalDate readingMonth) {
         UUID ownerId = (UUID) auth.getPrincipal();

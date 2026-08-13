@@ -17,12 +17,14 @@ export default function Header({ title, onMenuClick }: HeaderProps) {
 
   const pageTitle = title ?? resolveTitle(location.pathname)
   const roleLabel =
+    role === 'PLATFORM_ADMIN' ? 'Quản trị nền tảng' :
+    role === 'LANDLORD_ADMIN' ? 'Quản trị chủ nhà' :
     role === 'ADMIN' ? 'Quản trị vận hành' :
     role === 'TENANT' ? 'Cổng khách thuê' :
     'Bảng công việc kỹ thuật'
 
   const notifPath =
-    role === 'ADMIN' ? '/admin/notifications' :
+    ['ADMIN', 'PLATFORM_ADMIN', 'LANDLORD_ADMIN'].includes(role) ? '/admin/notifications' :
     role === 'TENANT' ? '/tenant/notifications' :
     '/tech/notifications'
 

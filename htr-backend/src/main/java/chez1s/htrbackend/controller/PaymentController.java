@@ -3,6 +3,7 @@ package chez1s.htrbackend.controller;
 import chez1s.htrbackend.service.PayOSService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,6 +16,12 @@ import java.util.Map;
 public class PaymentController {
 
     private final PayOSService payOSService;
+
+    @PostMapping("/reconcile/{orderCode}")
+    @PreAuthorize("hasAnyRole('TENANT','ADMIN','PLATFORM_ADMIN','LANDLORD_ADMIN')")
+    public ResponseEntity<Map<String, String>> reconcile(@PathVariable String orderCode) {
+        return ResponseEntity.ok(Map.of("status", payOSService.reconcile(orderCode)));
+    }
 
     @PostMapping("/callback")
     public ResponseEntity<Map<String, String>> handleCallback(@RequestBody Map<String, Object> payload) {

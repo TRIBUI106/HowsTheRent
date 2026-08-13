@@ -36,6 +36,10 @@ public class ContractService {
         return contractRepository.findAll();
     }
 
+    public List<Contract> listByOwner(UUID ownerId) {
+        return contractRepository.findByRoomPropertyOwnerId(ownerId);
+    }
+
     public PageResponse<ContractResponse> listAll(Pageable pageable) {
         return PageResponse.from(contractRepository.findAll(pageable).map(ContractResponse::from));
     }
@@ -51,6 +55,22 @@ public class ContractService {
     public Contract getById(UUID id) {
         return contractRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Contract", id));
+    }
+
+    public Contract getByIdForOwner(UUID id, UUID ownerId) {
+        Contract contract = getById(id);
+        if (!contract.getRoom().getProperty().getOwner().getId().equals(ownerId)) {
+            throw new ResourceNotFoundException("Contract", id);
+        }
+        return contract;
+    }
+
+    public Contract getByIdForTenant(UUID id, UUID tenantId) {
+        Contract contract = getById(id);
+        if (!contract.getTenant().getId().equals(tenantId)) {
+            throw new ResourceNotFoundException("Contract", id);
+        }
+        return contract;
     }
 
     @Transactional

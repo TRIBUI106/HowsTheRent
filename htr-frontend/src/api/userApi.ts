@@ -11,14 +11,14 @@ export const userApi = {
     email: string;
     phone?: string;
     password: string;
-    role: 'ADMIN' | 'TENANT' | 'TECHNICIAN';
+    role: User['role'];
   }) => api.post<User>("/users", data).then((r) => r.data),
   update: (
     id: string,
     data: Partial<{
       fullName: string;
       phone: string;
-      role: 'ADMIN' | 'TENANT' | 'TECHNICIAN';
+      role: User['role'];
     }>,
   ) => api.put<User>(`/users/${id}`, data).then((r) => r.data),
   toggleActive: (id: string) =>

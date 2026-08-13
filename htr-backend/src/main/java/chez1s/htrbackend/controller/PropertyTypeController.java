@@ -22,34 +22,34 @@ public class PropertyTypeController {
     private final PropertyTypeService propertyTypeService;
 
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','PLATFORM_ADMIN','LANDLORD_ADMIN')")
     public ResponseEntity<List<PropertyTypeResponse>> list(@RequestParam(defaultValue = "false") boolean activeOnly) {
         var types = activeOnly ? propertyTypeService.listActive() : propertyTypeService.listAll();
         return ResponseEntity.ok(types.stream().map(PropertyTypeResponse::from).toList());
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','PLATFORM_ADMIN','LANDLORD_ADMIN')")
     public ResponseEntity<PropertyTypeResponse> create(@Valid @RequestBody CreatePropertyTypeRequest req) {
         return ResponseEntity.status(HttpStatus.CREATED).body(PropertyTypeResponse.from(propertyTypeService.create(req)));
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','PLATFORM_ADMIN','LANDLORD_ADMIN')")
     public ResponseEntity<PropertyTypeResponse> update(@PathVariable UUID id,
                                                        @Valid @RequestBody CreatePropertyTypeRequest req) {
         return ResponseEntity.ok(PropertyTypeResponse.from(propertyTypeService.update(id, req)));
     }
 
     @PatchMapping("/{id}/active")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','PLATFORM_ADMIN','LANDLORD_ADMIN')")
     public ResponseEntity<PropertyTypeResponse> updateActive(@PathVariable UUID id,
                                                              @Valid @RequestBody UpdatePropertyTypeActiveRequest req) {
         return ResponseEntity.ok(PropertyTypeResponse.from(propertyTypeService.updateActive(id, req.getActive())));
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','PLATFORM_ADMIN','LANDLORD_ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable UUID id) {
         propertyTypeService.delete(id);
         return ResponseEntity.noContent().build();

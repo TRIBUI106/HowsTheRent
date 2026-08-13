@@ -27,6 +27,9 @@ public interface ContractRepository extends JpaRepository<Contract, UUID> {
     List<Contract> findByTenantId(UUID tenantId);
 
     @EntityGraph(attributePaths = {"room", "room.property", "tenant"})
+    List<Contract> findByRoomPropertyOwnerId(UUID ownerId);
+
+    @EntityGraph(attributePaths = {"room", "room.property", "tenant"})
     List<Contract> findByStatus(ContractStatus status);
 
     boolean existsByRoomIdAndStatus(UUID roomId, ContractStatus status);

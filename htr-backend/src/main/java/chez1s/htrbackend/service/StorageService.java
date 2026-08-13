@@ -4,6 +4,7 @@ import chez1s.htrbackend.exception.StorageException;
 import io.minio.GetPresignedObjectUrlArgs;
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
+import io.minio.RemoveObjectArgs;
 import io.minio.http.Method;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -49,6 +50,15 @@ public class StorageService {
         }
 
         return buildPublicUrl(objectName);
+    }
+
+    public void delete(String objectName) {
+        try {
+            String normalized = objectName.startsWith(publicUrl) ? objectName.substring(publicUrl.length()).replaceFirst("^/", "") : objectName;
+            minioClient.removeObject(RemoveObjectArgs.builder().bucket(bucket).object(normalized).build());
+        } catch (Exception e) {
+            log.warn("Storage cleanup failed for object={}", objectName);
+        }
     }
 
     public String getPresignedUrl(String objectName) {

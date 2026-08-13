@@ -12,6 +12,7 @@ import chez1s.htrbackend.service.MaintenanceService;
 import chez1s.htrbackend.service.StorageService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -31,14 +32,26 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/maintenance")
-@RequiredArgsConstructor
 public class MaintenanceController {
 
     private final MaintenanceService maintenanceService;
     private final StorageService storageService;
+    private final chez1s.htrbackend.service.UploadBatchService uploadBatchService;
+
+    @Autowired
+    public MaintenanceController(MaintenanceService maintenanceService, StorageService storageService,
+                                 chez1s.htrbackend.service.UploadBatchService uploadBatchService) {
+        this.maintenanceService = maintenanceService;
+        this.storageService = storageService;
+        this.uploadBatchService = uploadBatchService;
+    }
+
+    public MaintenanceController(MaintenanceService maintenanceService, StorageService storageService) {
+        this(maintenanceService, storageService, null);
+    }
 
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','PLATFORM_ADMIN','LANDLORD_ADMIN')")
     public ResponseEntity<PageResponse<MaintenanceRequestResponse>> listAll(
             Authentication auth,
             @RequestParam(required = false) List<MaintenanceStatus> statuses,
@@ -67,12 +80,13 @@ public class MaintenanceController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('TENANT','TECHNICIAN','ADMIN','PLATFORM_ADMIN','LANDLORD_ADMIN')")
     public ResponseEntity<MaintenanceRequestResponse> getById(@PathVariable UUID id) {
         return ResponseEntity.ok(maintenanceService.getResponseById(id));
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('TENANT','ADMIN')")
+    @PreAuthorize("hasAnyRole('TENANT','ADMIN','PLATFORM_ADMIN','LANDLORD_ADMIN')")
     public ResponseEntity<MaintenanceRequestResponse> create(Authentication auth,
                                                              @Valid @RequestBody CreateMaintenanceRequest req) {
         UUID tenantId = (UUID) auth.getPrincipal();
@@ -80,7 +94,7 @@ public class MaintenanceController {
     }
 
     @PostMapping("/{id}/assign")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','PLATFORM_ADMIN','LANDLORD_ADMIN')")
     public ResponseEntity<MaintenanceRequestResponse> assign(@PathVariable UUID id, @RequestParam UUID technicianId) {
         return ResponseEntity.ok(responseOf(maintenanceService.assign(id, technicianId)));
     }
@@ -106,7 +120,7 @@ public class MaintenanceController {
     }
 
     @PostMapping("/{id}/update-status")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','PLATFORM_ADMIN','LANDLORD_ADMIN')")
     public ResponseEntity<MaintenanceRequestResponse> updateStatus(@PathVariable UUID id,
                                                                    @RequestParam("status") MaintenanceStatus status) {
         return ResponseEntity.ok(responseOf(maintenanceService.updateStatus(id, status)));
@@ -119,7 +133,7 @@ public class MaintenanceController {
     }
 
     @PatchMapping("/{id}/sla")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','PLATFORM_ADMIN','LANDLORD_ADMIN')")
     public ResponseEntity<MaintenanceRequestResponse> updateSla(@PathVariable UUID id,
                                                                 @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime expectedResolvedAt) {
         return ResponseEntity.ok(responseOf(maintenanceService.updateSla(id, expectedResolvedAt)));
@@ -147,7 +161,7 @@ public class MaintenanceController {
     }
 
     @PostMapping("/{id}/pay-material")
-    @PreAuthorize("hasAnyRole('TENANT','ADMIN')")
+    @PreAuthorize("hasAnyRole('TENANT','ADMIN','PLATFORM_ADMIN','LANDLORD_ADMIN')")
     public ResponseEntity<MaintenanceRequestResponse> payMaterial(Authentication auth, @PathVariable UUID id) {
         return ResponseEntity.ok(responseOf(maintenanceService.payMaterial(id, (UUID) auth.getPrincipal())));
     }
@@ -186,10 +200,16 @@ public class MaintenanceController {
         return ResponseEntity.ok(maintenanceService.addNote(id, actorId, note));
     }
 
+    public ResponseEntity<MaintenanceRequestResponse> addCompletionImages(UUID id, List<? extends MultipartFile> images) {
+        return addCompletionImages(id, null, new java.util.ArrayList<>(images));
+    }
+
     @PostMapping(value = "/{id}/completion-images", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasAnyRole('ADMIN','TECHNICIAN')")
     public ResponseEntity<MaintenanceRequestResponse> addCompletionImages(
-            @PathVariable UUID id, @RequestParam("images") List<MultipartFile> images) {
+            @PathVariable UUID id,
+            @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey,
+            @RequestParam("images") List<MultipartFile> images) {
         if (images == null || images.isEmpty()) {
             throw new chez1s.htrbackend.exception.BadRequestException("Vui lòng chọn ít nhất một ảnh hoàn thành.");
         }
@@ -200,17 +220,37 @@ public class MaintenanceController {
         }
         // Upload all files before persisting anything, so a mid-batch failure
         // leaves no orphaned completion-image record.
-        List<String> urls = images.stream()
-                .map(image -> storageService.upload("maintenance/" + id + "/completion", image))
-                .toList();
+        var batch = uploadBatchService == null ? null : uploadBatchService.begin(idempotencyKey != null ? idempotencyKey : UUID.randomUUID().toString(), "MAINTENANCE_COMPLETION", id);
+        List<String> urls = new java.util.ArrayList<>();
+        try {
+            for (MultipartFile image : images) {
+                String url = storageService.upload("maintenance/" + id + "/completion", image);
+                urls.add(url);
+                if (uploadBatchService != null) uploadBatchService.record(batch, url, image.getContentType(), image.getSize());
+            }
+        } catch (RuntimeException exception) {
+            urls.forEach(storageService::delete);
+            if (uploadBatchService != null) uploadBatchService.requireCleanup(batch);
+            throw exception;
+        }
         maintenanceService.addCompletionImages(id, urls);
+        if (uploadBatchService != null) uploadBatchService.complete(batch);
         return ResponseEntity.ok(responseOf(maintenanceService.getById(id)));
     }
 
+    public ResponseEntity<MaintenanceRequestResponse> createWithImages(
+            Authentication auth, String title, String description,
+            chez1s.htrbackend.domain.enums.MaintenancePriority priority,
+            chez1s.htrbackend.domain.enums.MaintenanceCategory category,
+            List<String> preferredTimeSlots, List<MultipartFile> images, MultipartFile video) {
+        return createWithImages(auth, null, title, description, priority, category, preferredTimeSlots, images, video);
+    }
+
     @PostMapping(value = "/with-images", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @PreAuthorize("hasAnyRole('TENANT','ADMIN')")
+    @PreAuthorize("hasAnyRole('TENANT','ADMIN','PLATFORM_ADMIN','LANDLORD_ADMIN')")
     public ResponseEntity<MaintenanceRequestResponse> createWithImages(
             Authentication auth,
+            @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey,
             @RequestParam("title") String title,
             @RequestParam(value = "description", required = false) String description,
             @RequestParam(value = "priority", required = false) chez1s.htrbackend.domain.enums.MaintenancePriority priority,
@@ -235,10 +275,27 @@ public class MaintenanceController {
         // attachments have been stored successfully, so a failed upload
         // never leaves behind a ticket with missing attachments.
         String tempFolder = "maintenance/pending-" + UUID.randomUUID();
-        List<String> imageUrls = images == null ? List.of() : images.stream()
-                .map(img -> storageService.upload(tempFolder, img))
-                .toList();
-        String videoUrl = (video != null && !video.isEmpty()) ? storageService.upload(tempFolder + "/video", video) : null;
+        var batch = uploadBatchService == null ? null : uploadBatchService.begin(idempotencyKey != null ? idempotencyKey : UUID.randomUUID().toString(), "MAINTENANCE_REQUEST", null);
+        List<String> imageUrls = new java.util.ArrayList<>();
+        String videoUrl = null;
+        try {
+            if (images != null) {
+                for (MultipartFile img : images) {
+                    String url = storageService.upload(tempFolder, img);
+                    imageUrls.add(url);
+                    if (uploadBatchService != null) uploadBatchService.record(batch, url, img.getContentType(), img.getSize());
+                }
+            }
+            if (video != null && !video.isEmpty()) {
+                videoUrl = storageService.upload(tempFolder + "/video", video);
+                if (uploadBatchService != null) uploadBatchService.record(batch, videoUrl, video.getContentType(), video.getSize());
+            }
+        } catch (RuntimeException exception) {
+            imageUrls.forEach(storageService::delete);
+            if (videoUrl != null) storageService.delete(videoUrl);
+            if (uploadBatchService != null) uploadBatchService.requireCleanup(batch);
+            throw exception;
+        }
 
         CreateMaintenanceRequest req = new CreateMaintenanceRequest();
         req.setTitle(title);
@@ -250,6 +307,10 @@ public class MaintenanceController {
         req.setAttachmentVideo(videoUrl);
 
         MaintenanceRequest created = maintenanceService.create(tenantId, req);
+        if (batch != null) {
+            batch.setDomainId(created.getId());
+            uploadBatchService.complete(batch);
+        }
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(responseOf(maintenanceService.getById(created.getId())));
     }

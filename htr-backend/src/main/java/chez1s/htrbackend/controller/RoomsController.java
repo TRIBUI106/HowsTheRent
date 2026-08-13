@@ -29,7 +29,7 @@ public class RoomsController {
     }
 
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','PLATFORM_ADMIN','LANDLORD_ADMIN')")
     public ResponseEntity<List<RoomResponse>> listAll(Authentication auth) {
         UUID ownerId = (UUID) auth.getPrincipal();
         if (isAdmin(ownerId)) {
@@ -39,7 +39,7 @@ public class RoomsController {
     }
 
     @GetMapping("/empty")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','PLATFORM_ADMIN','LANDLORD_ADMIN')")
     public ResponseEntity<List<RoomResponse>> listEmpty(Authentication auth) {
         UUID ownerId = (UUID) auth.getPrincipal();
         if (isAdmin(ownerId)) {
@@ -49,7 +49,7 @@ public class RoomsController {
     }
 
     @GetMapping("/rented")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','PLATFORM_ADMIN','LANDLORD_ADMIN')")
     public ResponseEntity<List<RoomResponse>> listRented(Authentication auth) {
         UUID ownerId = (UUID) auth.getPrincipal();
         if (isAdmin(ownerId)) {

@@ -1,0 +1,18 @@
+# Stage-0 rollout manifest
+# Copy this file per environment and fill every required field before deployment.
+manifestVersion: 1
+application: htr-backend
+environment: REPLACE_ME
+release:
+  gitCommit: REPLACE_ME
+  migrationTarget: REPLACE_ME
+  rollbackPlan: REPLACE_ME
+checks:
+  backupVerified: false
+  migrationValidated: false
+  smokeTestsPassed: false
+  ownerScopeReviewed: false
+  paymentRecoveryReviewed: false
+approval:
+  approvedBy: REPLACE_ME
+  approvedAt: REPLACE_ME

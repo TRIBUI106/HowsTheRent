@@ -26,20 +26,21 @@ public class JwtTokenProvider {
         this.refreshTokenExpiration = refreshTokenExpiration;
     }
 
-    public String generateAccessToken(UUID userId, String email, String role) {
-        return buildToken(userId, email, role, accessTokenExpiration);
+    public String generateAccessToken(UUID userId, String email, String role, long authVersion) {
+        return buildToken(userId, email, role, authVersion, accessTokenExpiration);
     }
 
-    public String generateRefreshToken(UUID userId, String email, String role) {
-        return buildToken(userId, email, role, refreshTokenExpiration);
+    public String generateRefreshToken(UUID userId, String email, String role, long authVersion) {
+        return buildToken(userId, email, role, authVersion, refreshTokenExpiration);
     }
 
-    private String buildToken(UUID userId, String email, String role, long expiration) {
+    private String buildToken(UUID userId, String email, String role, long authVersion, long expiration) {
         Date now = new Date();
         return Jwts.builder()
                 .subject(userId.toString())
                 .claim("email", email)
                 .claim("role", role)
+                .claim("authVersion", authVersion)
                 .issuedAt(now)
                 .expiration(new Date(now.getTime() + expiration))
                 .signWith(key)
@@ -69,5 +70,10 @@ public class JwtTokenProvider {
 
     public String getRole(String token) {
         return parseToken(token).get("role", String.class);
+    }
+
+    public long getAuthVersion(String token) {
+        Number version = parseToken(token).get("authVersion", Number.class);
+        return version == null ? 0 : version.longValue();
     }
 }

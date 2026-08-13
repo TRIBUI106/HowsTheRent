@@ -4,14 +4,13 @@ import chez1s.htrbackend.domain.entity.Contract;
 import chez1s.htrbackend.dto.request.CreateContractRequest;
 import chez1s.htrbackend.dto.request.RenewContractRequest;
 import chez1s.htrbackend.dto.response.ContractResponse;
-import chez1s.htrbackend.dto.response.PageResponse;
+import chez1s.htrbackend.security.ActorContext;
+import chez1s.htrbackend.security.OwnerScopeResolver;
 import chez1s.htrbackend.service.ContractService;
+import chez1s.htrbackend.service.RoomService;
 import chez1s.htrbackend.service.StorageService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -28,18 +27,32 @@ import java.util.UUID;
 public class ContractController {
 
     private final ContractService contractService;
+    private final RoomService roomService;
     private final StorageService storageService;
+    private final OwnerScopeResolver ownerScopeResolver;
 
     @GetMapping("/contracts")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<ContractResponse>> listAll() {
-        return ResponseEntity.ok(contractService.listAll().stream().map(ContractResponse::from).toList());
+    @PreAuthorize("hasAnyRole('ADMIN','PLATFORM_ADMIN','LANDLORD_ADMIN')")
+    public ResponseEntity<List<ContractResponse>> listAll(Authentication authentication) {
+        ActorContext actor = ActorContext.require(authentication);
+        List<Contract> contracts = actor.isPlatformAdmin()
+                ? contractService.listAll()
+                : contractService.listByOwner(ownerScopeResolver.requireOwnerId(actor));
+        return ResponseEntity.ok(contracts.stream().map(ContractResponse::from).toList());
     }
 
     @GetMapping("/rooms/{roomId}/contracts")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<ContractResponse>> listByRoom(@PathVariable UUID roomId) {
-        return ResponseEntity.ok(contractService.listByRoom(roomId).stream().map(ContractResponse::from).toList());
+    @PreAuthorize("hasAnyRole('ADMIN','PLATFORM_ADMIN','LANDLORD_ADMIN')")
+    public ResponseEntity<List<ContractResponse>> listByRoom(Authentication authentication, @PathVariable UUID roomId) {
+        ActorContext actor = ActorContext.require(authentication);
+        List<Contract> contracts = contractService.listByRoom(roomId);
+        if (!actor.isPlatformAdmin()) {
+            UUID ownerId = ownerScopeResolver.requireOwnerId(actor);
+            contracts = contracts.stream()
+                    .filter(contract -> contract.getRoom().getProperty().getOwner().getId().equals(ownerId))
+                    .toList();
+        }
+        return ResponseEntity.ok(contracts.stream().map(ContractResponse::from).toList());
     }
 
     @GetMapping("/contracts/mine")
@@ -50,36 +63,66 @@ public class ContractController {
     }
 
     @GetMapping("/contracts/{id}")
-    public ResponseEntity<ContractResponse> getById(@PathVariable UUID id) {
-        return ResponseEntity.ok(ContractResponse.from(contractService.getById(id)));
+    public ResponseEntity<ContractResponse> getById(Authentication authentication, @PathVariable UUID id) {
+        ActorContext actor = ActorContext.require(authentication);
+        Contract contract = actor.role() == chez1s.htrbackend.domain.enums.UserRole.TENANT
+                ? contractService.getByIdForTenant(id, actor.userId())
+                : actor.isPlatformAdmin()
+                    ? contractService.getById(id)
+                    : contractService.getByIdForOwner(id, ownerScopeResolver.requireOwnerId(actor));
+        return ResponseEntity.ok(ContractResponse.from(contract));
     }
 
     @PostMapping("/rooms/{roomId}/contracts")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ContractResponse> create(@PathVariable UUID roomId,
+    @PreAuthorize("hasAnyRole('ADMIN','PLATFORM_ADMIN','LANDLORD_ADMIN')")
+    public ResponseEntity<ContractResponse> create(Authentication authentication,
+                                                   @PathVariable UUID roomId,
                                                    @Valid @RequestBody CreateContractRequest req) {
+        requireRoomAccess(ActorContext.require(authentication), roomId);
         return ResponseEntity.status(HttpStatus.CREATED).body(ContractResponse.from(contractService.create(roomId, req)));
     }
 
     @PostMapping("/contracts/{id}/terminate")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ContractResponse> terminate(@PathVariable UUID id) {
+    @PreAuthorize("hasAnyRole('ADMIN','PLATFORM_ADMIN','LANDLORD_ADMIN')")
+    public ResponseEntity<ContractResponse> terminate(Authentication authentication, @PathVariable UUID id) {
+        requireContractAccess(ActorContext.require(authentication), id);
         return ResponseEntity.ok(ContractResponse.from(contractService.terminate(id)));
     }
 
     @PostMapping("/contracts/{id}/upload")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ContractResponse> uploadFile(@PathVariable UUID id,
+    @PreAuthorize("hasAnyRole('ADMIN','PLATFORM_ADMIN','LANDLORD_ADMIN')")
+    public ResponseEntity<ContractResponse> uploadFile(Authentication authentication,
+                                                       @PathVariable UUID id,
                                                        @RequestParam("file") MultipartFile file) {
+        Contract contract = requireContractAccess(ActorContext.require(authentication), id);
         String url = storageService.upload("contracts/" + id, file);
-        Contract contract = contractService.getById(id);
         contract.setFileUrl(url);
         return ResponseEntity.ok(ContractResponse.from(contractService.save(contract)));
     }
 
     @PostMapping("/contracts/{id}/renew")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ContractResponse> renew(@PathVariable UUID id, @Valid @RequestBody RenewContractRequest req) {
+    @PreAuthorize("hasAnyRole('ADMIN','PLATFORM_ADMIN','LANDLORD_ADMIN')")
+    public ResponseEntity<ContractResponse> renew(Authentication authentication,
+                                                  @PathVariable UUID id,
+                                                  @Valid @RequestBody RenewContractRequest req) {
+        requireContractAccess(ActorContext.require(authentication), id);
         return ResponseEntity.ok(ContractResponse.from(contractService.renew(id, req)));
+    }
+
+    private Contract requireContractAccess(ActorContext actor, UUID contractId) {
+        return actor.isPlatformAdmin()
+                ? contractService.getById(contractId)
+                : contractService.getByIdForOwner(contractId, ownerScopeResolver.requireOwnerId(actor));
+    }
+
+    private void requireRoomAccess(ActorContext actor, UUID roomId) {
+        if (actor.isPlatformAdmin()) {
+            return;
+        }
+        UUID ownerId = ownerScopeResolver.requireOwnerId(actor);
+        var room = roomService.getById(roomId);
+        if (!room.getProperty().getOwner().getId().equals(ownerId)) {
+            throw new chez1s.htrbackend.exception.BusinessException("Room is outside the actor owner scope");
+        }
     }
 }

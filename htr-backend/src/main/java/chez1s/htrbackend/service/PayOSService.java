@@ -1,16 +1,22 @@
 package chez1s.htrbackend.service;
 
 import chez1s.htrbackend.domain.entity.Invoice;
+import chez1s.htrbackend.domain.entity.PaymentEventReceipt;
+import chez1s.htrbackend.domain.entity.PaymentIntent;
+import chez1s.htrbackend.domain.repository.PaymentEventReceiptRepository;
+import chez1s.htrbackend.domain.repository.PaymentIntentRepository;
 import chez1s.htrbackend.exception.BusinessException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -33,13 +39,11 @@ public class PayOSService {
     private final String cancelUrl;
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
+    private final PaymentIntentRepository paymentIntentRepository;
+    private final PaymentEventReceiptRepository paymentEventReceiptRepository;
 
-    public PayOSService(@Value("${payos.client-id}") String clientId,
-                        @Value("${payos.api-key}") String apiKey,
-                        @Value("${payos.checksum-key}") String checksumKey,
-                        @Value("${payos.return-url}") String returnUrl,
-                        @Value("${payos.cancel-url}") String cancelUrl,
-                        InvoiceService invoiceService) {
+    public PayOSService(String clientId, String apiKey, String checksumKey, String returnUrl,
+                        String cancelUrl, InvoiceService invoiceService) {
         this.clientId = clientId;
         this.apiKey = apiKey;
         this.checksumKey = checksumKey;
@@ -48,12 +52,40 @@ public class PayOSService {
         this.invoiceService = invoiceService;
         this.restTemplate = new RestTemplate();
         this.objectMapper = new ObjectMapper();
+        this.paymentIntentRepository = null;
+        this.paymentEventReceiptRepository = null;
+    }
+    @Autowired
+    public PayOSService(@Value("${payos.client-id}") String clientId,
+                        @Value("${payos.api-key}") String apiKey,
+                        @Value("${payos.checksum-key}") String checksumKey,
+                        @Value("${payos.return-url}") String returnUrl,
+                        @Value("${payos.cancel-url}") String cancelUrl,
+                        InvoiceService invoiceService,
+                        PaymentIntentRepository paymentIntentRepository,
+                        PaymentEventReceiptRepository paymentEventReceiptRepository) {
+        this.clientId = clientId;
+        this.apiKey = apiKey;
+        this.checksumKey = checksumKey;
+        this.returnUrl = returnUrl;
+        this.cancelUrl = cancelUrl;
+        this.invoiceService = invoiceService;
+        this.restTemplate = new RestTemplate();
+        this.objectMapper = new ObjectMapper();
+        this.paymentIntentRepository = paymentIntentRepository;
+        this.paymentEventReceiptRepository = paymentEventReceiptRepository;
     }
 
     public String createPaymentLink(Invoice invoice) {
         validateCredentials();
         long orderCode = createOrderCode(invoice);
         int amount = validateAmount(invoice);
+        String orderCodeText = String.valueOf(orderCode);
+        PaymentIntent intent = paymentIntentRepository == null ? PaymentIntent.builder().invoice(invoice).orderCode(orderCodeText).status("CREATED").build()
+                : paymentIntentRepository.findByOrderCode(orderCodeText)
+                    .orElseGet(() -> paymentIntentRepository.save(PaymentIntent.builder()
+                            .invoice(invoice).orderCode(orderCodeText).status("CREATED").build()));
+        if (intent.getCheckoutUrl() != null && !intent.getCheckoutUrl().isBlank()) return intent.getCheckoutUrl();
 
         Map<String, Object> body = new HashMap<>();
         body.put("orderCode", orderCode);
@@ -80,7 +112,10 @@ public class PayOSService {
                 throw new BusinessException("PayOS không trả về liên kết thanh toán: " + root.path("desc").asText());
             }
 
-            invoice.setPaymentLinkId(String.valueOf(orderCode));
+            intent.setCheckoutUrl(checkoutUrl);
+            intent.setStatus("LINK_CREATED");
+            if (paymentIntentRepository != null) paymentIntentRepository.save(intent);
+            invoice.setPaymentLinkId(orderCodeText);
             invoice.setCheckoutUrl(checkoutUrl);
             invoiceService.save(invoice);
             return checkoutUrl;
@@ -91,6 +126,7 @@ public class PayOSService {
         }
     }
 
+    @Transactional
     public void handleWebhook(Map<String, Object> payload) {
         @SuppressWarnings("unchecked")
         Map<String, Object> data = (Map<String, Object>) payload.get("data");
@@ -102,7 +138,7 @@ public class PayOSService {
 
         String computedSignature = computeHmac(data);
         if (!computedSignature.equals(signature)) {
-            log.warn("PayOS webhook signature mismatch: computed={}, received={}", computedSignature, signature);
+            log.warn("PayOS webhook signature mismatch");
             throw new BusinessException("Invalid webhook signature");
         }
 
@@ -114,8 +150,58 @@ public class PayOSService {
 
         String orderCode = String.valueOf(data.get("orderCode"));
         String transactionId = data.containsKey("reference") ? String.valueOf(data.get("reference")) : orderCode;
+        String eventKey = orderCode + ":" + transactionId;
+        if (paymentEventReceiptRepository != null && paymentEventReceiptRepository.existsByEventKey(eventKey)) return;
+        PaymentEventReceipt receipt = paymentEventReceiptRepository == null ? null : paymentEventReceiptRepository.save(PaymentEventReceipt.builder()
+                .eventKey(eventKey).orderCode(orderCode).transactionId(transactionId).applied(false).build());
         invoiceService.markPaidPayOS(orderCode, transactionId);
+        if (receipt != null) {
+            receipt.setApplied(true);
+            paymentEventReceiptRepository.save(receipt);
+        }
+        if (paymentIntentRepository != null) paymentIntentRepository.findByOrderCode(orderCode).ifPresent(intent -> {
+            intent.setStatus("PAID");
+            paymentIntentRepository.save(intent);
+        });
         log.info("PayOS payment confirmed: {}", orderCode);
+    }
+
+    @Transactional
+    public String reconcile(String orderCode) {
+        validateCredentials();
+        PaymentIntent intent = paymentIntentRepository.findByOrderCode(orderCode)
+                .orElseThrow(() -> new BusinessException("Payment intent not found"));
+        try {
+            String response = callPayOSGet("/v2/payment-requests/" + orderCode);
+            JsonNode root = objectMapper.readTree(response);
+            JsonNode data = root.path("data");
+            String status = data.path("status").asText("UNKNOWN");
+            if ("PAID".equalsIgnoreCase(status)) {
+                String transactionId = data.path("reference").asText(orderCode);
+                invoiceService.markPaidPayOS(orderCode, transactionId);
+                intent.setStatus("PAID");
+            } else {
+                intent.setStatus(status);
+            }
+            paymentIntentRepository.save(intent);
+            return intent.getStatus();
+        } catch (BusinessException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new BusinessException("Unable to verify payment status");
+        }
+    }
+
+    private String callPayOSGet(String path) {
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("x-client-id", clientId);
+            headers.set("x-api-key", apiKey);
+            return restTemplate.exchange(PAYOS_API + path, org.springframework.http.HttpMethod.GET,
+                    new HttpEntity<>(headers), String.class).getBody();
+        } catch (Exception e) {
+            throw new BusinessException("PayOS status verification failed");
+        }
     }
 
     private void validateCredentials() {

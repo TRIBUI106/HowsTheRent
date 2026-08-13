@@ -24,13 +24,13 @@ public class PropertyController {
     private final PropertyService propertyService;
 
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','PLATFORM_ADMIN','LANDLORD_ADMIN')")
     public ResponseEntity<List<PropertyResponse>> listAll() {
         return ResponseEntity.ok(propertyService.listAll().stream().map(PropertyResponse::from).toList());
     }
 
     @GetMapping("/mine")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','PLATFORM_ADMIN','LANDLORD_ADMIN')")
     public ResponseEntity<List<PropertyResponse>> listMine(Authentication auth) {
         UUID ownerId = (UUID) auth.getPrincipal();
         return ResponseEntity.ok(propertyService.listByOwner(ownerId).stream().map(PropertyResponse::from).toList());
@@ -42,7 +42,7 @@ public class PropertyController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','PLATFORM_ADMIN','LANDLORD_ADMIN')")
     public ResponseEntity<PropertyResponse> create(Authentication auth,
                                                    @Valid @RequestBody CreatePropertyRequest req) {
         UUID ownerId = (UUID) auth.getPrincipal();
@@ -50,27 +50,27 @@ public class PropertyController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','PLATFORM_ADMIN','LANDLORD_ADMIN')")
     public ResponseEntity<PropertyResponse> update(@PathVariable UUID id,
                                                    @Valid @RequestBody CreatePropertyRequest req) {
         return ResponseEntity.ok(PropertyResponse.from(propertyService.update(id, req)));
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','PLATFORM_ADMIN','LANDLORD_ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable UUID id) {
         propertyService.delete(id);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/{id}/fee-config")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','PLATFORM_ADMIN','LANDLORD_ADMIN')")
     public ResponseEntity<FeeConfigResponse> getFeeConfig(@PathVariable UUID id) {
         return ResponseEntity.ok(FeeConfigResponse.from(propertyService.getFeeConfig(id)));
     }
 
     @PutMapping("/{id}/fee-config")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','PLATFORM_ADMIN','LANDLORD_ADMIN')")
     public ResponseEntity<FeeConfigResponse> updateFeeConfig(@PathVariable UUID id,
                                                              @Valid @RequestBody UpdateFeeConfigRequest req) {
         return ResponseEntity.ok(FeeConfigResponse.from(propertyService.updateFeeConfig(id, req)));
