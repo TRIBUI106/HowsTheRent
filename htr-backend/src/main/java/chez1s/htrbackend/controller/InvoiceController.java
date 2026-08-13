@@ -5,6 +5,8 @@ import chez1s.htrbackend.domain.enums.InvoiceStatus;
 import chez1s.htrbackend.dto.response.InvoiceGenerationResponse;
 import chez1s.htrbackend.dto.response.InvoiceResponse;
 import chez1s.htrbackend.dto.response.PageResponse;
+import chez1s.htrbackend.security.ActorContext;
+import chez1s.htrbackend.security.OwnerScopeResolver;
 import chez1s.htrbackend.service.InvoiceService;
 import chez1s.htrbackend.service.PayOSService;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +19,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.YearMonth;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -28,15 +29,18 @@ public class InvoiceController {
 
     private final InvoiceService invoiceService;
     private final PayOSService payOSService;
+    private final OwnerScopeResolver ownerScopeResolver;
 
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','PLATFORM_ADMIN','LANDLORD_ADMIN')")
     public ResponseEntity<PageResponse<InvoiceResponse>> listAll(
-            Authentication auth,
+            Authentication authentication,
             @RequestParam(required = false) InvoiceStatus status,
             @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
-        UUID ownerId = (UUID) auth.getPrincipal();
-        return ResponseEntity.ok(invoiceService.listAllByOwner(ownerId, pageable, status));
+        ActorContext actor = ActorContext.require(authentication);
+        return ResponseEntity.ok(actor.isPlatformAdmin()
+                ? invoiceService.listAll(pageable, status)
+                : invoiceService.listAllByOwner(ownerScopeResolver.requireOwnerId(actor), pageable, status));
     }
 
     @GetMapping("/mine")
@@ -49,20 +53,26 @@ public class InvoiceController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<InvoiceResponse> getById(@PathVariable UUID id) {
-        return ResponseEntity.ok(InvoiceResponse.from(invoiceService.getById(id)));
+    public ResponseEntity<InvoiceResponse> getById(Authentication authentication, @PathVariable UUID id) {
+        return ResponseEntity.ok(InvoiceResponse.from(requireInvoiceAccess(ActorContext.require(authentication), id)));
     }
 
     @PostMapping("/generate")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<InvoiceGenerationResponse> generateAll(@RequestParam int year, @RequestParam int month) {
+    @PreAuthorize("hasAnyRole('ADMIN','PLATFORM_ADMIN','LANDLORD_ADMIN')")
+    public ResponseEntity<InvoiceGenerationResponse> generateAll(Authentication authentication,
+                                                                 @RequestParam int year,
+                                                                 @RequestParam int month) {
+        ActorContext actor = ActorContext.require(authentication);
         YearMonth targetMonth = YearMonth.of(year, month);
-        return ResponseEntity.ok(invoiceService.generateAllForMonth(targetMonth));
+        return ResponseEntity.ok(actor.isPlatformAdmin()
+                ? invoiceService.generateAllForMonth(targetMonth)
+                : invoiceService.generateAllForMonthByOwner(targetMonth, ownerScopeResolver.requireOwnerId(actor)));
     }
 
     @PostMapping("/{id}/pay-cash")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<InvoiceResponse> markPaidCash(@PathVariable UUID id) {
+    @PreAuthorize("hasAnyRole('ADMIN','PLATFORM_ADMIN','LANDLORD_ADMIN')")
+    public ResponseEntity<InvoiceResponse> markPaidCash(Authentication authentication, @PathVariable UUID id) {
+        requireInvoiceAccess(ActorContext.require(authentication), id);
         return ResponseEntity.ok(InvoiceResponse.from(invoiceService.markPaidCash(id)));
     }
 
@@ -73,14 +83,23 @@ public class InvoiceController {
     }
 
     @PostMapping("/{id}/pay-online")
-    @PreAuthorize("hasAnyRole('ADMIN','TENANT')")
-    public ResponseEntity<Map<String, String>> createPaymentLink(Authentication auth, @PathVariable UUID id) {
-        Invoice invoice = invoiceService.getById(id);
-        boolean isAdmin = auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-        if (!isAdmin && !invoice.getContract().getTenant().getId().equals((UUID) auth.getPrincipal())) {
-            throw new chez1s.htrbackend.exception.BusinessException("Bạn không có quyền thanh toán hóa đơn này");
-        }
+    @PreAuthorize("hasAnyRole('ADMIN','PLATFORM_ADMIN','LANDLORD_ADMIN','TENANT')")
+    public ResponseEntity<Map<String, String>> createPaymentLink(Authentication authentication, @PathVariable UUID id) {
+        Invoice invoice = requireInvoiceAccess(ActorContext.require(authentication), id);
         String checkoutUrl = payOSService.createPaymentLink(invoice);
         return ResponseEntity.ok(Map.of("checkoutUrl", checkoutUrl));
+    }
+
+    private Invoice requireInvoiceAccess(ActorContext actor, UUID invoiceId) {
+        if (actor.isPlatformAdmin()) {
+            return invoiceService.getById(invoiceId);
+        }
+        if (actor.isLandlordAdmin()) {
+            return invoiceService.getByIdForOwner(invoiceId, ownerScopeResolver.requireOwnerId(actor));
+        }
+        if (actor.role() == chez1s.htrbackend.domain.enums.UserRole.TENANT) {
+            return invoiceService.getByIdForTenant(invoiceId, actor.userId());
+        }
+        throw new chez1s.htrbackend.exception.BusinessException("Invoice access denied");
     }
 }

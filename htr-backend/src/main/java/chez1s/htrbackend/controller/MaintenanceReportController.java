@@ -31,20 +31,20 @@ public class MaintenanceReportController {
     private final SlaService slaService;
 
     @GetMapping("/reports/summary")
-    @PreAuthorize("hasAnyRole('ADMIN', 'LANDLORD')")
+    @PreAuthorize("hasAnyRole('ADMIN','PLATFORM_ADMIN','LANDLORD_ADMIN')")
     public ResponseEntity<MaintenanceReportResponse> getSummary(Authentication auth) {
         UUID ownerId = (UUID) auth.getPrincipal();
         return ResponseEntity.ok(reportService.getSummary(ownerId));
     }
 
     @GetMapping("/reports/technician-performance")
-    @PreAuthorize("hasAnyRole('ADMIN', 'LANDLORD')")
+    @PreAuthorize("hasAnyRole('ADMIN','PLATFORM_ADMIN','LANDLORD_ADMIN')")
     public ResponseEntity<List<TechnicianPerformanceDto>> getTechnicianPerformance() {
         return ResponseEntity.ok(reportService.listTechnicianPerformance());
     }
 
     @GetMapping("/reports/export")
-    @PreAuthorize("hasAnyRole('ADMIN', 'LANDLORD')")
+    @PreAuthorize("hasAnyRole('ADMIN','PLATFORM_ADMIN','LANDLORD_ADMIN')")
     public ResponseEntity<byte[]> exportReportCsv(Authentication auth) {
         UUID ownerId = (UUID) auth.getPrincipal();
         MaintenanceReportResponse summary = reportService.getSummary(ownerId);
@@ -109,13 +109,13 @@ public class MaintenanceReportController {
     }
 
     @PostMapping("/sla-rules")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','PLATFORM_ADMIN','LANDLORD_ADMIN')")
     public ResponseEntity<SlaRuleResponse> createOrUpdateSlaRule(@Valid @RequestBody CreateOrUpdateSlaRuleRequest req) {
         return ResponseEntity.ok(slaService.createOrUpdateRule(req));
     }
 
     @DeleteMapping("/sla-rules/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','PLATFORM_ADMIN','LANDLORD_ADMIN')")
     public ResponseEntity<Void> deleteSlaRule(@PathVariable UUID id) {
         slaService.deleteRule(id);
         return ResponseEntity.noContent().build();

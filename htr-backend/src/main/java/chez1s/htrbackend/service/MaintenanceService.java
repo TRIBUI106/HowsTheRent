@@ -47,7 +47,7 @@ public class MaintenanceService {
     @Transactional(readOnly = true)
     public PageResponse<MaintenanceRequestResponse> listAllByOwner(UUID ownerId, Pageable pageable) {
         boolean isAdmin = userRepository.findById(ownerId)
-                .map(u -> u.getRole() == UserRole.ADMIN)
+                .map(u -> u.getRole() == UserRole.ADMIN || u.getRole() == UserRole.PLATFORM_ADMIN)
                 .orElse(false);
         if (isAdmin) {
             return PageResponse.from(maintenanceRepository.findAll(pageable).map(MaintenanceRequestResponse::from));
@@ -58,7 +58,7 @@ public class MaintenanceService {
     @Transactional(readOnly = true)
     public PageResponse<MaintenanceRequestResponse> listFiltered(UUID ownerId, List<MaintenanceStatus> statuses, Pageable pageable) {
         boolean isAdmin = userRepository.findById(ownerId)
-                .map(u -> u.getRole() == UserRole.ADMIN)
+                .map(u -> u.getRole() == UserRole.ADMIN || u.getRole() == UserRole.PLATFORM_ADMIN)
                 .orElse(false);
         if (statuses == null || statuses.isEmpty()) {
             return listAllByOwner(ownerId, pageable);

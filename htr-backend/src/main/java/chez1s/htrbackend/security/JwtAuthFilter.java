@@ -1,5 +1,6 @@
 package chez1s.htrbackend.security;
 
+import chez1s.htrbackend.domain.repository.UserRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
@@ -24,6 +25,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     private static final String LEGACY_CAPITALIZED_ACCESS_TOKEN_COOKIE = "AccessToken";
 
     private final JwtTokenProvider tokenProvider;
+    private final UserRepository userRepository;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -39,12 +41,21 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         if (token != null) {
             UUID userId = tokenProvider.getUserId(token);
-            String role = tokenProvider.getRole(token);
-            var auth = new UsernamePasswordAuthenticationToken(
-                    userId, null,
-                    List.of(new SimpleGrantedAuthority("ROLE_" + role))
-            );
-            SecurityContextHolder.getContext().setAuthentication(auth);
+            String tokenRole = tokenProvider.getRole(token);
+            long tokenAuthVersion = tokenProvider.getAuthVersion(token);
+            userRepository.findById(userId)
+                    .filter(user -> user.isActive()
+                            && user.getRole().name().equals(tokenRole)
+                            && user.getAuthVersion() == tokenAuthVersion)
+                    .ifPresent(user -> {
+                        ActorContext actor = new ActorContext(user.getId(), user.getRole(), user.getAuthVersion());
+                        var auth = new UsernamePasswordAuthenticationToken(
+                                user.getId(), null,
+                                List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()))
+                        );
+                        auth.setDetails(actor);
+                        SecurityContextHolder.getContext().setAuthentication(auth);
+                    });
         }
 
         filterChain.doFilter(request, response);

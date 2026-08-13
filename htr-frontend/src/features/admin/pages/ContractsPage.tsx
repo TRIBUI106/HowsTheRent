@@ -137,17 +137,22 @@ export default function ContractsPage() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => {
-                api.get('/export/contracts', { responseType: 'blob' })
-                  .then(r => r.data)
-                  .then(blob => {
-                    const url = URL.createObjectURL(blob)
-                    const anchor = document.createElement('a')
-                    anchor.href = url
-                    anchor.download = 'hopdong.xlsx'
-                    anchor.click()
-                    URL.revokeObjectURL(url)
-                  })
+              onClick={async () => {
+                try {
+                  const response = await api.get('/export/contracts', { responseType: 'blob', validateStatus: status => status === 200 || status === 204 })
+                  if (response.status === 204 || response.headers['x-export-result'] === 'NO_DATA') {
+                    window.alert('Không có dữ liệu hợp đồng để xuất')
+                    return
+                  }
+                  const url = URL.createObjectURL(response.data)
+                  const anchor = document.createElement('a')
+                  anchor.href = url
+                  anchor.download = 'hopdong.xlsx'
+                  anchor.click()
+                  URL.revokeObjectURL(url)
+                } catch {
+                  window.alert('Không thể xuất danh sách hợp đồng')
+                }
               }}
             >
               <Download size={14} className="mr-1" /> Excel

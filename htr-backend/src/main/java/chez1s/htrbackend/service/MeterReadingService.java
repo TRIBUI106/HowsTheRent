@@ -32,18 +32,19 @@ public class MeterReadingService {
     }
 
     public Optional<MeterReading> findByRoomAndMonth(UUID roomId, LocalDate month) {
-        return meterReadingRepository.findByRoomIdAndReadingMonth(roomId, month);
+        return meterReadingRepository.findByRoomIdAndReadingMonth(roomId, normalizeMonth(month));
     }
 
     public Optional<MeterReading> findLatestBeforeMonth(UUID roomId, LocalDate month) {
-        return meterReadingRepository.findFirstByRoomIdAndReadingMonthLessThanOrderByReadingMonthDesc(roomId, month);
+        return meterReadingRepository.findFirstByRoomIdAndReadingMonthLessThanOrderByReadingMonthDesc(roomId, normalizeMonth(month));
     }
 
     @Transactional
     public MeterReading create(UUID roomId, UUID recordedById, CreateMeterReadingRequest req) {
-        Optional<MeterReading> existingReading = meterReadingRepository.findByRoomIdAndReadingMonth(roomId, req.getReadingMonth());
+        LocalDate readingMonth = normalizeMonth(req.getReadingMonth());
+        Optional<MeterReading> existingReading = meterReadingRepository.findByRoomIdAndReadingMonth(roomId, readingMonth);
         MeterReading previousReading = meterReadingRepository
-                .findFirstByRoomIdAndReadingMonthLessThanOrderByReadingMonthDesc(roomId, req.getReadingMonth())
+                .findFirstByRoomIdAndReadingMonthLessThanOrderByReadingMonthDesc(roomId, readingMonth)
                 .orElse(null);
 
         Long elecOld = previousReading != null
@@ -63,7 +64,7 @@ public class MeterReadingService {
 
         MeterReading reading = existingReading.orElseGet(() -> MeterReading.builder()
                 .room(roomService.getById(roomId))
-                .readingMonth(req.getReadingMonth())
+                .readingMonth(readingMonth)
                 .build());
         reading.setElecOld(elecOld);
         reading.setElecNew(req.getElecNew());
@@ -72,6 +73,10 @@ public class MeterReadingService {
         reading.setSource(req.getSource() != null ? req.getSource() : MeterReadingSource.MANUAL);
         reading.setRecordedBy(User.builder().id(recordedById).build());
         return meterReadingRepository.save(reading);
+    }
+
+    private LocalDate normalizeMonth(LocalDate date) {
+        return date.withDayOfMonth(1);
     }
 
     private void validateDelta(Long newValue, Long oldValue, String meterName) {

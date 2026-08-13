@@ -34,12 +34,12 @@ public class DashboardController {
 
     private boolean isAdmin(UUID userId) {
         return userRepository.findById(userId)
-                .map(u -> u.getRole() == UserRole.ADMIN)
+                .map(u -> u.getRole() == UserRole.ADMIN || u.getRole() == UserRole.PLATFORM_ADMIN)
                 .orElse(false);
     }
 
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','PLATFORM_ADMIN','LANDLORD_ADMIN')")
     public ResponseEntity<Map<String, Object>> getDashboard(Authentication auth) {
         UUID ownerId = (UUID) auth.getPrincipal();
         boolean admin = isAdmin(ownerId);
@@ -102,7 +102,7 @@ public class DashboardController {
     }
 
     @GetMapping("/revenue")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','PLATFORM_ADMIN','LANDLORD_ADMIN')")
     public ResponseEntity<List<Map<String, Object>>> getMonthlyRevenue(
             Authentication auth,
             @RequestParam(defaultValue = "12") int months) {

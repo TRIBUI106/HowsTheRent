@@ -23,13 +23,13 @@ public class RoomTimelineController {
     private final RoomTimelineService roomTimelineService;
 
     @GetMapping("/timeline")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','PLATFORM_ADMIN','LANDLORD_ADMIN')")
     public ResponseEntity<List<RoomTimelineResponse>> getTimeline(@PathVariable UUID roomId) {
         return ResponseEntity.ok(roomTimelineService.getTimeline(roomId));
     }
 
     @PostMapping("/notes")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','PLATFORM_ADMIN','LANDLORD_ADMIN')")
     public ResponseEntity<RoomNoteResponse> addNote(@PathVariable UUID roomId,
                                                     @Valid @RequestBody RoomNoteRequest req,
                                                     Authentication auth) {
@@ -39,7 +39,7 @@ public class RoomTimelineController {
     }
 
     @DeleteMapping("/notes/{noteId}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','PLATFORM_ADMIN','LANDLORD_ADMIN')")
     public ResponseEntity<Void> deleteNote(@PathVariable UUID roomId,
                                            @PathVariable UUID noteId) {
         roomTimelineService.deleteNote(noteId);

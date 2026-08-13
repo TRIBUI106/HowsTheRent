@@ -19,7 +19,7 @@ public class MaintenanceStateTransitionValidator {
         boolean allowed = switch (current) {
             case OPEN -> Set.of(MaintenanceStatus.ASSIGNED, MaintenanceStatus.CANCELLED).contains(target);
             case ASSIGNED -> Set.of(MaintenanceStatus.IN_PROGRESS, MaintenanceStatus.CANCELLED).contains(target);
-            case IN_PROGRESS -> Set.of(MaintenanceStatus.PENDING_PAYMENT, MaintenanceStatus.PENDING_REVIEW, MaintenanceStatus.COMPLETED, MaintenanceStatus.CANCELLED).contains(target);
+            case IN_PROGRESS -> Set.of(MaintenanceStatus.PENDING_REVIEW, MaintenanceStatus.CANCELLED).contains(target);
             case PENDING_PAYMENT -> Set.of(MaintenanceStatus.PENDING_REVIEW, MaintenanceStatus.CANCELLED).contains(target);
             case PENDING_REVIEW -> Set.of(MaintenanceStatus.COMPLETED, MaintenanceStatus.DONE, MaintenanceStatus.IN_PROGRESS, MaintenanceStatus.CANCELLED).contains(target);
             default -> false;

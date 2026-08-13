@@ -15,7 +15,8 @@ import RoomDetailPage from '@/features/admin/pages/RoomDetailPage'
 import ReportsPage from '@/features/admin/pages/ReportsPage'
 import SlaConfigPage from '@/features/admin/pages/SlaConfigPage'
 
-const ADMIN = ['ADMIN']
+const ADMIN = ['ADMIN', 'PLATFORM_ADMIN', 'LANDLORD_ADMIN']
+const PLATFORM_ADMIN = ['ADMIN', 'PLATFORM_ADMIN']
 
 const adminRoutes = [
   <Route key="/admin" path="/admin" element={<RequireRole roles={ADMIN}><AdminDashboard /></RequireRole>} />,
@@ -31,7 +32,7 @@ const adminRoutes = [
   <Route key="/admin/fee-config" path="/admin/fee-config" element={<RequireRole roles={ADMIN}><FeeConfigPage /></RequireRole>} />,
   <Route key="/admin/users" path="/admin/users" element={<RequireRole roles={ADMIN}><UsersPage /></RequireRole>} />,
   <Route key="/admin/meter-readings" path="/admin/meter-readings" element={<RequireRole roles={ADMIN}><MeterReadingsPage /></RequireRole>} />,
-  <Route key="/admin/audit-log" path="/admin/audit-log" element={<RequireRole roles={ADMIN}><AuditLogPage /></RequireRole>} />,
+  <Route key="/admin/audit-log" path="/admin/audit-log" element={<RequireRole roles={PLATFORM_ADMIN}><AuditLogPage /></RequireRole>} />,
 ]
 
 export default adminRoutes

@@ -41,6 +41,17 @@ public class InvoiceService {
         return invoiceRepository.findAll();
     }
 
+    public List<Invoice> listAllByOwner(UUID ownerId) {
+        return invoiceRepository.findByRoomPropertyOwnerIdOrderByInvoiceMonthDesc(ownerId);
+    }
+
+    public PageResponse<InvoiceResponse> listAll(Pageable pageable, InvoiceStatus status) {
+        var page = status == null
+                ? invoiceRepository.findAll(pageable)
+                : invoiceRepository.findByStatus(status, pageable);
+        return PageResponse.from(page.map(InvoiceResponse::from));
+    }
+
     public PageResponse<InvoiceResponse> listAllByOwner(UUID ownerId, Pageable pageable, InvoiceStatus status) {
         var page = status == null
                 ? invoiceRepository.findByRoomPropertyOwnerId(ownerId, pageable)
@@ -59,6 +70,22 @@ public class InvoiceService {
     public Invoice getById(UUID id) {
         return invoiceRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Invoice", id));
+    }
+
+    public Invoice getByIdForOwner(UUID id, UUID ownerId) {
+        Invoice invoice = getById(id);
+        if (!invoice.getRoom().getProperty().getOwner().getId().equals(ownerId)) {
+            throw new ResourceNotFoundException("Invoice", id);
+        }
+        return invoice;
+    }
+
+    public Invoice getByIdForTenant(UUID id, UUID tenantId) {
+        Invoice invoice = getById(id);
+        if (!invoice.getContract().getTenant().getId().equals(tenantId)) {
+            throw new ResourceNotFoundException("Invoice", id);
+        }
+        return invoice;
     }
 
     @Transactional
@@ -122,7 +149,18 @@ public class InvoiceService {
 
     @Transactional
     public InvoiceGenerationResponse generateAllForMonth(YearMonth targetMonth) {
-        List<Contract> activeContracts = contractRepository.findByStatus(ContractStatus.ACTIVE);
+        return generateForContracts(targetMonth, contractRepository.findByStatus(ContractStatus.ACTIVE));
+    }
+
+    @Transactional
+    public InvoiceGenerationResponse generateAllForMonthByOwner(YearMonth targetMonth, UUID ownerId) {
+        List<Contract> contracts = contractRepository.findByRoomPropertyOwnerId(ownerId).stream()
+                .filter(contract -> contract.getStatus() == ContractStatus.ACTIVE)
+                .toList();
+        return generateForContracts(targetMonth, contracts);
+    }
+
+    private InvoiceGenerationResponse generateForContracts(YearMonth targetMonth, List<Contract> activeContracts) {
         LocalDate monthDate = targetMonth.atDay(1);
         List<String> details = new ArrayList<>();
         int generated = 0;

@@ -1,5 +1,9 @@
 package chez1s.htrbackend.security;
 
+import chez1s.htrbackend.domain.entity.User;
+import chez1s.htrbackend.domain.enums.UserRole;
+import chez1s.htrbackend.domain.repository.UserRepository;
+
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.AfterEach;
@@ -21,11 +25,18 @@ class JwtAuthFilterTest {
         SecurityContextHolder.clearContext();
     }
 
+    private JwtAuthFilter filter(JwtTokenProvider tokenProvider, UUID userId, UserRole role) {
+        UserRepository userRepository = mock(UserRepository.class);
+        User user = User.builder().id(userId).role(role).active(true).authVersion(0).build();
+        when(userRepository.findById(userId)).thenReturn(java.util.Optional.of(user));
+        return new JwtAuthFilter(tokenProvider, userRepository);
+    }
+
     @Test
     void authenticatesUsingValidAccessTokenWhenEarlierDuplicateCookieIsInvalid() throws Exception {
         JwtTokenProvider tokenProvider = mock(JwtTokenProvider.class);
-        JwtAuthFilter filter = new JwtAuthFilter(tokenProvider);
         UUID userId = UUID.randomUUID();
+        JwtAuthFilter filter = filter(tokenProvider, userId, UserRole.ADMIN);
 
         when(tokenProvider.validateToken("old-token")).thenReturn(false);
         when(tokenProvider.validateToken("new-token")).thenReturn(true);
@@ -46,8 +57,8 @@ class JwtAuthFilterTest {
     @Test
     void authenticatesTenantFromRootAccessTokenWhenStaleMaintenanceCookieArrivesFirst() throws Exception {
         JwtTokenProvider tokenProvider = mock(JwtTokenProvider.class);
-        JwtAuthFilter filter = new JwtAuthFilter(tokenProvider);
         UUID tenantId = UUID.randomUUID();
+        JwtAuthFilter filter = filter(tokenProvider, tenantId, UserRole.TENANT);
 
         when(tokenProvider.validateToken("stale-maintenance-token")).thenReturn(false);
         when(tokenProvider.validateToken("current-root-token")).thenReturn(true);
@@ -76,8 +87,8 @@ class JwtAuthFilterTest {
     @Test
     void authenticatesUsingLegacyCapitalizedAccessTokenCookie() throws Exception {
         JwtTokenProvider tokenProvider = mock(JwtTokenProvider.class);
-        JwtAuthFilter filter = new JwtAuthFilter(tokenProvider);
         UUID technicianId = UUID.randomUUID();
+        JwtAuthFilter filter = filter(tokenProvider, technicianId, UserRole.TECHNICIAN);
 
         when(tokenProvider.validateToken("legacy-capitalized-token")).thenReturn(true);
         when(tokenProvider.getUserId("legacy-capitalized-token")).thenReturn(technicianId);
@@ -102,9 +113,9 @@ class JwtAuthFilterTest {
     @Test
     void prefersCanonicalAccessTokenOverLegacyCapitalizedCookie() throws Exception {
         JwtTokenProvider tokenProvider = mock(JwtTokenProvider.class);
-        JwtAuthFilter filter = new JwtAuthFilter(tokenProvider);
         UUID legacyTenantId = UUID.randomUUID();
         UUID currentTechnicianId = UUID.randomUUID();
+        JwtAuthFilter filter = filter(tokenProvider, currentTechnicianId, UserRole.TECHNICIAN);
 
         when(tokenProvider.validateToken("legacy-tenant-token")).thenReturn(true);
         when(tokenProvider.validateToken("current-technician-token")).thenReturn(true);
@@ -130,5 +141,69 @@ class JwtAuthFilterTest {
         assertThat(auth.getAuthorities())
                 .extracting("authority")
                 .containsExactly("ROLE_TECHNICIAN");
+    }
+
+    @Test
+    void storesActorContextWhilePreservingUuidPrincipal() throws Exception {
+        JwtTokenProvider tokenProvider = mock(JwtTokenProvider.class);
+        UUID userId = UUID.randomUUID();
+        JwtAuthFilter filter = filter(tokenProvider, userId, UserRole.LANDLORD_ADMIN);
+
+        when(tokenProvider.validateToken("token")).thenReturn(true);
+        when(tokenProvider.getUserId("token")).thenReturn(userId);
+        when(tokenProvider.getRole("token")).thenReturn("LANDLORD_ADMIN");
+
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setCookies(new Cookie("accessToken", "token"));
+        filter.doFilter(request, new MockHttpServletResponse(), (_request, _response) -> { });
+
+        var auth = SecurityContextHolder.getContext().getAuthentication();
+        assertThat(auth.getPrincipal()).isEqualTo(userId);
+        assertThat(auth.getDetails()).isEqualTo(new ActorContext(userId, UserRole.LANDLORD_ADMIN, 0));
+    }
+
+    @Test
+    void rejectsInactivePersistedUser() throws Exception {
+        assertPersistedUserMismatchIsRejected(false, UserRole.ADMIN, 0, "ADMIN", 0);
+    }
+
+    @Test
+    void rejectsPersistedRoleMismatch() throws Exception {
+        assertPersistedUserMismatchIsRejected(true, UserRole.LANDLORD_ADMIN, 0, "PLATFORM_ADMIN", 0);
+    }
+
+    @Test
+    void rejectsPersistedAuthVersionMismatch() throws Exception {
+        assertPersistedUserMismatchIsRejected(true, UserRole.PLATFORM_ADMIN, 2, "PLATFORM_ADMIN", 1);
+    }
+
+    private void assertPersistedUserMismatchIsRejected(
+            boolean active,
+            UserRole persistedRole,
+            long persistedVersion,
+            String tokenRole,
+            long tokenVersion
+    ) throws Exception {
+        JwtTokenProvider tokenProvider = mock(JwtTokenProvider.class);
+        UserRepository userRepository = mock(UserRepository.class);
+        UUID userId = UUID.randomUUID();
+        User user = User.builder()
+                .id(userId)
+                .role(persistedRole)
+                .active(active)
+                .authVersion(persistedVersion)
+                .build();
+        when(userRepository.findById(userId)).thenReturn(java.util.Optional.of(user));
+        when(tokenProvider.validateToken("token")).thenReturn(true);
+        when(tokenProvider.getUserId("token")).thenReturn(userId);
+        when(tokenProvider.getRole("token")).thenReturn(tokenRole);
+        when(tokenProvider.getAuthVersion("token")).thenReturn(tokenVersion);
+
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setCookies(new Cookie("accessToken", "token"));
+        new JwtAuthFilter(tokenProvider, userRepository)
+                .doFilter(request, new MockHttpServletResponse(), (_request, _response) -> { });
+
+        assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
     }
 }

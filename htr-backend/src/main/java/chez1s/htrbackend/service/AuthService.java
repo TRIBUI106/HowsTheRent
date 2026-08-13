@@ -45,8 +45,8 @@ public class AuthService {
         if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
             throw new BusinessException("Invalid email or password");
         }
-        String accessToken = tokenProvider.generateAccessToken(user.getId(), user.getEmail(), user.getRole().name());
-        String refreshToken = tokenProvider.generateRefreshToken(user.getId(), user.getEmail(), user.getRole().name());
+        String accessToken = tokenProvider.generateAccessToken(user.getId(), user.getEmail(), user.getRole().name(), user.getAuthVersion());
+        String refreshToken = tokenProvider.generateRefreshToken(user.getId(), user.getEmail(), user.getRole().name(), user.getAuthVersion());
         return new AuthResponse(accessToken, refreshToken, UserResponse.from(user));
     }
 
@@ -57,8 +57,13 @@ public class AuthService {
         var userId = tokenProvider.getUserId(request.getRefreshToken());
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessException("User not found"));
-        String accessToken = tokenProvider.generateAccessToken(user.getId(), user.getEmail(), user.getRole().name());
-        String refreshToken = tokenProvider.generateRefreshToken(user.getId(), user.getEmail(), user.getRole().name());
+        if (!user.isActive()
+                || !user.getRole().name().equals(tokenProvider.getRole(request.getRefreshToken()))
+                || user.getAuthVersion() != tokenProvider.getAuthVersion(request.getRefreshToken())) {
+            throw new BusinessException("Invalid or expired refresh token");
+        }
+        String accessToken = tokenProvider.generateAccessToken(user.getId(), user.getEmail(), user.getRole().name(), user.getAuthVersion());
+        String refreshToken = tokenProvider.generateRefreshToken(user.getId(), user.getEmail(), user.getRole().name(), user.getAuthVersion());
         return new AuthResponse(accessToken, refreshToken, UserResponse.from(user));
     }
 

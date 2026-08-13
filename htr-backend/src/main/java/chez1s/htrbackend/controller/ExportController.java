@@ -1,21 +1,17 @@
 package chez1s.htrbackend.controller;
 
-import chez1s.htrbackend.domain.repository.ContractRepository;
-import chez1s.htrbackend.domain.repository.InvoiceRepository;
-import chez1s.htrbackend.service.PropertyService;
+import chez1s.htrbackend.domain.entity.Contract;
+import chez1s.htrbackend.domain.entity.Invoice;
+import chez1s.htrbackend.security.ActorContext;
+import chez1s.htrbackend.security.OwnerScopeResolver;
+import chez1s.htrbackend.service.ContractService;
+import chez1s.htrbackend.service.InvoiceService;
 import lombok.RequiredArgsConstructor;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellStyle;
-import org.apache.poi.ss.usermodel.FillPatternType;
-import org.apache.poi.ss.usermodel.Font;
-import org.apache.poi.ss.usermodel.IndexedColors;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.VerticalAlignment;
-import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -25,100 +21,75 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.format.DateTimeFormatter;
-import java.util.UUID;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/export")
 @RequiredArgsConstructor
 public class ExportController {
 
-    private final InvoiceRepository invoiceRepository;
-    private final ContractRepository contractRepository;
-    private final PropertyService propertyService;
+    private final InvoiceService invoiceService;
+    private final ContractService contractService;
+    private final OwnerScopeResolver ownerScopeResolver;
 
     private static final DateTimeFormatter DTF = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     @GetMapping("/invoices")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<byte[]> exportInvoices(Authentication auth) {
-        UUID ownerId = (UUID) auth.getPrincipal();
-        var properties = propertyService.listByOwner(ownerId);
-        var propertyIds = properties.stream().map(p -> p.getId()).toList();
+    @PreAuthorize("hasAnyRole('ADMIN','PLATFORM_ADMIN','LANDLORD_ADMIN')")
+    public ResponseEntity<byte[]> exportInvoices(Authentication authentication) {
+        ActorContext actor = ActorContext.require(authentication);
+        List<Invoice> invoices = actor.isPlatformAdmin()
+                ? invoiceService.listAll()
+                : invoiceService.listAllByOwner(ownerScopeResolver.requireOwnerId(actor));
+        if (invoices.isEmpty()) {
+            return noData();
+        }
 
-        try (Workbook wb = new XSSFWorkbook()) {
-            Sheet sheet = wb.createSheet("Hoa don");
-            CellStyle headerStyle = createHeaderStyle(wb);
-            CellStyle bodyStyle = createBodyStyle(wb);
-            Row header = sheet.createRow(0);
-            String[] headers = {
-                    "Ma hoa don", "Thang", "Phong", "Tai san",
-                    "Tong tien", "Trang thai", "Han thanh toan", "Thanh toan luc"
-            };
-
-            for (int i = 0; i < headers.length; i++) {
-                Cell cell = header.createCell(i);
-                cell.setCellValue(headers[i]);
-                cell.setCellStyle(headerStyle);
-            }
-
+        try (Workbook workbook = new XSSFWorkbook()) {
+            Sheet sheet = workbook.createSheet("Hoa don");
+            CellStyle headerStyle = createHeaderStyle(workbook);
+            CellStyle bodyStyle = createBodyStyle(workbook);
+            String[] headers = {"Ma hoa don", "Thang", "Phong", "Tai san", "Tong tien", "Trang thai", "Han thanh toan", "Thanh toan luc"};
+            createHeader(sheet, headers, headerStyle);
             int rowNum = 1;
-            for (var invoice : invoiceRepository.findAll()) {
-                if (!propertyIds.contains(invoice.getContract().getRoom().getProperty().getId())) {
-                    continue;
-                }
-
+            for (Invoice invoice : invoices) {
                 Row row = sheet.createRow(rowNum++);
                 row.createCell(0).setCellValue(invoice.getId().toString());
                 row.createCell(1).setCellValue(invoice.getInvoiceMonth().toString());
-                row.createCell(2).setCellValue(invoice.getContract().getRoom().getRoomNumber());
-                row.createCell(3).setCellValue(invoice.getContract().getRoom().getProperty().getName());
+                row.createCell(2).setCellValue(invoice.getRoom().getRoomNumber());
+                row.createCell(3).setCellValue(invoice.getRoom().getProperty().getName());
                 row.createCell(4).setCellValue(invoice.getTotalAmount().doubleValue());
                 row.createCell(5).setCellValue(invoice.getStatus().name());
                 row.createCell(6).setCellValue(invoice.getDueDate() != null ? invoice.getDueDate().format(DTF) : "");
                 row.createCell(7).setCellValue(invoice.getPaidAt() != null ? invoice.getPaidAt().format(DTF) : "");
                 applyRowStyle(row, headers.length, bodyStyle);
             }
-
             finalizeSheet(sheet, rowNum, headers.length);
-            return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=hoadon.xlsx")
-                    .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
-                    .body(write(wb));
-        } catch (Exception e) {
-            throw new RuntimeException("Export failed", e);
+            return attachment("hoadon.xlsx", write(workbook));
+        } catch (Exception exception) {
+            throw new RuntimeException("Export failed", exception);
         }
     }
 
     @GetMapping("/contracts")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<byte[]> exportContracts(Authentication auth) {
-        UUID ownerId = (UUID) auth.getPrincipal();
-        var properties = propertyService.listByOwner(ownerId);
-        var propertyIds = properties.stream().map(p -> p.getId()).toList();
+    @PreAuthorize("hasAnyRole('ADMIN','PLATFORM_ADMIN','LANDLORD_ADMIN')")
+    public ResponseEntity<byte[]> exportContracts(Authentication authentication) {
+        ActorContext actor = ActorContext.require(authentication);
+        List<Contract> contracts = actor.isPlatformAdmin()
+                ? contractService.listAll()
+                : contractService.listByOwner(ownerScopeResolver.requireOwnerId(actor));
+        if (contracts.isEmpty()) {
+            return noData();
+        }
 
-        try (Workbook wb = new XSSFWorkbook()) {
-            Sheet sheet = wb.createSheet("Hop dong");
-            CellStyle headerStyle = createHeaderStyle(wb);
-            CellStyle bodyStyle = createBodyStyle(wb);
-            Row header = sheet.createRow(0);
-            String[] headers = {
-                    "Ma hop dong", "Phong", "Tai san", "Khach thue", "Email khach",
-                    "Ngay vao", "Ngay ra", "Tien dat coc", "Trang thai",
-                    "Ghi chu / dieu khoan", "Tep hop dong"
-            };
-
-            for (int i = 0; i < headers.length; i++) {
-                Cell cell = header.createCell(i);
-                cell.setCellValue(headers[i]);
-                cell.setCellStyle(headerStyle);
-            }
-
+        try (Workbook workbook = new XSSFWorkbook()) {
+            Sheet sheet = workbook.createSheet("Hop dong");
+            CellStyle headerStyle = createHeaderStyle(workbook);
+            CellStyle bodyStyle = createBodyStyle(workbook);
+            String[] headers = {"Ma hop dong", "Phong", "Tai san", "Khach thue", "Email khach", "Ngay vao", "Ngay ra", "Tien dat coc", "Trang thai", "Ghi chu / dieu khoan", "Tep hop dong"};
+            createHeader(sheet, headers, headerStyle);
             int rowNum = 1;
-            for (var contract : contractRepository.findAll()) {
-                if (!propertyIds.contains(contract.getRoom().getProperty().getId())) {
-                    continue;
-                }
-
+            for (Contract contract : contracts) {
                 Row row = sheet.createRow(rowNum++);
                 row.createCell(0).setCellValue(contract.getId().toString());
                 row.createCell(1).setCellValue(contract.getRoom().getRoomNumber());
@@ -133,17 +104,34 @@ public class ExportController {
                 row.createCell(10).setCellValue(contract.getFileUrl() != null ? contract.getFileUrl() : "");
                 applyRowStyle(row, headers.length, bodyStyle);
             }
-
             finalizeSheet(sheet, rowNum, headers.length);
             sheet.setColumnWidth(9, 40 * 256);
             sheet.setColumnWidth(10, 40 * 256);
+            return attachment("hopdong.xlsx", write(workbook));
+        } catch (Exception exception) {
+            throw new RuntimeException("Export failed", exception);
+        }
+    }
 
-            return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=hopdong.xlsx")
-                    .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
-                    .body(write(wb));
-        } catch (Exception e) {
-            throw new RuntimeException("Export failed", e);
+    private ResponseEntity<byte[]> noData() {
+        return ResponseEntity.status(HttpStatus.NO_CONTENT)
+                .header("X-Export-Result", "NO_DATA")
+                .build();
+    }
+
+    private ResponseEntity<byte[]> attachment(String filename, byte[] bytes) {
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + filename)
+                .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                .body(bytes);
+    }
+
+    private void createHeader(Sheet sheet, String[] headers, CellStyle style) {
+        Row header = sheet.createRow(0);
+        for (int i = 0; i < headers.length; i++) {
+            Cell cell = header.createCell(i);
+            cell.setCellValue(headers[i]);
+            cell.setCellStyle(style);
         }
     }
 
@@ -161,9 +149,9 @@ public class ExportController {
         }
     }
 
-    private CellStyle createHeaderStyle(Workbook wb) {
-        CellStyle style = wb.createCellStyle();
-        Font font = wb.createFont();
+    private CellStyle createHeaderStyle(Workbook workbook) {
+        CellStyle style = workbook.createCellStyle();
+        Font font = workbook.createFont();
         font.setBold(true);
         style.setFont(font);
         style.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
@@ -171,16 +159,16 @@ public class ExportController {
         return style;
     }
 
-    private CellStyle createBodyStyle(Workbook wb) {
-        CellStyle style = wb.createCellStyle();
+    private CellStyle createBodyStyle(Workbook workbook) {
+        CellStyle style = workbook.createCellStyle();
         style.setWrapText(true);
         style.setVerticalAlignment(VerticalAlignment.TOP);
         return style;
     }
 
-    private byte[] write(Workbook wb) throws Exception {
-        java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
-        wb.write(baos);
-        return baos.toByteArray();
+    private byte[] write(Workbook workbook) throws Exception {
+        java.io.ByteArrayOutputStream output = new java.io.ByteArrayOutputStream();
+        workbook.write(output);
+        return output.toByteArray();
     }
 }

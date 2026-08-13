@@ -16,7 +16,6 @@ class MaintenanceStateTransitionValidatorTest {
         assertDoesNotThrow(() -> validator.validateTransition(MaintenanceStatus.OPEN, MaintenanceStatus.CANCELLED));
         assertDoesNotThrow(() -> validator.validateTransition(MaintenanceStatus.ASSIGNED, MaintenanceStatus.IN_PROGRESS));
         assertDoesNotThrow(() -> validator.validateTransition(MaintenanceStatus.IN_PROGRESS, MaintenanceStatus.PENDING_REVIEW));
-        assertDoesNotThrow(() -> validator.validateTransition(MaintenanceStatus.IN_PROGRESS, MaintenanceStatus.PENDING_PAYMENT));
         assertDoesNotThrow(() -> validator.validateTransition(MaintenanceStatus.PENDING_PAYMENT, MaintenanceStatus.PENDING_REVIEW));
         assertDoesNotThrow(() -> validator.validateTransition(MaintenanceStatus.PENDING_REVIEW, MaintenanceStatus.COMPLETED));
         assertDoesNotThrow(() -> validator.validateTransition(MaintenanceStatus.PENDING_REVIEW, MaintenanceStatus.IN_PROGRESS));

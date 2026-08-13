@@ -27,10 +27,16 @@ public interface InvoiceRepository extends JpaRepository<Invoice, UUID> {
     List<Invoice> findByContractTenantIdOrderByInvoiceMonthDesc(UUID tenantId);
 
     @EntityGraph(attributePaths = {"room", "room.property", "contract", "contract.tenant"})
+    List<Invoice> findByRoomPropertyOwnerIdOrderByInvoiceMonthDesc(UUID ownerId);
+
+    @EntityGraph(attributePaths = {"room", "room.property", "contract", "contract.tenant"})
     Page<Invoice> findByRoomPropertyOwnerId(UUID ownerId, Pageable pageable);
 
     @EntityGraph(attributePaths = {"room", "room.property", "contract", "contract.tenant"})
     Page<Invoice> findByRoomPropertyOwnerIdAndStatus(UUID ownerId, InvoiceStatus status, Pageable pageable);
+
+    @EntityGraph(attributePaths = {"room", "room.property", "contract", "contract.tenant"})
+    Page<Invoice> findByStatus(InvoiceStatus status, Pageable pageable);
 
     List<Invoice> findByStatusAndDueDateBefore(InvoiceStatus status, LocalDate date);
 

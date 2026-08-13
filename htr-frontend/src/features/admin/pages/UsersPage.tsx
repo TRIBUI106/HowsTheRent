@@ -11,12 +11,14 @@ import { Table, TableRow, TableCell } from '@/components/ui/table'
 import { userApi } from '@/api'
 import type { User } from '@/types'
 
-const FILTER_ROLES = ['ALL', 'ADMIN', 'TENANT', 'TECHNICIAN'] as const
-const USER_ROLES = ['ADMIN', 'TENANT', 'TECHNICIAN'] as const
+const FILTER_ROLES = ['ALL', 'ADMIN', 'PLATFORM_ADMIN', 'LANDLORD_ADMIN', 'TENANT', 'TECHNICIAN'] as const
+const USER_ROLES = ['ADMIN', 'PLATFORM_ADMIN', 'LANDLORD_ADMIN', 'TENANT', 'TECHNICIAN'] as const
 
 const ROLE_LABELS: Record<(typeof FILTER_ROLES)[number], string> = {
   ALL: 'Tất cả',
-  ADMIN: 'Quản lý',
+  ADMIN: 'Quản trị vận hành',
+  PLATFORM_ADMIN: 'Quản trị nền tảng',
+  LANDLORD_ADMIN: 'Quản trị chủ nhà',
   TENANT: 'Khách thuê',
   TECHNICIAN: 'Kỹ thuật viên',
 }

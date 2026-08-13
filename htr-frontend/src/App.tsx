@@ -32,7 +32,7 @@ export default function App() {
   }
 
   const homePath =
-    user?.role === 'ADMIN' ? '/admin' :
+    ['ADMIN', 'PLATFORM_ADMIN', 'LANDLORD_ADMIN'].includes(user.role) ? '/admin' :
     user?.role === 'TENANT' ? '/tenant' :
     '/tech'
 

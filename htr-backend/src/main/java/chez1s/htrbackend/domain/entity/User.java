@@ -42,4 +42,8 @@ public class User extends BaseEntity {
 
     @Column(name = "is_active", nullable = false)
     private boolean active = true;
+
+    @Builder.Default
+    @Column(name = "auth_version", nullable = false)
+    private long authVersion = 0;
 }
