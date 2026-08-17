@@ -54,11 +54,26 @@ public class StorageService {
 
     public void delete(String objectName) {
         try {
-            String normalized = objectName.startsWith(publicUrl) ? objectName.substring(publicUrl.length()).replaceFirst("^/", "") : objectName;
+            String normalized = normalizeObjectName(objectName);
             minioClient.removeObject(RemoveObjectArgs.builder().bucket(bucket).object(normalized).build());
         } catch (Exception e) {
             log.warn("Storage cleanup failed for object={}", objectName);
         }
+    }
+
+    private String normalizeObjectName(String objectName) {
+        String baseUrl = publicUrl.endsWith("/") ? publicUrl.substring(0, publicUrl.length() - 1) : publicUrl;
+        if (!objectName.startsWith(baseUrl)) {
+            return objectName;
+        }
+        String normalized = objectName.substring(baseUrl.length()).replaceFirst("^/", "");
+        if (normalized.equals(bucket)) {
+            return "";
+        }
+        if (normalized.startsWith(bucket + "/")) {
+            return normalized.substring(bucket.length() + 1);
+        }
+        return normalized;
     }
 
     public String getPresignedUrl(String objectName) {
@@ -76,6 +91,9 @@ public class StorageService {
 
     private String buildPublicUrl(String objectName) {
         String baseUrl = publicUrl.endsWith("/") ? publicUrl.substring(0, publicUrl.length() - 1) : publicUrl;
-        return baseUrl + "/" + objectName;
+        if (baseUrl.endsWith("/" + bucket)) {
+            return baseUrl + "/" + objectName;
+        }
+        return baseUrl + "/" + bucket + "/" + objectName;
     }
 }

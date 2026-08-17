@@ -1,10 +1,21 @@
 package chez1s.htrbackend.controller;
 
+import chez1s.htrbackend.domain.entity.Contract;
 import chez1s.htrbackend.domain.entity.MaintenanceRequest;
+import chez1s.htrbackend.domain.entity.Property;
+import chez1s.htrbackend.domain.entity.Room;
+import chez1s.htrbackend.domain.entity.User;
+import chez1s.htrbackend.domain.enums.ContractStatus;
+import chez1s.htrbackend.domain.enums.UserRole;
+import chez1s.htrbackend.domain.repository.ContractRepository;
 import chez1s.htrbackend.dto.request.CreateMaintenanceRequest;
 import chez1s.htrbackend.exception.BadRequestException;
+import chez1s.htrbackend.exception.BusinessException;
 import chez1s.htrbackend.exception.StorageException;
+import chez1s.htrbackend.security.ActorContext;
+import chez1s.htrbackend.security.OwnerScopeResolver;
 import chez1s.htrbackend.service.MaintenanceService;
+import chez1s.htrbackend.service.RoomService;
 import chez1s.htrbackend.service.StorageService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,11 +26,14 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.core.Authentication;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -30,14 +44,23 @@ class MaintenanceControllerTest {
     @Mock
     private StorageService storageService;
     @Mock
+    private RoomService roomService;
+    @Mock
+    private OwnerScopeResolver ownerScopeResolver;
+    @Mock
+    private ContractRepository contractRepository;
+    @Mock
     private Authentication authentication;
 
     private MaintenanceController controller;
+    private UUID callerId;
 
     @BeforeEach
     void setup() {
-        controller = new MaintenanceController(maintenanceService, storageService);
-        lenient().when(authentication.getPrincipal()).thenReturn(UUID.randomUUID());
+        controller = new MaintenanceController(maintenanceService, storageService, roomService, ownerScopeResolver, contractRepository);
+        callerId = UUID.randomUUID();
+        lenient().when(authentication.getPrincipal()).thenReturn(callerId);
+        lenient().when(authentication.getDetails()).thenReturn(new ActorContext(callerId, UserRole.TENANT, 1L));
     }
 
     @Test
@@ -88,6 +111,20 @@ class MaintenanceControllerTest {
     }
 
     @Test
+    void createWithImages_CreateFails_CleansUploadedFiles() {
+        MockMultipartFile image = new MockMultipartFile("images", "photo.jpg", "image/jpeg", "img-bytes".getBytes());
+        when(storageService.upload(startsWith("maintenance/pending-"), eq(image)))
+                .thenReturn("https://storage/photo.jpg");
+        when(maintenanceService.create(any(), any(CreateMaintenanceRequest.class)))
+                .thenThrow(new BadRequestException("Mô tả yêu cầu bảo trì tối thiểu 10 ký tự."));
+
+        assertThrows(BadRequestException.class, () -> controller.createWithImages(
+                authentication, "Leak", "short", null, null, null, List.of(image), null));
+
+        verify(storageService).delete("https://storage/photo.jpg");
+    }
+
+    @Test
     void addCompletionImages_UploadFailsMidBatch_DoesNotPersistAnyImage() {
         UUID requestId = UUID.randomUUID();
         MockMultipartFile first = new MockMultipartFile("images", "done1.jpg", "image/jpeg", "bytes1".getBytes());
@@ -100,8 +137,23 @@ class MaintenanceControllerTest {
 
         assertThrows(StorageException.class, () -> controller.addCompletionImages(requestId, List.of(first, second)));
 
+        verify(storageService).delete("https://storage/done1.jpg");
         verify(maintenanceService, never()).addCompletionImages(any(), any());
         verify(maintenanceService, never()).addCompletionImage(any(), any());
+    }
+
+    @Test
+    void addCompletionImages_PersistFails_CleansUploadedFiles() {
+        UUID requestId = UUID.randomUUID();
+        MockMultipartFile image = new MockMultipartFile("images", "done.jpg", "image/jpeg", "bytes".getBytes());
+        when(storageService.upload(eq("maintenance/" + requestId + "/completion"), eq(image)))
+                .thenReturn("https://storage/done.jpg");
+        doThrow(new BusinessException("Request not found"))
+                .when(maintenanceService).addCompletionImages(requestId, List.of("https://storage/done.jpg"));
+
+        assertThrows(BusinessException.class, () -> controller.addCompletionImages(requestId, List.of(image)));
+
+        verify(storageService).delete("https://storage/done.jpg");
     }
 
     @Test
@@ -113,5 +165,160 @@ class MaintenanceControllerTest {
 
         verify(storageService, never()).upload(anyString(), any());
         verify(maintenanceService, never()).addCompletionImages(any(), any());
+    }
+
+    @Test
+    void create_Tenant_UsesOwnIdAndNeverConsultsRoomOwnerScope() {
+        CreateMaintenanceRequest req = new CreateMaintenanceRequest();
+        req.setTitle("Leak");
+        req.setDescription("Water leaking badly in bathroom");
+
+        UUID createdId = UUID.randomUUID();
+        MaintenanceRequest created = MaintenanceRequest.builder().id(createdId).build();
+        when(maintenanceService.create(eq(callerId), any(CreateMaintenanceRequest.class))).thenReturn(created);
+        when(maintenanceService.getResponseById(createdId)).thenReturn(mock(chez1s.htrbackend.dto.response.MaintenanceRequestResponse.class));
+
+        controller.create(authentication, req);
+
+        verify(maintenanceService).create(eq(callerId), any(CreateMaintenanceRequest.class));
+        verifyNoInteractions(roomService, ownerScopeResolver, contractRepository);
+    }
+
+    @Test
+    void create_TenantWithMatchingRoomId_UsesOwnId() {
+        UUID roomId = UUID.randomUUID();
+        CreateMaintenanceRequest req = new CreateMaintenanceRequest();
+        req.setRoomId(roomId);
+        req.setTitle("Leak");
+        req.setDescription("Water leaking badly in bathroom");
+
+        Contract activeContract = Contract.builder()
+                .id(UUID.randomUUID())
+                .tenant(User.builder().id(callerId).build())
+                .room(Room.builder().id(roomId).build())
+                .status(ContractStatus.ACTIVE)
+                .build();
+        when(contractRepository.findFirstByTenantIdAndStatusOrderByCreatedAtDesc(callerId, ContractStatus.ACTIVE))
+                .thenReturn(Optional.of(activeContract));
+
+        UUID createdId = UUID.randomUUID();
+        MaintenanceRequest created = MaintenanceRequest.builder().id(createdId).build();
+        when(maintenanceService.create(eq(callerId), any(CreateMaintenanceRequest.class))).thenReturn(created);
+        when(maintenanceService.getResponseById(createdId)).thenReturn(mock(chez1s.htrbackend.dto.response.MaintenanceRequestResponse.class));
+
+        controller.create(authentication, req);
+
+        verify(maintenanceService).create(eq(callerId), any(CreateMaintenanceRequest.class));
+        verifyNoInteractions(roomService, ownerScopeResolver);
+    }
+
+    @Test
+    void create_TenantWithOtherRoomId_ThrowsBusinessExceptionAndCreatesNoTicket() {
+        UUID requestedRoomId = UUID.randomUUID();
+        UUID activeRoomId = UUID.randomUUID();
+        CreateMaintenanceRequest req = new CreateMaintenanceRequest();
+        req.setRoomId(requestedRoomId);
+        req.setTitle("Leak");
+        req.setDescription("Water leaking badly in bathroom");
+
+        Contract activeContract = Contract.builder()
+                .id(UUID.randomUUID())
+                .tenant(User.builder().id(callerId).build())
+                .room(Room.builder().id(activeRoomId).build())
+                .status(ContractStatus.ACTIVE)
+                .build();
+        when(contractRepository.findFirstByTenantIdAndStatusOrderByCreatedAtDesc(callerId, ContractStatus.ACTIVE))
+                .thenReturn(Optional.of(activeContract));
+
+        BusinessException exception = assertThrows(BusinessException.class, () -> controller.create(authentication, req));
+
+        assertEquals("Room is outside the tenant active contract", exception.getMessage());
+        verify(maintenanceService, never()).create(any(), any());
+        verifyNoInteractions(roomService, ownerScopeResolver);
+    }
+
+    @Test
+    void create_AdminWithValidRoomId_ResolvesTenantFromRoomActiveContract() {
+        UUID adminId = UUID.randomUUID();
+        UUID roomId = UUID.randomUUID();
+        UUID resolvedTenantId = UUID.randomUUID();
+        when(authentication.getDetails()).thenReturn(new ActorContext(adminId, UserRole.PLATFORM_ADMIN, 1L));
+
+        CreateMaintenanceRequest req = new CreateMaintenanceRequest();
+        req.setRoomId(roomId);
+        req.setTitle("Leak");
+        req.setDescription("Water leaking badly in bathroom");
+
+        User tenant = User.builder().id(resolvedTenantId).fullName("Tenant Name").build();
+        Contract contract = Contract.builder().id(UUID.randomUUID()).tenant(tenant).status(ContractStatus.ACTIVE).build();
+        when(contractRepository.findFirstByRoomIdAndStatusOrderByCreatedAtDesc(roomId, ContractStatus.ACTIVE))
+                .thenReturn(Optional.of(contract));
+
+        UUID createdId = UUID.randomUUID();
+        MaintenanceRequest created = MaintenanceRequest.builder().id(createdId).build();
+        when(maintenanceService.create(eq(resolvedTenantId), any(CreateMaintenanceRequest.class))).thenReturn(created);
+        when(maintenanceService.getResponseById(createdId)).thenReturn(mock(chez1s.htrbackend.dto.response.MaintenanceRequestResponse.class));
+
+        controller.create(authentication, req);
+
+        verify(maintenanceService).create(eq(resolvedTenantId), any(CreateMaintenanceRequest.class));
+        // Platform admins are not scoped to a single owner, so ownership checks must not run.
+        verifyNoInteractions(roomService, ownerScopeResolver);
+    }
+
+    @Test
+    void create_AdminMissingRoomId_ThrowsBadRequestAndCreatesNoTicket() {
+        UUID adminId = UUID.randomUUID();
+        when(authentication.getDetails()).thenReturn(new ActorContext(adminId, UserRole.ADMIN, 1L));
+
+        CreateMaintenanceRequest req = new CreateMaintenanceRequest();
+        req.setTitle("Leak");
+        req.setDescription("Water leaking badly in bathroom");
+
+        assertThrows(BadRequestException.class, () -> controller.create(authentication, req));
+        verify(maintenanceService, never()).create(any(), any());
+    }
+
+    @Test
+    void create_AdminRoomWithoutActiveContract_ThrowsBadRequestAndCreatesNoTicket() {
+        UUID adminId = UUID.randomUUID();
+        UUID roomId = UUID.randomUUID();
+        when(authentication.getDetails()).thenReturn(new ActorContext(adminId, UserRole.PLATFORM_ADMIN, 1L));
+
+        CreateMaintenanceRequest req = new CreateMaintenanceRequest();
+        req.setRoomId(roomId);
+        req.setTitle("Leak");
+        req.setDescription("Water leaking badly in bathroom");
+
+        when(contractRepository.findFirstByRoomIdAndStatusOrderByCreatedAtDesc(roomId, ContractStatus.ACTIVE))
+                .thenReturn(Optional.empty());
+
+        assertThrows(BadRequestException.class, () -> controller.create(authentication, req));
+        verify(maintenanceService, never()).create(any(), any());
+    }
+
+    @Test
+    void create_LandlordAdminOutsideOwnerScope_ThrowsBusinessExceptionAndCreatesNoTicket() {
+        UUID landlordAdminId = UUID.randomUUID();
+        UUID roomId = UUID.randomUUID();
+        UUID landlordOwnerId = UUID.randomUUID();
+        UUID actualRoomOwnerId = UUID.randomUUID();
+        when(authentication.getDetails()).thenReturn(new ActorContext(landlordAdminId, UserRole.LANDLORD_ADMIN, 1L));
+
+        CreateMaintenanceRequest req = new CreateMaintenanceRequest();
+        req.setRoomId(roomId);
+        req.setTitle("Leak");
+        req.setDescription("Water leaking badly in bathroom");
+
+        Room room = Room.builder().id(roomId)
+                .property(Property.builder().id(UUID.randomUUID())
+                        .owner(User.builder().id(actualRoomOwnerId).build()).build())
+                .build();
+        when(roomService.getById(roomId)).thenReturn(room);
+        when(ownerScopeResolver.requireOwnerId(any(ActorContext.class))).thenReturn(landlordOwnerId);
+
+        assertThrows(BusinessException.class, () -> controller.create(authentication, req));
+        verify(maintenanceService, never()).create(any(), any());
+        verify(contractRepository, never()).findFirstByRoomIdAndStatusOrderByCreatedAtDesc(any(), any());
     }
 }

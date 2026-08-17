@@ -39,6 +39,9 @@ public interface ContractRepository extends JpaRepository<Contract, UUID> {
     @EntityGraph(attributePaths = {"room", "room.property", "tenant"})
     Optional<Contract> findFirstByTenantIdAndStatusOrderByCreatedAtDesc(UUID tenantId, ContractStatus status);
 
+    @EntityGraph(attributePaths = {"room", "room.property", "tenant"})
+    Optional<Contract> findFirstByRoomIdAndStatusOrderByCreatedAtDesc(UUID roomId, ContractStatus status);
+
     @Override
     @EntityGraph(attributePaths = {"room", "room.property", "tenant"})
     Optional<Contract> findById(UUID id);

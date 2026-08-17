@@ -1,14 +1,23 @@
 package chez1s.htrbackend.controller;
 
+import chez1s.htrbackend.domain.entity.Contract;
 import chez1s.htrbackend.domain.entity.MaintenanceRequest;
+import chez1s.htrbackend.domain.enums.ContractStatus;
 import chez1s.htrbackend.domain.enums.MaintenanceStatus;
+import chez1s.htrbackend.domain.enums.UserRole;
+import chez1s.htrbackend.domain.repository.ContractRepository;
 import chez1s.htrbackend.dto.request.CreateMaintenanceMaterial;
 import chez1s.htrbackend.dto.request.CreateMaintenanceRequest;
 import chez1s.htrbackend.dto.response.MaintenanceMaterialResponse;
 import chez1s.htrbackend.dto.response.MaintenanceNoteResponse;
 import chez1s.htrbackend.dto.response.MaintenanceRequestResponse;
 import chez1s.htrbackend.dto.response.PageResponse;
+import chez1s.htrbackend.exception.BadRequestException;
+import chez1s.htrbackend.exception.BusinessException;
+import chez1s.htrbackend.security.ActorContext;
+import chez1s.htrbackend.security.OwnerScopeResolver;
 import chez1s.htrbackend.service.MaintenanceService;
+import chez1s.htrbackend.service.RoomService;
 import chez1s.htrbackend.service.StorageService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -37,17 +46,31 @@ public class MaintenanceController {
     private final MaintenanceService maintenanceService;
     private final StorageService storageService;
     private final chez1s.htrbackend.service.UploadBatchService uploadBatchService;
+    private final RoomService roomService;
+    private final OwnerScopeResolver ownerScopeResolver;
+    private final ContractRepository contractRepository;
 
     @Autowired
     public MaintenanceController(MaintenanceService maintenanceService, StorageService storageService,
-                                 chez1s.htrbackend.service.UploadBatchService uploadBatchService) {
+                                 chez1s.htrbackend.service.UploadBatchService uploadBatchService,
+                                 RoomService roomService, OwnerScopeResolver ownerScopeResolver,
+                                 ContractRepository contractRepository) {
         this.maintenanceService = maintenanceService;
         this.storageService = storageService;
         this.uploadBatchService = uploadBatchService;
+        this.roomService = roomService;
+        this.ownerScopeResolver = ownerScopeResolver;
+        this.contractRepository = contractRepository;
     }
 
     public MaintenanceController(MaintenanceService maintenanceService, StorageService storageService) {
-        this(maintenanceService, storageService, null);
+        this(maintenanceService, storageService, null, null, null, null);
+    }
+
+    public MaintenanceController(MaintenanceService maintenanceService, StorageService storageService,
+                                 RoomService roomService, OwnerScopeResolver ownerScopeResolver,
+                                 ContractRepository contractRepository) {
+        this(maintenanceService, storageService, null, roomService, ownerScopeResolver, contractRepository);
     }
 
     @GetMapping
@@ -89,8 +112,47 @@ public class MaintenanceController {
     @PreAuthorize("hasAnyRole('TENANT','ADMIN','PLATFORM_ADMIN','LANDLORD_ADMIN')")
     public ResponseEntity<MaintenanceRequestResponse> create(Authentication auth,
                                                              @Valid @RequestBody CreateMaintenanceRequest req) {
-        UUID tenantId = (UUID) auth.getPrincipal();
+        UUID tenantId = resolveTenantId(auth, req.getRoomId());
         return ResponseEntity.status(HttpStatus.CREATED).body(responseOf(maintenanceService.create(tenantId, req)));
+    }
+
+    /**
+     * Resolves which tenant a maintenance ticket should belong to.
+     * Tenants always create tickets for themselves (unchanged behavior).
+     * Admin/platform-admin/landlord-admin must pick a room in their owner scope; the tenant is
+     * derived from that room's current active contract, never from the caller's own id.
+     */
+    private UUID resolveTenantId(Authentication auth, UUID roomId) {
+        ActorContext actor = ActorContext.require(auth);
+        if (actor.role() == UserRole.TENANT) {
+            if (roomId != null) {
+                requireTenantRoomAccess(actor.userId(), roomId);
+            }
+            return actor.userId();
+        }
+        if (roomId == null) {
+            throw new BadRequestException("Vui lòng chọn phòng để tạo yêu cầu bảo trì hộ khách thuê");
+        }
+        requireRoomAccess(actor, roomId);
+        Contract activeContract = contractRepository.findFirstByRoomIdAndStatusOrderByCreatedAtDesc(roomId, ContractStatus.ACTIVE)
+                .orElseThrow(() -> new BadRequestException("Phòng này chưa có hợp đồng đang hoạt động, không thể tạo yêu cầu bảo trì hộ khách thuê"));
+        return activeContract.getTenant().getId();
+    }
+
+    private void requireTenantRoomAccess(UUID tenantId, UUID roomId) {
+        Contract activeContract = contractRepository.findFirstByTenantIdAndStatusOrderByCreatedAtDesc(tenantId, ContractStatus.ACTIVE)
+                .orElseThrow(() -> new BusinessException("Bạn chưa có hợp đồng đang hoạt động"));
+        if (activeContract.getRoom() == null || !roomId.equals(activeContract.getRoom().getId())) {
+            throw new BusinessException("Room is outside the tenant active contract");
+        }
+    }
+
+    private void requireRoomAccess(ActorContext actor, UUID roomId) {
+        if (actor.isPlatformAdmin()) return;
+        var room = roomService.getById(roomId);
+        if (!room.getProperty().getOwner().getId().equals(ownerScopeResolver.requireOwnerId(actor))) {
+            throw new BusinessException("Room is outside the actor owner scope");
+        }
     }
 
     @PostMapping("/{id}/assign")
@@ -228,14 +290,14 @@ public class MaintenanceController {
                 urls.add(url);
                 if (uploadBatchService != null) uploadBatchService.record(batch, url, image.getContentType(), image.getSize());
             }
+            maintenanceService.addCompletionImages(id, urls);
+            if (uploadBatchService != null) uploadBatchService.complete(batch);
+            return ResponseEntity.ok(responseOf(maintenanceService.getById(id)));
         } catch (RuntimeException exception) {
             urls.forEach(storageService::delete);
             if (uploadBatchService != null) uploadBatchService.requireCleanup(batch);
             throw exception;
         }
-        maintenanceService.addCompletionImages(id, urls);
-        if (uploadBatchService != null) uploadBatchService.complete(batch);
-        return ResponseEntity.ok(responseOf(maintenanceService.getById(id)));
     }
 
     public ResponseEntity<MaintenanceRequestResponse> createWithImages(
@@ -243,7 +305,7 @@ public class MaintenanceController {
             chez1s.htrbackend.domain.enums.MaintenancePriority priority,
             chez1s.htrbackend.domain.enums.MaintenanceCategory category,
             List<String> preferredTimeSlots, List<MultipartFile> images, MultipartFile video) {
-        return createWithImages(auth, null, title, description, priority, category, preferredTimeSlots, images, video);
+        return createWithImages(auth, null, null, title, description, priority, category, preferredTimeSlots, images, video);
     }
 
     @PostMapping(value = "/with-images", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -251,6 +313,7 @@ public class MaintenanceController {
     public ResponseEntity<MaintenanceRequestResponse> createWithImages(
             Authentication auth,
             @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey,
+            @RequestParam(value = "roomId", required = false) UUID roomId,
             @RequestParam("title") String title,
             @RequestParam(value = "description", required = false) String description,
             @RequestParam(value = "priority", required = false) chez1s.htrbackend.domain.enums.MaintenancePriority priority,
@@ -258,7 +321,7 @@ public class MaintenanceController {
             @RequestParam(value = "preferredTimeSlots", required = false) List<String> preferredTimeSlots,
             @RequestParam(value = "images", required = false) List<MultipartFile> images,
             @RequestParam(value = "video", required = false) MultipartFile video) {
-        UUID tenantId = (UUID) auth.getPrincipal();
+        UUID tenantId = resolveTenantId(auth, roomId);
 
         if (images != null) {
             for (MultipartFile img : images) {
@@ -290,29 +353,30 @@ public class MaintenanceController {
                 videoUrl = storageService.upload(tempFolder + "/video", video);
                 if (uploadBatchService != null) uploadBatchService.record(batch, videoUrl, video.getContentType(), video.getSize());
             }
+
+            CreateMaintenanceRequest req = new CreateMaintenanceRequest();
+            req.setRoomId(roomId);
+            req.setTitle(title);
+            req.setDescription(description);
+            if (priority != null) req.setPriority(priority);
+            if (category != null) req.setCategory(category);
+            if (preferredTimeSlots != null) req.setPreferredTimeSlots(preferredTimeSlots);
+            req.setImages(imageUrls);
+            req.setAttachmentVideo(videoUrl);
+
+            MaintenanceRequest created = maintenanceService.create(tenantId, req);
+            if (batch != null) {
+                batch.setDomainId(created.getId());
+                uploadBatchService.complete(batch);
+            }
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(responseOf(maintenanceService.getById(created.getId())));
         } catch (RuntimeException exception) {
             imageUrls.forEach(storageService::delete);
             if (videoUrl != null) storageService.delete(videoUrl);
             if (uploadBatchService != null) uploadBatchService.requireCleanup(batch);
             throw exception;
         }
-
-        CreateMaintenanceRequest req = new CreateMaintenanceRequest();
-        req.setTitle(title);
-        req.setDescription(description);
-        if (priority != null) req.setPriority(priority);
-        if (category != null) req.setCategory(category);
-        if (preferredTimeSlots != null) req.setPreferredTimeSlots(preferredTimeSlots);
-        req.setImages(imageUrls);
-        req.setAttachmentVideo(videoUrl);
-
-        MaintenanceRequest created = maintenanceService.create(tenantId, req);
-        if (batch != null) {
-            batch.setDomainId(created.getId());
-            uploadBatchService.complete(batch);
-        }
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(responseOf(maintenanceService.getById(created.getId())));
     }
 
     private static final List<String> IMAGE_EXTENSIONS = List.of(".jpg", ".jpeg", ".png", ".webp", ".heic", ".heif", ".gif", ".bmp");
