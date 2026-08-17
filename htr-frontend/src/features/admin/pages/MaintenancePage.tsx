@@ -1,7 +1,8 @@
 import { getErrorMessage } from '@/lib/apiError'
 import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { CheckCircle, XCircle, Search, AlertTriangle, ShieldAlert, FileText, Package } from 'lucide-react'
+import { CheckCircle, XCircle, Search, AlertTriangle, ShieldAlert, FileText, Package, Plus, X } from 'lucide-react'
+import api from '@/lib/api'
 import { maintenanceApi, userApi } from '@/api'
 import Layout from '@/components/Layout'
 import { Card } from '@/components/ui/card'
@@ -12,7 +13,17 @@ import { Pagination } from '@/components/ui/pagination'
 import { TableSkeleton, ListSkeleton } from '@/components/ui/feedback'
 import { formatDate, formatCurrency, priorityColor, priorityLabel, categoryLabel } from '@/lib/utils'
 import { showToast } from '@/lib/toast'
-import type { MaintenanceMaterial, MaintenanceNote, MaintenanceRequest, Page, User } from '@/types'
+import { getAdminMaintenanceFormError, submitAdminMaintenanceRequest, type AdminMaintenanceCreateForm } from '../adminMaintenanceCreateForm'
+import { getRoomPropertyName } from '@/lib/apiMappers'
+import type { MaintenanceMaterial, MaintenanceNote, MaintenanceRequest, Page, Room, User } from '@/types'
+
+const emptyCreateForm = (): AdminMaintenanceCreateForm => ({
+  roomId: '',
+  title: '',
+  description: '',
+  priority: 'NORMAL',
+  category: 'OTHER',
+})
 
 const SIZE = 20
 
@@ -33,6 +44,11 @@ export default function AdminMaintenancePage() {
   // Detail Modal / Inspection panel
   const [inspectRequestId, setInspectRequestId] = useState<string | null>(null)
   const [slaDateInput, setSlaDateInput] = useState('')
+
+  // Tạo yêu cầu bảo trì hộ khách thuê
+  const [showCreate, setShowCreate] = useState(false)
+  const [createForm, setCreateForm] = useState<AdminMaintenanceCreateForm>(emptyCreateForm())
+  const [createError, setCreateError] = useState('')
 
   const { data, isLoading } = useQuery<Page<MaintenanceRequest>>({
     queryKey: ['maintenance', page, filterStatus],
@@ -64,6 +80,33 @@ export default function AdminMaintenancePage() {
     queryKey: ['admin-maintenance-notes', inspectRequestId],
     queryFn: () => (inspectRequestId ? maintenanceApi.listNotes(inspectRequestId) : Promise.resolve([])),
     enabled: !!inspectRequestId,
+  })
+
+  // Chỉ những phòng đang có khách thuê mới có hợp đồng đang hoạt động để gán yêu cầu bảo trì
+  const { data: rentedRooms = [], isLoading: loadingRentedRooms } = useQuery<Room[]>({
+    queryKey: ['rooms-rented'],
+    queryFn: () => api.get<Room[]>('/rooms/rented').then((r) => r.data),
+    enabled: showCreate,
+  })
+
+  const createRequestMutation = useMutation({
+    mutationFn: (form: AdminMaintenanceCreateForm) => submitAdminMaintenanceRequest(form, maintenanceApi.create),
+    onSuccess: (result) => {
+      if (!result.ok) {
+        setCreateError(result.error)
+        showToast({ message: result.error, type: 'error' })
+        return
+      }
+      qc.invalidateQueries({ queryKey: ['maintenance'] })
+      qc.invalidateQueries({ queryKey: ['dashboard'] })
+      setShowCreate(false)
+      setCreateForm(emptyCreateForm())
+      setCreateError('')
+      showToast({ message: 'Đã tạo yêu cầu bảo trì hộ khách thuê thành công', type: 'success' })
+    },
+    onError: (err: unknown) => {
+      showToast({ message: getErrorMessage(err, 'Không thể tạo yêu cầu bảo trì'), type: 'error' })
+    },
   })
 
   const assignMutation = useMutation({
@@ -206,8 +249,148 @@ export default function AdminMaintenancePage() {
               <option value="FURNITURE">Nội thất</option>
               <option value="OTHER">Khác</option>
             </select>
+
+            <Button
+              variant="primary"
+              onClick={() => {
+                setCreateForm(emptyCreateForm())
+                setCreateError('')
+                setShowCreate(true)
+              }}
+              className="flex items-center gap-1.5"
+            >
+              <Plus size={15} />
+              Tạo yêu cầu bảo trì
+            </Button>
           </div>
         </div>
+
+        {/* Modal Tạo yêu cầu bảo trì hộ khách thuê */}
+        {showCreate && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+            <Card className="w-full max-w-lg animate-scale-in p-6">
+              <div className="mb-4 flex items-center justify-between border-b border-border/60 pb-3">
+                <h2 className="text-lg font-semibold text-fg">Tạo yêu cầu bảo trì hộ khách thuê</h2>
+                <button
+                  onClick={() => setShowCreate(false)}
+                  className="text-fg-subtle transition-colors hover:text-fg"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              <form
+                onSubmit={(event) => {
+                  event.preventDefault()
+                  const validationError = getAdminMaintenanceFormError(createForm)
+                  if (validationError) {
+                    setCreateError(validationError)
+                    showToast({ message: validationError, type: 'error' })
+                    return
+                  }
+                  setCreateError('')
+                  createRequestMutation.mutate(createForm)
+                }}
+                className="space-y-4"
+              >
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-fg">
+                    Phòng <span className="text-error">*</span>
+                  </label>
+                  <select
+                    value={createForm.roomId}
+                    onChange={(event) => setCreateForm((prev) => ({ ...prev, roomId: event.target.value }))}
+                    className="w-full rounded-xl border border-border/80 bg-surface px-3 py-2 text-sm text-fg focus:outline-none focus:ring-2 focus:ring-accent"
+                  >
+                    <option value="">
+                      {loadingRentedRooms ? 'Đang tải danh sách phòng...' : 'Chọn phòng đang có khách thuê'}
+                    </option>
+                    {rentedRooms.map((room) => (
+                      <option key={room.id} value={room.id}>
+                        Phòng {room.roomNumber} - {getRoomPropertyName(room)}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="mt-1 text-xs text-fg-subtle">
+                    Khách thuê sẽ được tự động xác định theo hợp đồng đang hoạt động của phòng này.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="mb-1 block text-xs font-medium text-fg">Mức độ ưu tiên</label>
+                    <select
+                      value={createForm.priority}
+                      onChange={(event) => setCreateForm((prev) => ({ ...prev, priority: event.target.value }))}
+                      className="w-full rounded-xl border border-border/80 bg-surface px-3 py-2 text-sm text-fg focus:outline-none focus:ring-2 focus:ring-accent"
+                    >
+                      <option value="NORMAL">Bình thường</option>
+                      <option value="HIGH">Ưu tiên cao</option>
+                      <option value="URGENT">Khẩn cấp (!)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="mb-1 block text-xs font-medium text-fg">Danh mục sự cố</label>
+                    <select
+                      value={createForm.category}
+                      onChange={(event) => setCreateForm((prev) => ({ ...prev, category: event.target.value }))}
+                      className="w-full rounded-xl border border-border/80 bg-surface px-3 py-2 text-sm text-fg focus:outline-none focus:ring-2 focus:ring-accent"
+                    >
+                      <option value="ELECTRIC">Điện</option>
+                      <option value="PLUMBING">Nước / Đường ống</option>
+                      <option value="AIR_CONDITIONER">Điều hòa</option>
+                      <option value="FURNITURE">Nội thất</option>
+                      <option value="OTHER">Khác</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-fg">
+                    Tiêu đề sự cố <span className="text-error">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={createForm.title}
+                    onChange={(event) => setCreateForm((prev) => ({ ...prev, title: event.target.value }))}
+                    className="w-full rounded-xl border border-border/80 bg-surface px-3 py-2 text-sm text-fg focus:outline-none focus:ring-2 focus:ring-accent"
+                    placeholder="VD: Điều hòa không lạnh, vòi nước bị rò..."
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-fg">
+                    Mô tả chi tiết <span className="text-error">*</span>
+                  </label>
+                  <textarea
+                    rows={3}
+                    value={createForm.description}
+                    onChange={(event) => setCreateForm((prev) => ({ ...prev, description: event.target.value }))}
+                    className="w-full resize-none rounded-xl border border-border/80 bg-surface px-3 py-2 text-sm text-fg focus:outline-none focus:ring-2 focus:ring-accent"
+                    placeholder="Mô tả cụ thể hiện tượng, xảy ra từ lúc nào, ở khu vực nào..."
+                  />
+                </div>
+
+                {createError && <p className="text-sm text-error">{createError}</p>}
+
+                <div className="flex gap-3 border-t border-border/60 pt-3">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="flex-1"
+                    onClick={() => setShowCreate(false)}
+                  >
+                    Hủy
+                  </Button>
+                  <Button type="submit" variant="primary" className="flex-1" disabled={createRequestMutation.isPending}>
+                    {createRequestMutation.isPending ? 'Đang tạo...' : 'Tạo yêu cầu'}
+                  </Button>
+                </div>
+              </form>
+            </Card>
+          </div>
+        )}
 
         {/* Modal Kiểm tra chi tiết phiếu (Vật tư, SLA, Timeline) */}
         {inspectRequest && (

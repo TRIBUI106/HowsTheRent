@@ -75,6 +75,18 @@ function getMonthDate(month: string) {
   return `${month}-01`
 }
 
+// Clears any locally cached entry for `month` so the component falls back to fresh
+// server-derived state (the `readingSeeds` query) instead of stale, never-reconciled
+// `forms`/`successRooms` data left over from an earlier visit to that month.
+// Exported for unit testing only.
+// eslint-disable-next-line react-refresh/only-export-components
+export function withMonthCleared<T>(map: Record<string, T>, month: string): Record<string, T> {
+  if (!(month in map)) return map
+  const rest = { ...map }
+  delete rest[month]
+  return rest
+}
+
 export default function MeterReadingsPage() {
   const qc = useQueryClient()
   const [selectedMonth, setSelectedMonth] = useState(currentYearMonth())
@@ -312,14 +324,8 @@ export default function MeterReadingsPage() {
                 onChange={(event) => {
                   const nextMonth = event.target.value
                   setSelectedMonth(nextMonth)
-                  setForms((previous) => {
-                    const { [nextMonth]: existing, ...otherMonths } = previous
-                    return existing ? previous : otherMonths
-                  })
-                  setSuccessRooms((previous) => {
-                    const { [nextMonth]: existing, ...otherMonths } = previous
-                    return existing ? previous : otherMonths
-                  })
+                  setForms((previous) => withMonthCleared(previous, nextMonth))
+                  setSuccessRooms((previous) => withMonthCleared(previous, nextMonth))
                   setGenResult(null)
                 }}
                 className="rounded-xl border border-border/80 bg-surface px-3 py-2 text-sm text-fg focus:outline-none focus:ring-2 focus:ring-accent"

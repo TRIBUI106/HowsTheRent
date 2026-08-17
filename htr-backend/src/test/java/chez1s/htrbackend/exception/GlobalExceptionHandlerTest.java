@@ -1,5 +1,6 @@
 package chez1s.htrbackend.exception;
 
+import org.hibernate.LazyInitializationException;
 import org.junit.jupiter.api.Test;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -34,6 +35,19 @@ class GlobalExceptionHandlerTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
         assertThat(response.getBody()).containsEntry("status", HttpStatus.CONFLICT.value());
         assertThat(response.getBody()).containsEntry("message", "Không thể thực hiện vì dữ liệu đang được sử dụng ở nơi khác.");
+        assertThat(response.getBody()).containsKey("timestamp");
+    }
+
+    @Test
+    void lazyInitializationExceptionReturnsInternalServerErrorWithFriendlyMessage() {
+        GlobalExceptionHandler handler = new GlobalExceptionHandler();
+        LazyInitializationException exception = new LazyInitializationException("could not initialize proxy - no Session");
+
+        var response = handler.handleLazyInitialization(exception);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
+        assertThat(response.getBody()).containsEntry("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
+        assertThat(response.getBody()).containsEntry("message", "Đã xảy ra lỗi khi tải dữ liệu. Vui lòng thử lại.");
         assertThat(response.getBody()).containsKey("timestamp");
     }
 

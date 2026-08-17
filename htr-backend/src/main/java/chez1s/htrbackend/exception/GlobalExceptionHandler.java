@@ -1,5 +1,6 @@
 package chez1s.htrbackend.exception;
 
+import org.hibernate.LazyInitializationException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -39,6 +40,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<Map<String, Object>> handleDataIntegrity(DataIntegrityViolationException ex) {
         return buildResponse(HttpStatus.CONFLICT, "Không thể thực hiện vì dữ liệu đang được sử dụng ở nơi khác.");
+    }
+
+    @ExceptionHandler(LazyInitializationException.class)
+    public ResponseEntity<Map<String, Object>> handleLazyInitialization(LazyInitializationException ex) {
+        return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Đã xảy ra lỗi khi tải dữ liệu. Vui lòng thử lại.");
     }
 
     @ExceptionHandler(MaxUploadSizeExceededException.class)
