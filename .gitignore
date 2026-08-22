@@ -11,4 +11,4 @@
 DS_Store
 .env
 .env.prod
-.env.local
+.env.localbackups/
