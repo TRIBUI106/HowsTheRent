@@ -650,8 +650,9 @@ export default function AdminMaintenancePage() {
                         )
                       )}
 
-                      {/* Nghiệm thu / Xong */}
-                      {(request.status === 'PENDING_REVIEW' || request.status === 'IN_PROGRESS' || request.status === 'PENDING_PAYMENT') && (
+                      {/* Nghiệm thu / Xong — chỉ khả dụng khi phiếu đã ở trạng thái chờ nghiệm thu,
+                          khớp với MaintenanceStateTransitionValidator (backend chỉ cho phép PENDING_REVIEW -> DONE) */}
+                      {request.status === 'PENDING_REVIEW' && (
                         <button
                           onClick={() => resolveMutation.mutate(request.id)}
                           disabled={resolveMutation.isPending}
