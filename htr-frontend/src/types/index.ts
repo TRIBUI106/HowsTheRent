@@ -178,6 +178,7 @@ export interface MaintenanceRequest {
   slotDeclinedByTenant?: boolean
   completionImages?: string[]
   attachmentVideo?: string
+  completionVideo?: string
   startedAt?: string
   isOverdueSla?: boolean
   isComplained?: boolean

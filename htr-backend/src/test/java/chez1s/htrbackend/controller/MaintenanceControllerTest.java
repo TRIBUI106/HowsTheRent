@@ -168,6 +168,56 @@ class MaintenanceControllerTest {
     }
 
     @Test
+    void addCompletionImages_WithValidVideo_UploadsVideoAndSetsIt() {
+        UUID requestId = UUID.randomUUID();
+        MockMultipartFile image = new MockMultipartFile("images", "done.jpg", "image/jpeg", "bytes".getBytes());
+        MockMultipartFile video = new MockMultipartFile("video", "clip.mp4", "video/mp4", "video-bytes".getBytes());
+
+        when(storageService.upload(eq("maintenance/" + requestId + "/completion"), eq(image)))
+                .thenReturn("https://storage/done.jpg");
+        when(storageService.upload(eq("maintenance/" + requestId + "/completion/video"), eq(video)))
+                .thenReturn("https://storage/clip.mp4");
+        when(maintenanceService.getById(requestId)).thenReturn(MaintenanceRequest.builder().id(requestId).build());
+        when(maintenanceService.getResponseById(requestId)).thenReturn(mock(chez1s.htrbackend.dto.response.MaintenanceRequestResponse.class));
+
+        controller.addCompletionImages(requestId, List.of(image), video);
+
+        verify(maintenanceService).addCompletionImages(requestId, List.of("https://storage/done.jpg"));
+        verify(maintenanceService).setCompletionVideo(requestId, "https://storage/clip.mp4");
+    }
+
+    @Test
+    void addCompletionImages_RejectsNonVideoContentTypeAndSkipsUploadEntirely() {
+        UUID requestId = UUID.randomUUID();
+        MockMultipartFile image = new MockMultipartFile("images", "done.jpg", "image/jpeg", "bytes".getBytes());
+        MockMultipartFile notAVideo = new MockMultipartFile("video", "clip.txt", "text/plain", "not-a-video".getBytes());
+
+        assertThrows(BadRequestException.class, () -> controller.addCompletionImages(requestId, List.of(image), notAVideo));
+
+        verify(storageService, never()).upload(anyString(), any());
+        verify(maintenanceService, never()).addCompletionImages(any(), any());
+        verify(maintenanceService, never()).setCompletionVideo(any(), any());
+    }
+
+    @Test
+    void addCompletionImages_VideoUploadFails_CleansUpImagesAndDoesNotPersist() {
+        UUID requestId = UUID.randomUUID();
+        MockMultipartFile image = new MockMultipartFile("images", "done.jpg", "image/jpeg", "bytes".getBytes());
+        MockMultipartFile video = new MockMultipartFile("video", "clip.mp4", "video/mp4", "video-bytes".getBytes());
+
+        when(storageService.upload(eq("maintenance/" + requestId + "/completion"), eq(image)))
+                .thenReturn("https://storage/done.jpg");
+        when(storageService.upload(eq("maintenance/" + requestId + "/completion/video"), eq(video)))
+                .thenThrow(new StorageException("Dịch vụ tải ảnh hiện không khả dụng.", new RuntimeException("timeout")));
+
+        assertThrows(StorageException.class, () -> controller.addCompletionImages(requestId, List.of(image), video));
+
+        verify(storageService).delete("https://storage/done.jpg");
+        verify(maintenanceService, never()).addCompletionImages(any(), any());
+        verify(maintenanceService, never()).setCompletionVideo(any(), any());
+    }
+
+    @Test
     void create_Tenant_UsesOwnIdAndNeverConsultsRoomOwnerScope() {
         CreateMaintenanceRequest req = new CreateMaintenanceRequest();
         req.setTitle("Leak");

@@ -263,7 +263,11 @@ public class MaintenanceController {
     }
 
     public ResponseEntity<MaintenanceRequestResponse> addCompletionImages(UUID id, List<? extends MultipartFile> images) {
-        return addCompletionImages(id, null, new java.util.ArrayList<>(images));
+        return addCompletionImages(id, null, new java.util.ArrayList<>(images), null);
+    }
+
+    public ResponseEntity<MaintenanceRequestResponse> addCompletionImages(UUID id, List<? extends MultipartFile> images, MultipartFile video) {
+        return addCompletionImages(id, null, new java.util.ArrayList<>(images), video);
     }
 
     @PostMapping(value = "/{id}/completion-images", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -271,7 +275,8 @@ public class MaintenanceController {
     public ResponseEntity<MaintenanceRequestResponse> addCompletionImages(
             @PathVariable UUID id,
             @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey,
-            @RequestParam("images") List<MultipartFile> images) {
+            @RequestParam("images") List<MultipartFile> images,
+            @RequestParam(value = "video", required = false) MultipartFile video) {
         if (images == null || images.isEmpty()) {
             throw new chez1s.htrbackend.exception.BadRequestException("Vui lòng chọn ít nhất một ảnh hoàn thành.");
         }
@@ -280,21 +285,31 @@ public class MaintenanceController {
                 throw new chez1s.htrbackend.exception.BadRequestException("Minh chứng hoàn thành chỉ chấp nhận tệp hình ảnh.");
             }
         }
+        if (video != null && !video.isEmpty() && !isVideoFile(video)) {
+            throw new chez1s.htrbackend.exception.BadRequestException("Tệp video không đúng định dạng.");
+        }
         // Upload all files before persisting anything, so a mid-batch failure
         // leaves no orphaned completion-image record.
         var batch = uploadBatchService == null ? null : uploadBatchService.begin(idempotencyKey != null ? idempotencyKey : UUID.randomUUID().toString(), "MAINTENANCE_COMPLETION", id);
         List<String> urls = new java.util.ArrayList<>();
+        String videoUrl = null;
         try {
             for (MultipartFile image : images) {
                 String url = storageService.upload("maintenance/" + id + "/completion", image);
                 urls.add(url);
                 if (uploadBatchService != null) uploadBatchService.record(batch, url, image.getContentType(), image.getSize());
             }
+            if (video != null && !video.isEmpty()) {
+                videoUrl = storageService.upload("maintenance/" + id + "/completion/video", video);
+                if (uploadBatchService != null) uploadBatchService.record(batch, videoUrl, video.getContentType(), video.getSize());
+            }
             maintenanceService.addCompletionImages(id, urls);
+            if (videoUrl != null) maintenanceService.setCompletionVideo(id, videoUrl);
             if (uploadBatchService != null) uploadBatchService.complete(batch);
             return ResponseEntity.ok(responseOf(maintenanceService.getById(id)));
         } catch (RuntimeException exception) {
             urls.forEach(storageService::delete);
+            if (videoUrl != null) storageService.delete(videoUrl);
             if (uploadBatchService != null) uploadBatchService.requireCleanup(batch);
             throw exception;
         }

@@ -362,6 +362,13 @@ public class MaintenanceService {
     }
 
     @Transactional
+    public MaintenanceRequest setCompletionVideo(UUID requestId, String videoUrl) {
+        MaintenanceRequest req = getById(requestId);
+        req.setCompletionVideo(videoUrl);
+        return maintenanceRepository.save(req);
+    }
+
+    @Transactional
     public MaintenanceRequest setAttachmentVideo(UUID requestId, String videoUrl) {
         MaintenanceRequest req = getById(requestId);
         req.setAttachmentVideo(videoUrl);

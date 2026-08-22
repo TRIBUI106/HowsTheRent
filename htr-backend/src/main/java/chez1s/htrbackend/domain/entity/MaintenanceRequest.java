@@ -98,6 +98,9 @@ public class MaintenanceRequest extends BaseEntity {
     @Column(name = "attachment_video")
     private String attachmentVideo;
 
+    @Column(name = "completion_video")
+    private String completionVideo;
+
     @Column(name = "started_at")
     private LocalDateTime startedAt;
 

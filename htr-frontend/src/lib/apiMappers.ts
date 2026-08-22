@@ -48,6 +48,7 @@ export type FlatMaintenanceLike = Partial<Omit<MaintenanceRequest, 'room' | 'ten
   slotDeclinedByTenant?: boolean
   completionImages?: string[]
   attachmentVideo?: string
+  completionVideo?: string
   startedAt?: string
   isOverdueSla?: boolean
   isComplained?: boolean
@@ -195,6 +196,7 @@ export function normalizeMaintenanceRequest(requestLike: FlatMaintenanceLike): M
     slotDeclinedByTenant: requestLike.slotDeclinedByTenant,
     completionImages: requestLike.completionImages ?? [],
     attachmentVideo: requestLike.attachmentVideo,
+    completionVideo: requestLike.completionVideo,
     startedAt: requestLike.startedAt,
     isOverdueSla: requestLike.isOverdueSla,
     isComplained: requestLike.isComplained,

@@ -1,7 +1,7 @@
 import { getErrorMessage } from '@/lib/apiError'
 import { useRef, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Camera, CheckCircle, Play, FileText, Clock, Plus, Trash2, Send, CheckSquare, Package } from 'lucide-react'
+import { Camera, CheckCircle, Play, FileText, Clock, Plus, Trash2, Send, CheckSquare, Package, Video } from 'lucide-react'
 import { maintenanceApi } from '@/api'
 import { canSubmitCompletionReview, getImageSelectionError, replaceMaintenanceRequest } from '@/features/tech/completionImageFlow'
 import Layout from '@/components/Layout'
@@ -16,6 +16,7 @@ import type { MaintenanceMaterial, MaintenanceNote, MaintenanceRequest } from '@
 export default function TechMaintenancePage() {
   const qc = useQueryClient()
   const completionImageRef = useRef<HTMLInputElement>(null)
+  const completionVideoRef = useRef<HTMLInputElement>(null)
   const [activeTab, setActiveTab] = useState<'ALL' | 'IN_PROGRESS' | 'ASSIGNED' | 'DONE'>('ALL')
   
   // Work modal / expanded section state
@@ -36,6 +37,7 @@ export default function TechMaintenancePage() {
 
   // Completion evidence upload state
   const [pendingCompletionImages, setPendingCompletionImages] = useState<File[]>([])
+  const [pendingCompletionVideo, setPendingCompletionVideo] = useState<File | null>(null)
   const [completionUploadError, setCompletionUploadError] = useState('')
 
   const { data: requests = [], isLoading } = useQuery<MaintenanceRequest[]>({
@@ -152,13 +154,15 @@ export default function TechMaintenancePage() {
   })
 
   const completionImagesMutation = useMutation({
-    mutationFn: ({ id, images }: { id: string; images: File[] }) => maintenanceApi.addCompletionImages(id, images),
+    mutationFn: ({ id, images, video }: { id: string; images: File[]; video?: File | null }) =>
+      maintenanceApi.addCompletionImages(id, images, video),
     onSuccess: (uploadedRequest) => {
       qc.setQueryData<MaintenanceRequest[]>(['tech-maintenance'], (current) =>
         current ? replaceMaintenanceRequest(current, uploadedRequest) : [uploadedRequest],
       )
       qc.invalidateQueries({ queryKey: ['maintenance'] })
       setPendingCompletionImages([])
+      setPendingCompletionVideo(null)
       setCompletionUploadError('')
       showToast({ message: 'Đã tải ảnh hoàn thành', type: 'success' })
     },
@@ -183,6 +187,7 @@ export default function TechMaintenancePage() {
     if (requestId === selectedRequestId) return
     setSelectedRequestId(requestId)
     setPendingCompletionImages([])
+    setPendingCompletionVideo(null)
     setCompletionUploadError('')
   }
 
@@ -198,13 +203,13 @@ export default function TechMaintenancePage() {
 
     setPendingCompletionImages(images)
     setCompletionUploadError('')
-    completionImagesMutation.mutate({ id: selectedRequest.id, images })
+    completionImagesMutation.mutate({ id: selectedRequest.id, images, video: pendingCompletionVideo })
   }
 
   function retryCompletionImagesUpload() {
     if (!selectedRequest || pendingCompletionImages.length === 0) return
     setCompletionUploadError('')
-    completionImagesMutation.mutate({ id: selectedRequest.id, images: pendingCompletionImages })
+    completionImagesMutation.mutate({ id: selectedRequest.id, images: pendingCompletionImages, video: pendingCompletionVideo })
   }
 
   function submitReview() {
@@ -582,6 +587,28 @@ export default function TechMaintenancePage() {
                     {/* Action button to finish work */}
                     {selectedRequest.status === 'IN_PROGRESS' && (
                       <div className="pt-4 border-t border-border space-y-3">
+                        <input
+                          ref={completionVideoRef}
+                          type="file"
+                          accept="video/*"
+                          className="hidden"
+                          onChange={(event) => {
+                            setPendingCompletionVideo(event.target.files?.[0] ?? null)
+                            event.target.value = ''
+                          }}
+                        />
+                        <Button
+                          variant="outline"
+                          onClick={() => completionVideoRef.current?.click()}
+                          disabled={completionImagesMutation.isPending}
+                          className="w-full flex items-center justify-center gap-2"
+                        >
+                          <Video size={16} />
+                          {pendingCompletionVideo ? pendingCompletionVideo.name : 'Video minh chứng (tùy chọn)'}
+                        </Button>
+                        {pendingCompletionVideo && (
+                          <p className="text-xs text-fg-muted">Video sẽ được gửi kèm cùng lúc với ảnh hoàn thành bên dưới.</p>
+                        )}
                         <input
                           ref={completionImageRef}
                           type="file"
