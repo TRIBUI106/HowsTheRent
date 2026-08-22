@@ -61,19 +61,19 @@ public class StorageService {
         }
     }
 
+    // publicUrl always represents the full public root objects hang directly
+    // off of — for local MinIO that's {minio.url}/{minio.bucket} (see the
+    // application.properties default), and for Cloudflare R2's public access
+    // (both pub-*.r2.dev domains and custom domains) the domain itself is
+    // already bound to a single bucket, so the object key follows the root
+    // directly with no bucket segment. Object names are therefore always
+    // normalized/built relative to publicUrl alone, never the bucket name.
     private String normalizeObjectName(String objectName) {
         String baseUrl = publicUrl.endsWith("/") ? publicUrl.substring(0, publicUrl.length() - 1) : publicUrl;
         if (!objectName.startsWith(baseUrl)) {
             return objectName;
         }
-        String normalized = objectName.substring(baseUrl.length()).replaceFirst("^/", "");
-        if (normalized.equals(bucket)) {
-            return "";
-        }
-        if (normalized.startsWith(bucket + "/")) {
-            return normalized.substring(bucket.length() + 1);
-        }
-        return normalized;
+        return objectName.substring(baseUrl.length()).replaceFirst("^/", "");
     }
 
     public String getPresignedUrl(String objectName) {
@@ -91,9 +91,6 @@ public class StorageService {
 
     private String buildPublicUrl(String objectName) {
         String baseUrl = publicUrl.endsWith("/") ? publicUrl.substring(0, publicUrl.length() - 1) : publicUrl;
-        if (baseUrl.endsWith("/" + bucket)) {
-            return baseUrl + "/" + objectName;
-        }
-        return baseUrl + "/" + bucket + "/" + objectName;
+        return baseUrl + "/" + objectName;
     }
 }

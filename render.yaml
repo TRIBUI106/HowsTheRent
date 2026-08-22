@@ -46,6 +46,6 @@ services:
       - key: MINIO_SECRET_KEY
         sync: false
       - key: MINIO_BUCKET
-        value: htr
+        value: htr-minio
       - key: MINIO_AUTO_CREATE_BUCKET
         value: "false"
