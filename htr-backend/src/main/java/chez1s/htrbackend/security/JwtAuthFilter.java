@@ -27,6 +27,26 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     private final JwtTokenProvider tokenProvider;
     private final UserRepository userRepository;
 
+    // Long-lived SSE connections (see NotificationController#stream) use an
+    // infinite-timeout emitter. When a write to a dead client connection fails,
+    // Spring/Tomcat re-enters the full filter chain via an ASYNC/ERROR dispatch
+    // to resolve the error. OncePerRequestFilter skips re-running on those
+    // dispatch types by default, so without this override the SecurityContext
+    // is never re-populated on that redispatch and AuthorizationFilter denies
+    // the request even though the original session/cookie was valid — surfacing
+    // as "AuthorizationDeniedException ... response is already committed" in
+    // logs. Re-authenticating from the request's own cookies/header on every
+    // dispatch type fixes this at the source.
+    @Override
+    protected boolean shouldNotFilterAsyncDispatch() {
+        return false;
+    }
+
+    @Override
+    protected boolean shouldNotFilterErrorDispatch() {
+        return false;
+    }
+
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
