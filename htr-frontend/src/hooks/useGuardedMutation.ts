@@ -1,3 +1,4 @@
+import { useCallback } from 'react'
 import {
   useMutation,
   type UseMutationOptions,
@@ -17,10 +18,27 @@ export function useGuardedMutation<
   const isOnline = useOnlineStatus()
   const mutation = useMutation(options)
 
+  // Depending on `mutation.mutate`/`mutation.mutateAsync` (stable across
+  // renders) rather than the whole `mutation` object (which changes
+  // identity whenever status/data change) is intentional: it's what keeps
+  // these guarded functions referentially stable, matching native
+  // `useMutation` behavior.
+  const guardedMutate = useCallback(
+    (...args: Parameters<typeof mutation.mutate>) =>
+      guardMutate(isOnline, () => mutation.mutate(...args)),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [isOnline, mutation.mutate]
+  )
+  const guardedMutateAsync = useCallback(
+    (...args: Parameters<typeof mutation.mutateAsync>) =>
+      guardMutateAsync(isOnline, () => mutation.mutateAsync(...args)),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [isOnline, mutation.mutateAsync]
+  )
+
   return {
     ...mutation,
-    mutate: (...args) => guardMutate(isOnline, () => mutation.mutate(...args)),
-    mutateAsync: (...args) =>
-      guardMutateAsync(isOnline, () => mutation.mutateAsync(...args)),
+    mutate: guardedMutate,
+    mutateAsync: guardedMutateAsync,
   }
 }

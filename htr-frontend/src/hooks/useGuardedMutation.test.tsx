@@ -49,4 +49,32 @@ describe('useGuardedMutation', () => {
     expect(mutationFn).not.toHaveBeenCalled()
     expect(showToast).toHaveBeenCalledOnce()
   })
+
+  it('blocks mutateAsync and toasts when offline', async () => {
+    Object.defineProperty(window.navigator, 'onLine', {
+      value: false,
+      configurable: true,
+    })
+    const mutationFn = vi.fn().mockResolvedValue('ok')
+    const { result } = renderHook(
+      () => useGuardedMutation({ mutationFn }),
+      { wrapper }
+    )
+    await expect(result.current.mutateAsync(undefined)).rejects.toThrow()
+    expect(mutationFn).not.toHaveBeenCalled()
+    expect(showToast).toHaveBeenCalledOnce()
+  })
+
+  it('keeps mutate and mutateAsync referentially stable across re-renders when isOnline is unchanged', () => {
+    const mutationFn = vi.fn().mockResolvedValue('ok')
+    const { result, rerender } = renderHook(
+      () => useGuardedMutation({ mutationFn }),
+      { wrapper }
+    )
+    const firstMutate = result.current.mutate
+    const firstMutateAsync = result.current.mutateAsync
+    rerender()
+    expect(result.current.mutate).toBe(firstMutate)
+    expect(result.current.mutateAsync).toBe(firstMutateAsync)
+  })
 })
