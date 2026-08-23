@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useGuardedMutation } from './useGuardedMutation'
 import { notificationApi } from '@/api/notificationApi'
 import { showToast } from '@/lib/toast'
 
@@ -49,12 +50,12 @@ export function useNotifications() {
     return () => stream.close()
   }, [qc])
 
-  const markRead = useMutation({
+  const markRead = useGuardedMutation({
     mutationFn: notificationApi.markRead,
     onSuccess: () => qc.invalidateQueries({ queryKey: ['notifications'] }),
   })
 
-  const markAllRead = useMutation({
+  const markAllRead = useGuardedMutation({
     mutationFn: notificationApi.markAllRead,
     onSuccess: () => qc.invalidateQueries({ queryKey: ['notifications'] }),
   })
