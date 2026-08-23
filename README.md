@@ -93,3 +93,27 @@ npm install
 npm run dev
 ```
 Yêu cầu: Node.js 18+
+
+## Frontend cache & offline
+
+Frontend sử dụng TanStack Query để cache dữ liệu API và lưu cache xuống `localStorage`.
+
+- Dữ liệu đã xem được khôi phục sau khi reload trang.
+- Khi offline, ứng dụng hiển thị dữ liệu cache gần nhất và hiện banner cảnh báo dữ liệu có thể chưa mới nhất.
+- Các thao tác ghi (`create`, `update`, `delete`, thanh toán, cập nhật trạng thái...) bị chặn khi offline; ứng dụng **không queue hoặc tự gửi lại** thao tác đó khi có mạng.
+- Cache được xoá khi logout và được reset tự động sau production build mới.
+
+> Dữ liệu cache được lưu theo trình duyệt. Hãy logout khi dùng máy dùng chung.
+
+## Troubleshooting: API trả về 401
+
+Nếu DevTools hiển thị `401` cho `/api/dashboard/...`, `/api/notifications` hoặc `/api/notifications/stream`:
+
+1. Đăng xuất rồi đăng nhập lại để tạo lại HTTP-only session/refresh cookie.
+2. Kiểm tra backend đang chạy và frontend đang gọi đúng API:
+   - Local Vite dev server dùng proxy `/api` tới `http://localhost:8080`.
+   - Production cần cấu hình `VITE_API_BASE_URL` đúng backend URL và backend phải cho phép origin frontend trong CORS.
+3. Nếu lỗi vẫn lặp lại sau khi login, xoá site data/cookies của domain frontend trong Browser DevTools rồi đăng nhập lại.
+4. `Unchecked runtime.lastError: Could not establish connection` thường đến từ browser extension, không phải lỗi của HowsTheRent backend.
+
+Frontend sẽ thử refresh session một lần khi nhận `401`. Nếu refresh thất bại, ứng dụng xoá session local, xoá cache persisted và điều hướng về `/login`.
