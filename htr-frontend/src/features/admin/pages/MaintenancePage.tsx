@@ -1,6 +1,7 @@
 import { getErrorMessage } from '@/lib/apiError'
 import { useState } from 'react'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useGuardedMutation } from '@/hooks/useGuardedMutation'
 import { CheckCircle, XCircle, Search, AlertTriangle, ShieldAlert, FileText, Package, Plus, X } from 'lucide-react'
 import api from '@/lib/api'
 import { maintenanceApi, userApi } from '@/api'
@@ -89,7 +90,7 @@ export default function AdminMaintenancePage() {
     enabled: showCreate,
   })
 
-  const createRequestMutation = useMutation({
+  const createRequestMutation = useGuardedMutation({
     mutationFn: (form: AdminMaintenanceCreateForm) => submitAdminMaintenanceRequest(form, maintenanceApi.create),
     onSuccess: (result) => {
       if (!result.ok) {
@@ -109,7 +110,7 @@ export default function AdminMaintenancePage() {
     },
   })
 
-  const assignMutation = useMutation({
+  const assignMutation = useGuardedMutation({
     mutationFn: ({ id, techId }: { id: string; techId: string }) => maintenanceApi.assign(id, techId),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['maintenance'] })
@@ -123,7 +124,7 @@ export default function AdminMaintenancePage() {
     },
   })
 
-  const cancelMutation = useMutation({
+  const cancelMutation = useGuardedMutation({
     mutationFn: ({ id, reason }: { id: string; reason: string }) => maintenanceApi.cancel(id, reason),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['maintenance'] })
@@ -137,7 +138,7 @@ export default function AdminMaintenancePage() {
     },
   })
 
-  const resolveMutation = useMutation({
+  const resolveMutation = useGuardedMutation({
     mutationFn: (id: string) => maintenanceApi.resolve(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['maintenance'] })
@@ -150,7 +151,7 @@ export default function AdminMaintenancePage() {
     },
   })
 
-  const updateSlaMutation = useMutation({
+  const updateSlaMutation = useGuardedMutation({
     mutationFn: ({ id, date }: { id: string; date: string }) => maintenanceApi.updateSla(id, date),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['maintenance'] })

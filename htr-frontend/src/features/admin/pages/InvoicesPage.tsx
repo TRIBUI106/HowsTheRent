@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useGuardedMutation } from '@/hooks/useGuardedMutation'
 import { Download, ReceiptText } from 'lucide-react'
 import api from '@/lib/api'
 import { extractPageContent, normalizeInvoice } from '@/lib/apiMappers'
@@ -55,7 +56,7 @@ export default function AdminInvoicesPage() {
   const [generationResult, setGenerationResult] = useState<InvoiceGenerationResult | null>(null)
   const [pendingCashInvoiceIds, setPendingCashInvoiceIds] = useState<Set<string>>(new Set())
 
-  const markPaidCashMutation = useMutation({
+  const markPaidCashMutation = useGuardedMutation({
     mutationFn: async (id: string) => {
       const { data } = await api.post(`/invoices/${id}/pay-cash`)
       return normalizeInvoice(data)
@@ -109,7 +110,7 @@ export default function AdminInvoicesPage() {
   const totalPages = data?.totalPages ?? 1
   const generateMonthLabel = generateMonth ? formatMonth(`${generateMonth}-01`) : ''
 
-  const generateMutation = useMutation({
+  const generateMutation = useGuardedMutation({
     mutationFn: async () => {
       const [year, month] = generateMonth.split('-').map(Number)
       const { data } = await api.post('/invoices/generate', null, { params: { year, month } })
