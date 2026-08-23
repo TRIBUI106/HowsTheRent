@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useGuardedMutation } from '@/hooks/useGuardedMutation'
 import { roomApi, roomTimelineApi } from '@/api'
 import { useAuthStore } from '@/stores/authStore'
 import Layout from '@/components/Layout'
@@ -46,7 +47,7 @@ export default function RoomDetailPage() {
     enabled: !!user && !!roomId,
   })
 
-  const addNote = useMutation({
+  const addNote = useGuardedMutation({
     mutationFn: () => roomTimelineApi.addNote(roomId!, noteText.trim()),
     onSuccess: () => {
       setNoteText('')
@@ -57,7 +58,7 @@ export default function RoomDetailPage() {
     },
   })
 
-  const deleteNote = useMutation({
+  const deleteNote = useGuardedMutation({
     mutationFn: (noteId: string) => roomTimelineApi.deleteNote(roomId!, noteId),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['room-timeline', roomId] }),
     onError: (err: unknown) => {

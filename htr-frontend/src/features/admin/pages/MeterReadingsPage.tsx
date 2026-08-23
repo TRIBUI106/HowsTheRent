@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useGuardedMutation } from '@/hooks/useGuardedMutation'
 import Layout from '@/components/Layout'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -148,7 +149,7 @@ export default function MeterReadingsPage() {
   const activeForms = forms[selectedMonth] ?? seededForms
   const activeSuccessRooms = successRooms[selectedMonth] ?? new Set<string>()
 
-  const readingMutation = useMutation({
+  const readingMutation = useGuardedMutation({
     mutationFn: ({ roomId, data }: { roomId: string; data: object }) =>
       api.post(`/rooms/${roomId}/meter-readings`, data),
     onSuccess: (response, variables) => {
@@ -185,7 +186,7 @@ export default function MeterReadingsPage() {
     },
   })
 
-  const hunonicSyncMutation = useMutation({
+  const hunonicSyncMutation = useGuardedMutation({
     mutationFn: ({ roomId }: { roomId: string }) =>
       api.post(`/rooms/${roomId}/meter-readings/hunonic-sync`, {
         readingMonth: getMonthDate(selectedMonth),
