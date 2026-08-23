@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useGuardedMutation } from '@/hooks/useGuardedMutation'
 import Layout from '@/components/Layout'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -39,6 +40,7 @@ export default function FeeConfigPage() {
     queryKey: ['fee-config', selectedProp],
     queryFn: () => api.get(`/properties/${selectedProp}/fee-config`).then(r => r.data),
     enabled: !!selectedProp,
+    staleTime: 1000 * 60 * 10,
   })
 
   const [feeForm, setFeeForm] = useState<Partial<FeeConfig>>({})
@@ -52,7 +54,7 @@ export default function FeeConfigPage() {
     return typeof value === 'number' ? formatCurrencyInput(value) : ''
   }
 
-  const feeMutation = useMutation({
+  const feeMutation = useGuardedMutation({
     mutationFn: (data: Partial<FeeConfig>) =>
       api.put(`/properties/${selectedProp}/fee-config`, data),
     onSuccess: async () => {

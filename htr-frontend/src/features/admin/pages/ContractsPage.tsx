@@ -1,6 +1,7 @@
 import { getErrorMessage } from '@/lib/apiError'
 import { useState } from 'react'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useGuardedMutation } from '@/hooks/useGuardedMutation'
 import Layout from '@/components/Layout'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -75,7 +76,7 @@ export default function ContractsPage() {
 
   const contracts: Contract[] = (contractsData ?? []).map(normalizeContract)
 
-  const terminateMutation = useMutation({
+  const terminateMutation = useGuardedMutation({
     mutationFn: (id: string) => api.post(`/contracts/${id}/terminate`),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['admin-contracts'] })
@@ -83,7 +84,7 @@ export default function ContractsPage() {
     },
   })
 
-  const renewMutation = useMutation({
+  const renewMutation = useGuardedMutation({
     mutationFn: ({ id, data }: { id: string; data: object }) => api.post(`/contracts/${id}/renew`, data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['admin-contracts'] })
@@ -94,7 +95,7 @@ export default function ContractsPage() {
     onError: (e: unknown) => setRenewError(getErrorMessage(e, 'Lỗi')),
   })
 
-  const createMutation = useMutation({
+  const createMutation = useGuardedMutation({
     mutationFn: (data: object) => api.post(`/rooms/${form.roomId}/contracts`, data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['admin-contracts'] })

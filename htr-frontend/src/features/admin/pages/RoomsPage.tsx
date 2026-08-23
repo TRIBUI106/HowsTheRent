@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useGuardedMutation } from '@/hooks/useGuardedMutation'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { propertyApi, roomApi, userApi } from '@/api'
 import { useAuthStore } from '@/stores/authStore'
@@ -65,7 +66,7 @@ export default function RoomsPage() {
     setForm(emptyForm)
   }
 
-  const save = useMutation({
+  const save = useGuardedMutation({
     mutationFn: async () => {
         const payload = {
         roomNumber: form.roomNumber,
@@ -93,7 +94,7 @@ export default function RoomsPage() {
     },
   })
 
-  const remove = useMutation({
+  const remove = useGuardedMutation({
     mutationFn: (id: string) => roomApi.remove(effectiveSelectedProperty, id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['rooms', effectiveSelectedProperty] })

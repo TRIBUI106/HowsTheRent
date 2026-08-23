@@ -1,6 +1,7 @@
 import { getErrorMessage } from '@/lib/apiError'
 import { useState } from 'react'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useGuardedMutation } from '@/hooks/useGuardedMutation'
 import Layout from '@/components/Layout'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -22,9 +23,10 @@ export default function SlaConfigPage() {
   const { data: rules = [], isLoading } = useQuery<SlaRule[]>({
     queryKey: ['sla-rules'],
     queryFn: slaApi.listRules,
+    staleTime: 1000 * 60 * 10,
   })
 
-  const saveMutation = useMutation({
+  const saveMutation = useGuardedMutation({
     mutationFn: () => slaApi.createOrUpdateRule(priority, category, Number(maxHours)),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['sla-rules'] })
@@ -38,7 +40,7 @@ export default function SlaConfigPage() {
     },
   })
 
-  const deleteMutation = useMutation({
+  const deleteMutation = useGuardedMutation({
     mutationFn: (id: string) => slaApi.deleteRule(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['sla-rules'] })

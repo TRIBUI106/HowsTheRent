@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useGuardedMutation } from '@/hooks/useGuardedMutation'
 import { Camera, Video, X, Clock, AlertTriangle, CheckCircle, CreditCard, ShieldAlert, Star } from 'lucide-react'
 import api from '@/lib/api'
 import { maintenanceApi, reportApi } from '@/api'
@@ -89,7 +90,7 @@ export default function TenantMaintenancePage() {
     setError('')
   }
 
-  const createMutation = useMutation({
+  const createMutation = useGuardedMutation({
     mutationFn: () => {
       const form = new FormData()
       form.append('title', title.trim())
@@ -115,7 +116,7 @@ export default function TenantMaintenancePage() {
     },
   })
 
-  const resolveMutation = useMutation({
+  const resolveMutation = useGuardedMutation({
     mutationFn: (id: string) => maintenanceApi.resolve(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['tenant-maintenance-list'] })
@@ -127,7 +128,7 @@ export default function TenantMaintenancePage() {
     },
   })
 
-  const complainMutation = useMutation({
+  const complainMutation = useGuardedMutation({
     mutationFn: ({ id, reason }: { id: string; reason: string }) => maintenanceApi.complain(id, reason),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['tenant-maintenance-list'] })
@@ -140,7 +141,7 @@ export default function TenantMaintenancePage() {
     },
   })
 
-  const reviewMutation = useMutation({
+  const reviewMutation = useGuardedMutation({
     mutationFn: ({ id, stars, comment }: { id: string; stars: number; comment?: string }) => reportApi.createReview(id, stars, comment),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['tenant-maintenance-list'] })
@@ -153,7 +154,7 @@ export default function TenantMaintenancePage() {
     },
   })
 
-  const payMaterialMutation = useMutation({
+  const payMaterialMutation = useGuardedMutation({
     mutationFn: (id: string) => maintenanceApi.payMaterial(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['tenant-maintenance-list'] })
@@ -164,7 +165,7 @@ export default function TenantMaintenancePage() {
     },
   })
 
-  const tenantConfirmSlotMutation = useMutation({
+  const tenantConfirmSlotMutation = useGuardedMutation({
     mutationFn: ({ id, confirm }: { id: string; confirm: boolean }) => maintenanceApi.tenantConfirmSlot(id, confirm),
     onSuccess: (_, variables) => {
       qc.invalidateQueries({ queryKey: ['tenant-maintenance-list'] })

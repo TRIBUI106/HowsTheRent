@@ -1,4 +1,5 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useGuardedMutation } from '@/hooks/useGuardedMutation'
 import { Building2, FolderTree, Plus, Settings2, Tag } from 'lucide-react'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -54,6 +55,7 @@ export default function PropertiesPage() {
   const { data: propertyTypes = [] } = useQuery<PropertyType[]>({
     queryKey: ['property-types'],
     queryFn: () => propertyTypeApi.list(),
+    staleTime: 1000 * 60 * 10,
   })
 
   const propertyList = properties ?? []
@@ -77,7 +79,7 @@ export default function PropertiesPage() {
     setTypeForm(emptyTypeForm)
   }
 
-  const save = useMutation({
+  const save = useGuardedMutation({
     mutationFn: () => {
       const payload = {
         name: form.name,
@@ -103,7 +105,7 @@ export default function PropertiesPage() {
     onError: (error) => showToast({ message: extractErrorMessage(error, 'Lưu tài sản thất bại'), type: 'error' }),
   })
 
-  const saveType = useMutation({
+  const saveType = useGuardedMutation({
     mutationFn: (payload: typeof typeForm) =>
       editingTypeId ? propertyTypeApi.update(editingTypeId, payload) : propertyTypeApi.create(payload),
     onSuccess: () => {
@@ -117,7 +119,7 @@ export default function PropertiesPage() {
     onError: (error) => showToast({ message: extractErrorMessage(error, 'Lưu loại tài sản thất bại'), type: 'error' }),
   })
 
-  const toggleTypeActive = useMutation({
+  const toggleTypeActive = useGuardedMutation({
     mutationFn: ({ id, active }: { id: string; active: boolean }) => propertyTypeApi.updateActive(id, active),
     onSuccess: (_data, variables) => {
       qc.invalidateQueries({ queryKey: ['property-types'] })
@@ -129,7 +131,7 @@ export default function PropertiesPage() {
     onError: (error) => showToast({ message: extractErrorMessage(error, 'Cập nhật trạng thái thất bại'), type: 'error' }),
   })
 
-  const removeType = useMutation({
+  const removeType = useGuardedMutation({
     mutationFn: (id: string) => propertyTypeApi.remove(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['property-types'] })
@@ -139,7 +141,7 @@ export default function PropertiesPage() {
     onError: (error) => showToast({ message: extractErrorMessage(error, 'Xóa loại tài sản thất bại'), type: 'error' }),
   })
 
-  const remove = useMutation({
+  const remove = useGuardedMutation({
     mutationFn: (id: string) => api.delete(`/properties/${id}`),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['properties'] })

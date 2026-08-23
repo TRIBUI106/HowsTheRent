@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import type { User } from '@/types'
+import { removePersistedCache } from '@/lib/persister'
 
 interface AuthState {
   user: User | null
@@ -24,6 +25,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
   clearAuth: () => {
     localStorage.removeItem('user')
+    removePersistedCache()
     set({ user: null })
   },
 }))

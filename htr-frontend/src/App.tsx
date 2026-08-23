@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { useAuthStore } from '@/stores/authStore'
+import OfflineBanner from '@/components/OfflineBanner'
 import LandingPage from '@/pages/LandingPage'
 import LoginPage from '@/features/auth/pages/LoginPage'
 import ForgotPasswordPage from '@/features/auth/pages/ForgotPasswordPage'
@@ -18,16 +19,19 @@ export default function App() {
 
   if (!user) {
     return (
-      <Routes>
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/landing" element={<LandingPage />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-        <Route path="/reset-password" element={<ResetPasswordPage />} />
-        <Route path="/payment/success" element={<PaymentSuccessPage />} />
-        <Route path="/payment/cancel" element={<PaymentCancelPage />} />
-        <Route path="*" element={<Navigate to="/login" replace />} />
-      </Routes>
+      <>
+        <OfflineBanner />
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/landing" element={<LandingPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
+          <Route path="/payment/success" element={<PaymentSuccessPage />} />
+          <Route path="/payment/cancel" element={<PaymentCancelPage />} />
+          <Route path="*" element={<Navigate to="/login" replace />} />
+        </Routes>
+      </>
     )
   }
 
@@ -37,18 +41,21 @@ export default function App() {
     '/tech'
 
   return (
-    <Routes>
-      <Route path="/" element={<Navigate to={homePath} replace />} />
-      <Route path="/login" element={<Navigate to={homePath} replace />} />
-      <Route path="/landing" element={<LandingPage />} />
-      <Route path="/change-password" element={<ChangePasswordPage />} />
-      <Route path="/profile" element={<ProfilePage />} />
-      {adminRoutes}
-      {tenantRoutes}
-      {techRoutes}
-      <Route path="/payment/success" element={<PaymentSuccessPage />} />
-      <Route path="/payment/cancel" element={<PaymentCancelPage />} />
-      <Route path="*" element={<NotFoundPage />} />
-    </Routes>
+    <>
+      <OfflineBanner />
+      <Routes>
+        <Route path="/" element={<Navigate to={homePath} replace />} />
+        <Route path="/login" element={<Navigate to={homePath} replace />} />
+        <Route path="/landing" element={<LandingPage />} />
+        <Route path="/change-password" element={<ChangePasswordPage />} />
+        <Route path="/profile" element={<ProfilePage />} />
+        {adminRoutes}
+        {tenantRoutes}
+        {techRoutes}
+        <Route path="/payment/success" element={<PaymentSuccessPage />} />
+        <Route path="/payment/cancel" element={<PaymentCancelPage />} />
+        <Route path="*" element={<NotFoundPage />} />
+      </Routes>
+    </>
   )
 }
