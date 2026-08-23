@@ -39,6 +39,7 @@ export default function FeeConfigPage() {
     queryKey: ['fee-config', selectedProp],
     queryFn: () => api.get(`/properties/${selectedProp}/fee-config`).then(r => r.data),
     enabled: !!selectedProp,
+    staleTime: 1000 * 60 * 10,
   })
 
   const [feeForm, setFeeForm] = useState<Partial<FeeConfig>>({})

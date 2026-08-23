@@ -54,6 +54,7 @@ export default function PropertiesPage() {
   const { data: propertyTypes = [] } = useQuery<PropertyType[]>({
     queryKey: ['property-types'],
     queryFn: () => propertyTypeApi.list(),
+    staleTime: 1000 * 60 * 10,
   })
 
   const propertyList = properties ?? []

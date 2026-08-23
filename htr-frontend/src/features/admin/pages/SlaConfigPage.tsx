@@ -22,6 +22,7 @@ export default function SlaConfigPage() {
   const { data: rules = [], isLoading } = useQuery<SlaRule[]>({
     queryKey: ['sla-rules'],
     queryFn: slaApi.listRules,
+    staleTime: 1000 * 60 * 10,
   })
 
   const saveMutation = useMutation({
