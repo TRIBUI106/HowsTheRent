@@ -1,6 +1,7 @@
 import { getErrorMessage } from '@/lib/apiError'
 import { useState } from 'react'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useGuardedMutation } from '@/hooks/useGuardedMutation'
 import api from '@/lib/api'
 import { invoiceApi } from '@/api/invoiceApi'
 import { extractPageContent, normalizeInvoice } from '@/lib/apiMappers'
@@ -43,7 +44,7 @@ export default function TenantInvoicesPage() {
     }
   }
 
-  const cashMutation = useMutation({
+  const cashMutation = useGuardedMutation({
     mutationFn: (id: string) => invoiceApi.requestCashPayment(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['tenant-invoices'] })
