@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useGuardedMutation } from '@/hooks/useGuardedMutation'
 import Layout from '@/components/Layout'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -52,7 +53,7 @@ export default function UsersPage() {
 
   const refreshUsers = () => qc.invalidateQueries({ queryKey: ['admin-users'] })
 
-  const createUserMutation = useMutation({
+  const createUserMutation = useGuardedMutation({
     mutationFn: () => userApi.create(createForm),
     onSuccess: () => {
       refreshUsers()
@@ -61,7 +62,7 @@ export default function UsersPage() {
     },
   })
 
-  const updateUserMutation = useMutation({
+  const updateUserMutation = useGuardedMutation({
     mutationFn: () => {
       if (!editingUser) {
         return Promise.reject(new Error('No user selected'))
@@ -75,7 +76,7 @@ export default function UsersPage() {
     },
   })
 
-  const toggleActiveMutation = useMutation({
+  const toggleActiveMutation = useGuardedMutation({
     mutationFn: (id: string) => userApi.toggleActive(id),
     onSuccess: () => refreshUsers(),
   })
