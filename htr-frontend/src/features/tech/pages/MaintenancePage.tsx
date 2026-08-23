@@ -1,6 +1,7 @@
 import { getErrorMessage } from '@/lib/apiError'
 import { useRef, useState } from 'react'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useGuardedMutation } from '@/hooks/useGuardedMutation'
 import { Camera, CheckCircle, Play, FileText, Clock, Plus, Trash2, Send, CheckSquare, Package, Video } from 'lucide-react'
 import { maintenanceApi } from '@/api'
 import { canSubmitCompletionReview, getImageSelectionError, replaceMaintenanceRequest } from '@/features/tech/completionImageFlow'
@@ -60,7 +61,7 @@ export default function TechMaintenancePage() {
     enabled: !!selectedRequestId,
   })
 
-  const startMutation = useMutation({
+  const startMutation = useGuardedMutation({
     mutationFn: (id: string) => maintenanceApi.startWork(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['tech-maintenance'] })
@@ -72,7 +73,7 @@ export default function TechMaintenancePage() {
     },
   })
 
-  const confirmSlotMutation = useMutation({
+  const confirmSlotMutation = useGuardedMutation({
     mutationFn: ({ id, slot }: { id: string; slot: string }) => maintenanceApi.confirmSlot(id, slot),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['tech-maintenance'] })
@@ -83,7 +84,7 @@ export default function TechMaintenancePage() {
     },
   })
 
-  const addMaterialMutation = useMutation({
+  const addMaterialMutation = useGuardedMutation({
     mutationFn: () => {
       if (!selectedRequestId) throw new Error('No selected request')
       return maintenanceApi.addMaterial(selectedRequestId, {
@@ -108,7 +109,7 @@ export default function TechMaintenancePage() {
     },
   })
 
-  const deleteMaterialMutation = useMutation({
+  const deleteMaterialMutation = useGuardedMutation({
     mutationFn: (materialId: string) => {
       if (!selectedRequestId) throw new Error('No selected request')
       return maintenanceApi.deleteMaterial(selectedRequestId, materialId)
@@ -123,7 +124,7 @@ export default function TechMaintenancePage() {
     },
   })
 
-  const addNoteMutation = useMutation({
+  const addNoteMutation = useGuardedMutation({
     mutationFn: () => {
       if (!selectedRequestId) throw new Error('No selected request')
       return maintenanceApi.addNote(selectedRequestId, noteText.trim())
@@ -138,7 +139,7 @@ export default function TechMaintenancePage() {
     },
   })
 
-  const submitReviewMutation = useMutation({
+  const submitReviewMutation = useGuardedMutation({
     mutationFn: (id: string) => maintenanceApi.submitReview(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['tech-maintenance'] })
@@ -153,7 +154,7 @@ export default function TechMaintenancePage() {
     },
   })
 
-  const completionImagesMutation = useMutation({
+  const completionImagesMutation = useGuardedMutation({
     mutationFn: ({ id, images, video }: { id: string; images: File[]; video?: File | null }) =>
       maintenanceApi.addCompletionImages(id, images, video),
     onSuccess: (uploadedRequest) => {
