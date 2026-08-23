@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useMutation } from '@tanstack/react-query'
+import { useGuardedMutation } from '@/hooks/useGuardedMutation'
 import Layout from '@/components/Layout'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -14,7 +14,7 @@ export default function ChangePasswordPage() {
   const [form, setForm] = useState({ currentPassword: '', newPassword: '', confirm: '' })
   const [error, setError] = useState('')
 
-  const mutation = useMutation({
+  const mutation = useGuardedMutation({
     mutationFn: () => userApi.changePassword({ currentPassword: form.currentPassword, newPassword: form.newPassword }),
     onSuccess: () => {
       showToast({ message: 'Mật khẩu đã được cập nhật', type: 'success' })
