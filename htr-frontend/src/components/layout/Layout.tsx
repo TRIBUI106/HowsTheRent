@@ -1,4 +1,7 @@
 import { useState, type ReactNode } from 'react'
+import { useOnlineStatus } from '@/hooks/useOnlineStatus'
+import { OFFLINE_BANNER_SPACING_CLASS } from '@/components/OfflineBanner'
+import { cn } from '@/lib/utils'
 import Sidebar from './Sidebar'
 import Header from './Header'
 
@@ -9,9 +12,13 @@ interface LayoutProps {
 
 export default function Layout({ children, title }: LayoutProps) {
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
+  const isOnline = useOnlineStatus()
 
   return (
-    <div className="flex h-screen bg-bg">
+    <div
+      className={cn('flex h-screen bg-bg', !isOnline && OFFLINE_BANNER_SPACING_CLASS)}
+      data-testid="app-layout"
+    >
       <Sidebar mobileOpen={mobileNavOpen} onClose={() => setMobileNavOpen(false)} />
       <div className="flex-1 flex flex-col overflow-hidden min-w-0 bg-[linear-gradient(to_bottom,theme(colors.sidebar)_0,theme(colors.bg)_120px)]">
         <Header title={title} onMenuClick={() => setMobileNavOpen(true)} />

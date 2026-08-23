@@ -1,7 +1,8 @@
 import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister'
 import type { Persister } from '@tanstack/react-query-persist-client'
 
-export const CACHE_BUSTER = 'v1'
+// Vite injects a fresh build id for production deployments and a stable id in dev.
+export const CACHE_BUSTER = __HTR_BUILD_ID__
 const STORAGE_KEY = 'htr-query-cache'
 
 export function getPersister(): Persister | null {

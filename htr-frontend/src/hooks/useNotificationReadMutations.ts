@@ -1,6 +1,7 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQueryClient } from '@tanstack/react-query'
 import { notificationApi } from '@/api'
 import type { Notification } from '@/types'
+import { useGuardedMutation } from './useGuardedMutation'
 
 type MutationContext = {
   previous?: Notification[]
@@ -11,7 +12,7 @@ const NOTIFICATIONS_QUERY_KEY = ['notifications'] as const
 export function useNotificationReadMutations() {
   const queryClient = useQueryClient()
 
-  const markOneMutation = useMutation<unknown, Error, string, MutationContext>({
+  const markOneMutation = useGuardedMutation<unknown, Error, string, MutationContext>({
     mutationFn: (id) => notificationApi.markRead(id),
     onMutate: async (id) => {
       await queryClient.cancelQueries({ queryKey: NOTIFICATIONS_QUERY_KEY })
@@ -33,7 +34,7 @@ export function useNotificationReadMutations() {
     },
   })
 
-  const markAllMutation = useMutation<unknown, Error, void, MutationContext>({
+  const markAllMutation = useGuardedMutation<unknown, Error, void, MutationContext>({
     mutationFn: () => notificationApi.markAllRead(),
     onMutate: async () => {
       await queryClient.cancelQueries({ queryKey: NOTIFICATIONS_QUERY_KEY })
