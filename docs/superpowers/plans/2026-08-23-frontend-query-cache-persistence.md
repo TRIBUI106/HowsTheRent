@@ -503,59 +503,55 @@ Expected: PASS (2 tests)
 
 - [ ] **Step 5: Mount in App shell**
 
-In `src/App.tsx`, add the import and render `<OfflineBanner />` once, outside the role branches so it's visible on every route including the logged-out landing/login pages:
+In `src/App.tsx`, add the import and render `<OfflineBanner />` once per return branch, outside the `Routes` so it's visible on every route including the logged-out landing/login pages. Apply this exact diff:
 
 ```diff
  import { Routes, Route, Navigate } from 'react-router-dom'
  import { useAuthStore } from '@/stores/authStore'
 +import OfflineBanner from '@/components/OfflineBanner'
  import LandingPage from '@/pages/LandingPage'
-```
+ import LoginPage from '@/features/auth/pages/LoginPage'
+ import ForgotPasswordPage from '@/features/auth/pages/ForgotPasswordPage'
+ import ResetPasswordPage from '@/features/auth/pages/ResetPasswordPage'
+ import ChangePasswordPage from '@/features/auth/pages/ChangePasswordPage'
+ import ProfilePage from '@/features/auth/pages/ProfilePage'
+ import PaymentSuccessPage from '@/features/payment/pages/SuccessPage'
+ import PaymentCancelPage from '@/features/payment/pages/CancelPage'
+ import NotFoundPage from '@/pages/NotFoundPage'
+ import adminRoutes from '@/router/adminRoutes'
+ import tenantRoutes from '@/router/tenantRoutes'
+ import techRoutes from '@/router/techRoutes'
 
-```diff
  export default function App() {
    const { user } = useAuthStore()
 
-+  return (
-+    <>
-+      <OfflineBanner />
-+      {renderRoutes()}
-+    </>
-+  )
-+}
-+
-+function renderRoutes() {
-+  const { user } = useAuthStore()
    if (!user) {
-```
-
-Note: `useAuthStore` is now called twice (once in `App`, once in the extracted `renderRoutes`). Simpler: keep the single `user` read in `App` and pass routing inline instead of extracting a function. Apply this exact diff instead:
-
-```diff
- export default function App() {
-   const { user } = useAuthStore()
-
--  if (!user) {
--    return (
-+  if (!user) {
-+    return (
+     return (
+-      <Routes>
+-        <Route path="/" element={<LandingPage />} />
+-        <Route path="/landing" element={<LandingPage />} />
+-        <Route path="/login" element={<LoginPage />} />
+-        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+-        <Route path="/reset-password" element={<ResetPasswordPage />} />
+-        <Route path="/payment/success" element={<PaymentSuccessPage />} />
+-        <Route path="/payment/cancel" element={<PaymentCancelPage />} />
+-        <Route path="*" element={<Navigate to="/login" replace />} />
+-      </Routes>
 +      <>
 +        <OfflineBanner />
-         <Routes>
-           <Route path="/" element={<LandingPage />} />
-           <Route path="/landing" element={<LandingPage />} />
-           <Route path="/login" element={<LoginPage />} />
-           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-           <Route path="/reset-password" element={<ResetPasswordPage />} />
-           <Route path="/payment/success" element={<PaymentSuccessPage />} />
-           <Route path="/payment/cancel" element={<PaymentCancelPage />} />
-           <Route path="*" element={<Navigate to="/login" replace />} />
-         </Routes>
--    )
--  }
++        <Routes>
++          <Route path="/" element={<LandingPage />} />
++          <Route path="/landing" element={<LandingPage />} />
++          <Route path="/login" element={<LoginPage />} />
++          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
++          <Route path="/reset-password" element={<ResetPasswordPage />} />
++          <Route path="/payment/success" element={<PaymentSuccessPage />} />
++          <Route path="/payment/cancel" element={<PaymentCancelPage />} />
++          <Route path="*" element={<Navigate to="/login" replace />} />
++        </Routes>
 +      </>
-+    )
-+  }
+     )
+   }
 
    const homePath =
      ['ADMIN', 'PLATFORM_ADMIN', 'LANDLORD_ADMIN'].includes(user.role) ? '/admin' :
@@ -564,21 +560,32 @@ Note: `useAuthStore` is now called twice (once in `App`, once in the extracted `
 
    return (
 -    <Routes>
+-      <Route path="/" element={<Navigate to={homePath} replace />} />
+-      <Route path="/login" element={<Navigate to={homePath} replace />} />
+-      <Route path="/landing" element={<LandingPage />} />
+-      <Route path="/change-password" element={<ChangePasswordPage />} />
+-      <Route path="/profile" element={<ProfilePage />} />
+-      {adminRoutes}
+-      {tenantRoutes}
+-      {techRoutes}
+-      <Route path="/payment/success" element={<PaymentSuccessPage />} />
+-      <Route path="/payment/cancel" element={<PaymentCancelPage />} />
+-      <Route path="*" element={<NotFoundPage />} />
+-    </Routes>
 +    <>
 +      <OfflineBanner />
 +      <Routes>
-       <Route path="/" element={<Navigate to={homePath} replace />} />
-       <Route path="/login" element={<Navigate to={homePath} replace />} />
-       <Route path="/landing" element={<LandingPage />} />
-       <Route path="/change-password" element={<ChangePasswordPage />} />
-       <Route path="/profile" element={<ProfilePage />} />
-       {adminRoutes}
-       {tenantRoutes}
-       {techRoutes}
-       <Route path="/payment/success" element={<PaymentSuccessPage />} />
-       <Route path="/payment/cancel" element={<PaymentCancelPage />} />
-       <Route path="*" element={<NotFoundPage />} />
--    </Routes>
++        <Route path="/" element={<Navigate to={homePath} replace />} />
++        <Route path="/login" element={<Navigate to={homePath} replace />} />
++        <Route path="/landing" element={<LandingPage />} />
++        <Route path="/change-password" element={<ChangePasswordPage />} />
++        <Route path="/profile" element={<ProfilePage />} />
++        {adminRoutes}
++        {tenantRoutes}
++        {techRoutes}
++        <Route path="/payment/success" element={<PaymentSuccessPage />} />
++        <Route path="/payment/cancel" element={<PaymentCancelPage />} />
++        <Route path="*" element={<NotFoundPage />} />
 +      </Routes>
 +    </>
    )
