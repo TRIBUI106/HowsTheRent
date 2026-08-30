@@ -7,6 +7,7 @@ import chez1s.htrbackend.domain.entity.Property;
 import chez1s.htrbackend.domain.entity.User;
 import chez1s.htrbackend.domain.enums.RoomStatus;
 import chez1s.htrbackend.domain.repository.*;
+import chez1s.htrbackend.dto.response.AdminPostSummaryResponse;
 import chez1s.htrbackend.dto.response.BlogPostDetailResponse;
 import chez1s.htrbackend.dto.response.BlogPostSummaryResponse;
 import chez1s.htrbackend.dto.response.LikeStatusResponse;
@@ -116,6 +117,28 @@ class PostServiceTest {
 
         assertThat(result.content()).isEqualTo("Rất hài lòng");
         assertThat(result.userName()).isEqualTo("Khách A");
+    }
+
+    @Test
+    void listAllForAdminIncludesPropertiesWithNoPostYet() {
+        UUID propertyWithPostId = UUID.randomUUID();
+        UUID propertyWithoutPostId = UUID.randomUUID();
+        Property withPost = Property.builder().id(propertyWithPostId).name("Nhà A").build();
+        Property withoutPost = Property.builder().id(propertyWithoutPostId).name("Nhà B").build();
+        Post post = Post.builder().id(UUID.randomUUID()).property(withPost).title("Bài viết A")
+                .slug("bai-viet-a").published(true).build();
+        when(propertyRepository.findAll()).thenReturn(List.of(withPost, withoutPost));
+        when(postRepository.findAll()).thenReturn(List.of(post));
+
+        List<AdminPostSummaryResponse> result = postService.listAllForAdmin();
+
+        assertThat(result).hasSize(2);
+        AdminPostSummaryResponse rowA = result.stream().filter(r -> r.propertyId().equals(propertyWithPostId)).findFirst().orElseThrow();
+        assertThat(rowA.published()).isTrue();
+        assertThat(rowA.slug()).isEqualTo("bai-viet-a");
+        AdminPostSummaryResponse rowB = result.stream().filter(r -> r.propertyId().equals(propertyWithoutPostId)).findFirst().orElseThrow();
+        assertThat(rowB.published()).isFalse();
+        assertThat(rowB.postId()).isNull();
     }
 
     @Test

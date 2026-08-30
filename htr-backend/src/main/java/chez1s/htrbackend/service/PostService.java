@@ -7,6 +7,7 @@ import chez1s.htrbackend.domain.entity.Property;
 import chez1s.htrbackend.domain.entity.User;
 import chez1s.htrbackend.domain.enums.RoomStatus;
 import chez1s.htrbackend.domain.repository.*;
+import chez1s.htrbackend.dto.response.AdminPostSummaryResponse;
 import chez1s.htrbackend.dto.response.BlogPostDetailResponse;
 import chez1s.htrbackend.dto.response.BlogPostSummaryResponse;
 import chez1s.htrbackend.dto.response.LikeStatusResponse;
@@ -17,6 +18,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -35,6 +39,26 @@ public class PostService {
     public List<BlogPostSummaryResponse> listPublished() {
         return postRepository.findByPublishedTrueOrderByPublishedAtDesc().stream()
                 .map(this::toSummary)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<AdminPostSummaryResponse> listAllForAdmin() {
+        Map<UUID, Post> postsByPropertyId = postRepository.findAll().stream()
+                .collect(Collectors.toMap(post -> post.getProperty().getId(), post -> post));
+        return propertyRepository.findAll().stream()
+                .map(property -> {
+                    Post post = postsByPropertyId.get(property.getId());
+                    return new AdminPostSummaryResponse(
+                            property.getId(),
+                            property.getName(),
+                            post != null ? post.getId() : null,
+                            post != null ? post.getTitle() : null,
+                            post != null ? post.getSlug() : null,
+                            post != null && post.isPublished(),
+                            post != null ? post.getUpdatedAt() : null
+                    );
+                })
                 .toList();
     }
 
