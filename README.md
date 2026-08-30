@@ -117,3 +117,12 @@ Nếu DevTools hiển thị `401` cho `/api/dashboard/...`, `/api/notifications`
 4. `Unchecked runtime.lastError: Could not establish connection` thường đến từ browser extension, không phải lỗi của HowsTheRent backend.
 
 Frontend sẽ thử refresh session một lần khi nhận `401`. Nếu refresh thất bại, ứng dụng xoá session local, xoá cache persisted và điều hướng về `/login`.
+
+### Nguyên nhân gốc thường gặp (đã xảy ra nhiều lần trong lịch sử fix)
+
+Lịch sử commit cho thấy phần lớn các đợt "sửa 401" lặp đi lặp lại chỉ đến từ **2 nguyên nhân kiến trúc**, không phải nhiều lỗi rời rạc. Biết trước 2 điều này để tránh lặp lại:
+
+1. **Cookie auth bị đổi tên/scope mà không dọn cookie cũ.** Lịch sử: `localStorage` → cookie, `AccessToken` → `accessToken`, path `/api/maintenance` → `/`. Mỗi lần đổi, ai còn cookie cũ trong trình duyệt sẽ dính 401, và fix mỗi lần chỉ là "thêm fallback đọc cookie cũ" (xem `JwtAuthFilter.java`, vẫn còn `LEGACY_CAPITALIZED_ACCESS_TOKEN_COOKIE`). **Quy tắc:** không đổi tên/scope cookie `accessToken`/`refreshToken` nếu không thật sự cần thiết; nếu bắt buộc phải đổi, phải thêm cả fallback đọc cookie cũ **và** logic chủ động xoá cookie cũ ở mọi path cũ khi login/logout, giống các fix trước.
+2. **Lazy JPA field bị truy cập ngoài transaction → hiện thành 401 thay vì 500.** Project chạy `spring.jpa.open-in-view=false`; nếu build response DTO **ngoài** `@Transactional` (ví dụ ở controller thay vì service) và đụng field `FetchType.LAZY` chưa fetch, sẽ ném `LazyInitializationException`. `GlobalExceptionHandler` đã bắt exception này trả về 500 thân thiện, và `JwtAuthFilter` đã fix để re-authenticate cả dispatch loại ASYNC/ERROR (`shouldNotFilterAsyncDispatch`/`shouldNotFilterErrorDispatch` = false) — nên lỗi này giờ hiện đúng là 500, không còn giả dạng 401 nữa. Nhưng nguyên nhân gốc (thiếu `@EntityGraph`) vẫn chưa được dọn hết — chỉ 7/15 entity có `FetchType.LAZY` đã được gắn `@EntityGraph` trên repository method liên quan. **Quy tắc cho code mới:** khi thêm entity/quan hệ lazy mới, luôn build DTO **bên trong** `@Transactional(readOnly = true)` của service, hoặc gắn `@EntityGraph` cho repository method sẽ dùng để trả response — đừng đợi bug rồi mới vá.
+
+**Gotcha khác (chưa từng gây ticket, nhưng có thể gây 401 "vô cớ"):** `JwtAuthFilter` check thêm `authVersion` khớp giữa token và DB. Token còn hạn, chữ ký đúng, nhưng nếu `authVersion` bị bump ở nơi khác (đổi mật khẩu, đổi role, force logout) thì request vẫn 401 — đây là tính năng thu hồi token có chủ đích, không phải bug.

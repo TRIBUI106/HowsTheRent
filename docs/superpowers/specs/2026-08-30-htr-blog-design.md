@@ -212,6 +212,47 @@ organic search performance matters more than expected once this ships.
   decide (no rich-text editor exists anywhere in this codebase yet, so
   there's no existing pattern to match)
 
+## 7.1. Mandatory implementation rules (from this repo's 401-incident history — see `CLAUDE.md` / README's "Troubleshooting: API trả về 401")
+
+This app has a documented history of 401 bugs that all trace back to two
+repeated architectural mistakes. This feature adds a new role (first
+ever self-registered/public one) and three new entities with relations
+— exactly the shape of change that has caused both mistakes before.
+These rules are not optional polish, they're how this feature avoids
+becoming incident #4 and #5 in that history:
+
+1. **Do not introduce any new or renamed auth cookie for `GUEST`.**
+   Reuse the existing `accessToken`/`refreshToken` cookies, same names,
+   same `/` path, same `JwtAuthFilter` flow — a `GUEST` login is just
+   another row in the same `users` table with a different `role` claim.
+   Three past incidents were all "we changed the cookie identity and
+   didn't fully retire the old one" in different disguises; this feature
+   must not create a fourth variant.
+2. **Every new entity (`Post`, `PostComment`, `PostLike`) that gets
+   mapped to a response DTO must either be built inside a
+   `@Transactional(readOnly = true)` service method, or have
+   `@EntityGraph` on the repository method that fetches it** — in
+   particular `Post.property` (and through it `property.images`/
+   `property.rooms` if the auto-draft generator touches them),
+   `PostComment.user`, and any listing endpoint that returns multiple
+   posts/comments with their relations. This project runs
+   `spring.jpa.open-in-view=false`; three past bugs were exactly this
+   mistake (`cf67604`, `608b465`, `8c7858b`), and it's now the
+   established pattern to follow proactively rather than hit and patch.
+3. **§4.1's `@PreAuthorize` hardening pass on the currently-unannotated
+   endpoints is required before `GUEST` can log in**, not a nice-to-have
+   — see the earlier conversation in this session for why (this repo's
+   RBAC is entirely per-endpoint `@PreAuthorize`, there is no
+   gateway-level role gate; endpoints without their own annotation only
+   check "is anyone logged in", which was safe when every role was
+   admin-provisioned and stops being safe once `GUEST` is
+   self-registerable).
+4. Local manual verification of the auth/comment/like flow should follow
+   the recipe in `CLAUDE.md`'s "Manual full-stack verification recipe"
+   section (env var overrides for `.env`'s CORS/MinIO placeholders, the
+   `seed.sql` auth_version fix, the admin password reset trick) rather
+   than rediscovering those from scratch.
+
 ## 8. Rollout
 
 Additive only: new tables, new role, new endpoints, new routes — nothing
