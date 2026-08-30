@@ -4,9 +4,12 @@ import chez1s.htrbackend.domain.entity.Post;
 import chez1s.htrbackend.domain.entity.PostComment;
 import chez1s.htrbackend.domain.entity.PostLike;
 import chez1s.htrbackend.domain.entity.Property;
+import chez1s.htrbackend.domain.entity.Room;
 import chez1s.htrbackend.domain.entity.User;
 import chez1s.htrbackend.domain.enums.RoomStatus;
 import chez1s.htrbackend.domain.repository.*;
+import chez1s.htrbackend.dto.request.UpdatePostRequest;
+import chez1s.htrbackend.dto.response.AdminPostDetailResponse;
 import chez1s.htrbackend.dto.response.AdminPostSummaryResponse;
 import chez1s.htrbackend.dto.response.BlogPostDetailResponse;
 import chez1s.htrbackend.dto.response.BlogPostSummaryResponse;
@@ -17,7 +20,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.text.Normalizer;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -60,6 +65,37 @@ public class PostService {
                     );
                 })
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public AdminPostDetailResponse getForAdmin(UUID propertyId) {
+        Post post = postRepository.findByPropertyId(propertyId)
+                .orElseThrow(() -> new ResourceNotFoundException("Post for property", propertyId));
+        return AdminPostDetailResponse.from(post);
+    }
+
+    @Transactional
+    public AdminPostDetailResponse upsertPost(UUID propertyId, UpdatePostRequest req, UUID authorId) {
+        Property property = propertyService.getById(propertyId);
+        Post post = postRepository.findByPropertyId(propertyId).orElseGet(() -> {
+            Post created = new Post();
+            created.setProperty(property);
+            return created;
+        });
+        User author = userRepository.findById(authorId)
+                .orElseThrow(() -> new ResourceNotFoundException("User", authorId));
+
+        post.setTitle(req.getTitle());
+        post.setContent(req.getContent());
+        post.setCoverImageUrl(req.getCoverImageUrl() != null ? req.getCoverImageUrl() : resolveDefaultCoverImage(propertyId));
+        post.setAuthor(author);
+
+        String desiredSlug = req.getSlug() != null && !req.getSlug().isBlank()
+                ? slugify(req.getSlug())
+                : slugify(req.getTitle());
+        post.setSlug(uniqueSlug(desiredSlug, post.getId()));
+
+        return AdminPostDetailResponse.from(postRepository.save(post));
     }
 
     @Transactional(readOnly = true)
@@ -110,6 +146,36 @@ public class PostService {
                 .orElseThrow(() -> new ResourceNotFoundException("Post", slug));
         postLikeRepository.deleteByPostIdAndUserId(post.getId(), userId);
         return new LikeStatusResponse(false, postLikeRepository.countByPostId(post.getId()));
+    }
+
+    private String resolveDefaultCoverImage(UUID propertyId) {
+        return roomRepository.findByPropertyId(propertyId).stream()
+                .flatMap(room -> room.getImages().stream())
+                .findFirst()
+                .orElse(null);
+    }
+
+    private String uniqueSlug(String base, UUID excludingPostId) {
+        String candidate = base;
+        int suffix = 2;
+        while (excludingPostId == null
+                ? postRepository.existsBySlug(candidate)
+                : postRepository.existsBySlugAndIdNot(candidate, excludingPostId)) {
+            candidate = base + "-" + suffix;
+            suffix++;
+        }
+        return candidate;
+    }
+
+    private String slugify(String input) {
+        String withoutDiacritics = Normalizer.normalize(input, Normalizer.Form.NFD)
+                .replaceAll("\\p{InCombiningDiacriticalMarks}+", "")
+                .replace('đ', 'd').replace('Đ', 'D');
+        return withoutDiacritics.toLowerCase(Locale.ROOT)
+                .replaceAll("[^a-z0-9\\s-]", "")
+                .trim()
+                .replaceAll("\\s+", "-")
+                .replaceAll("-+", "-");
     }
 
     private BlogPostSummaryResponse toSummary(Post post) {

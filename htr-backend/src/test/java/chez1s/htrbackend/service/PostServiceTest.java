@@ -7,6 +7,8 @@ import chez1s.htrbackend.domain.entity.Property;
 import chez1s.htrbackend.domain.entity.User;
 import chez1s.htrbackend.domain.enums.RoomStatus;
 import chez1s.htrbackend.domain.repository.*;
+import chez1s.htrbackend.dto.request.UpdatePostRequest;
+import chez1s.htrbackend.dto.response.AdminPostDetailResponse;
 import chez1s.htrbackend.dto.response.AdminPostSummaryResponse;
 import chez1s.htrbackend.dto.response.BlogPostDetailResponse;
 import chez1s.htrbackend.dto.response.BlogPostSummaryResponse;
@@ -139,6 +141,58 @@ class PostServiceTest {
         AdminPostSummaryResponse rowB = result.stream().filter(r -> r.propertyId().equals(propertyWithoutPostId)).findFirst().orElseThrow();
         assertThat(rowB.published()).isFalse();
         assertThat(rowB.postId()).isNull();
+    }
+
+    @Test
+    void getForAdminThrowsWhenNoPostExistsYet() {
+        UUID propertyId = UUID.randomUUID();
+        when(postRepository.findByPropertyId(propertyId)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> postService.getForAdmin(propertyId))
+                .isInstanceOf(ResourceNotFoundException.class);
+    }
+
+    @Test
+    void upsertPostCreatesOnFirstCallWithGeneratedSlug() {
+        UUID propertyId = UUID.randomUUID();
+        UUID authorId = UUID.randomUUID();
+        Property property = Property.builder().id(propertyId).name("Nhà trọ Xanh").build();
+        User author = User.builder().id(authorId).fullName("Admin A").build();
+        UpdatePostRequest req = new UpdatePostRequest();
+        req.setTitle("Phòng Trọ Đẹp Quận 1");
+        req.setContent("<p>Nội dung</p>");
+        when(postRepository.findByPropertyId(propertyId)).thenReturn(Optional.empty());
+        when(propertyService.getById(propertyId)).thenReturn(property);
+        when(userRepository.findById(authorId)).thenReturn(Optional.of(author));
+        when(roomRepository.findByPropertyId(propertyId)).thenReturn(List.of());
+        when(postRepository.existsBySlug("phong-tro-dep-quan-1")).thenReturn(false);
+        when(postRepository.save(org.mockito.ArgumentMatchers.any(Post.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        AdminPostDetailResponse result = postService.upsertPost(propertyId, req, authorId);
+
+        assertThat(result.slug()).isEqualTo("phong-tro-dep-quan-1");
+        assertThat(result.title()).isEqualTo("Phòng Trọ Đẹp Quận 1");
+        assertThat(result.published()).isFalse();
+    }
+
+    @Test
+    void upsertPostAppendsSuffixOnSlugCollision() {
+        UUID propertyId = UUID.randomUUID();
+        UUID authorId = UUID.randomUUID();
+        Property property = Property.builder().id(propertyId).name("Nhà trọ Xanh").build();
+        UpdatePostRequest req = new UpdatePostRequest();
+        req.setTitle("Phòng Đẹp");
+        when(postRepository.findByPropertyId(propertyId)).thenReturn(Optional.empty());
+        when(propertyService.getById(propertyId)).thenReturn(property);
+        when(userRepository.findById(authorId)).thenReturn(Optional.of(User.builder().id(authorId).build()));
+        when(roomRepository.findByPropertyId(propertyId)).thenReturn(List.of());
+        when(postRepository.existsBySlug("phong-dep")).thenReturn(true);
+        when(postRepository.existsBySlug("phong-dep-2")).thenReturn(false);
+        when(postRepository.save(org.mockito.ArgumentMatchers.any(Post.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        AdminPostDetailResponse result = postService.upsertPost(propertyId, req, authorId);
+
+        assertThat(result.slug()).isEqualTo("phong-dep-2");
     }
 
     @Test
