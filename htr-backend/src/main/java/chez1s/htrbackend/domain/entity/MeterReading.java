@@ -39,6 +39,32 @@ public class MeterReading {
     @Column(name = "water_new")
     private Long waterNew;
 
+    /** True when the electricity meter was physically replaced during this period. */
+    @Column(name = "elec_replaced", nullable = false)
+    @Builder.Default
+    private boolean elecReplaced = false;
+
+    /** Old meter's final reading right before removal, when {@link #elecReplaced}. */
+    @Column(name = "elec_old_meter_final")
+    private Long elecOldMeterFinal;
+
+    /** New meter's starting reading at install, when {@link #elecReplaced}. */
+    @Column(name = "elec_new_meter_start")
+    private Long elecNewMeterStart;
+
+    /** True when the water meter was physically replaced during this period. */
+    @Column(name = "water_replaced", nullable = false)
+    @Builder.Default
+    private boolean waterReplaced = false;
+
+    /** Old meter's final reading right before removal, when {@link #waterReplaced}. */
+    @Column(name = "water_old_meter_final")
+    private Long waterOldMeterFinal;
+
+    /** New meter's starting reading at install, when {@link #waterReplaced}. */
+    @Column(name = "water_new_meter_start")
+    private Long waterNewMeterStart;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     @Builder.Default

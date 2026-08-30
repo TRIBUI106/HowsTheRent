@@ -122,5 +122,93 @@ class MeterReadingServiceTest {
         assertThat(result.getElecOld()).isEqualTo(150L);
         assertThat(result.getWaterOld()).isEqualTo(20L);
     }
+
+    @Test
+    void create_meterReplaced_allowsNewReadingLowerThanPreviousMonthsFinalReading() {
+        UUID roomId = UUID.randomUUID();
+        UUID recordedById = UUID.randomUUID();
+        LocalDate previousMonth = LocalDate.of(2026, 6, 1);
+        LocalDate month = LocalDate.of(2026, 7, 1);
+        MeterReading previous = MeterReading.builder()
+                .id(UUID.randomUUID())
+                .room(new Room())
+                .readingMonth(previousMonth)
+                .elecOld(9700L)
+                .elecNew(9800L) // old meter's last known reading
+                .source(MeterReadingSource.MANUAL)
+                .build();
+
+        CreateMeterReadingRequest request = new CreateMeterReadingRequest();
+        request.setReadingMonth(month);
+        request.setElecReplaced(true);
+        request.setElecOldMeterFinal(9850L); // old meter used 50 more before removal
+        request.setElecNewMeterStart(0L);    // new meter installed at 0
+        request.setElecNew(120L);            // far lower than 9850 — would fail the normal check
+
+        when(meterReadingRepository.findByRoomIdAndReadingMonth(roomId, month)).thenReturn(Optional.empty());
+        when(meterReadingRepository.findFirstByRoomIdAndReadingMonthLessThanOrderByReadingMonthDesc(roomId, month)).thenReturn(Optional.of(previous));
+        when(roomService.getById(roomId)).thenReturn(new Room());
+        when(meterReadingRepository.save(org.mockito.ArgumentMatchers.any(MeterReading.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        MeterReading result = meterReadingService.create(roomId, recordedById, request);
+
+        assertThat(result.isElecReplaced()).isTrue();
+        assertThat(result.getElecOld()).isEqualTo(9800L);
+        assertThat(result.getElecOldMeterFinal()).isEqualTo(9850L);
+        assertThat(result.getElecNewMeterStart()).isEqualTo(0L);
+        assertThat(result.getElecNew()).isEqualTo(120L);
+    }
+
+    @Test
+    void create_meterReplaced_rejectsWhenOldMeterFinalIsBelowItsPreviousReading() {
+        UUID roomId = UUID.randomUUID();
+        UUID recordedById = UUID.randomUUID();
+        LocalDate previousMonth = LocalDate.of(2026, 6, 1);
+        LocalDate month = LocalDate.of(2026, 7, 1);
+        MeterReading previous = MeterReading.builder()
+                .id(UUID.randomUUID())
+                .room(new Room())
+                .readingMonth(previousMonth)
+                .elecOld(9700L)
+                .elecNew(9800L)
+                .source(MeterReadingSource.MANUAL)
+                .build();
+
+        CreateMeterReadingRequest request = new CreateMeterReadingRequest();
+        request.setReadingMonth(month);
+        request.setElecReplaced(true);
+        request.setElecOldMeterFinal(9799L); // less than previous month's 9800 — impossible
+        request.setElecNewMeterStart(0L);
+        request.setElecNew(120L);
+
+        when(meterReadingRepository.findByRoomIdAndReadingMonth(roomId, month)).thenReturn(Optional.empty());
+        when(meterReadingRepository.findFirstByRoomIdAndReadingMonthLessThanOrderByReadingMonthDesc(roomId, month)).thenReturn(Optional.of(previous));
+
+        assertThatThrownBy(() -> meterReadingService.create(roomId, recordedById, request))
+                .isInstanceOf(BusinessException.class);
+    }
+
+    @Test
+    void create_meterReplaced_rejectsWhenMissingNewMeterStart() {
+        UUID roomId = UUID.randomUUID();
+        UUID recordedById = UUID.randomUUID();
+        LocalDate month = LocalDate.of(2026, 7, 1);
+
+        CreateMeterReadingRequest request = new CreateMeterReadingRequest();
+        request.setReadingMonth(month);
+        request.setElecOld(100L);
+        request.setElecReplaced(true);
+        request.setElecOldMeterFinal(150L);
+        // elecNewMeterStart intentionally left null
+        request.setElecNew(20L);
+
+        when(meterReadingRepository.findByRoomIdAndReadingMonth(roomId, month)).thenReturn(Optional.empty());
+        when(meterReadingRepository.findFirstByRoomIdAndReadingMonthLessThanOrderByReadingMonthDesc(roomId, month)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> meterReadingService.create(roomId, recordedById, request))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("requires both");
+    }
 }
 

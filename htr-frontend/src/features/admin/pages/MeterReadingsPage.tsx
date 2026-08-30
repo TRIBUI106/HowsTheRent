@@ -19,6 +19,12 @@ interface ReadingForm {
   elecNew: string
   waterOld: string
   waterNew: string
+  elecReplaced: boolean
+  elecOldMeterFinal: string
+  elecNewMeterStart: string
+  waterReplaced: boolean
+  waterOldMeterFinal: string
+  waterNewMeterStart: string
 }
 
 interface MeterReadingHistory {
@@ -64,7 +70,11 @@ function getErrorMessage(error: unknown, fallback: string) {
   return apiError.response?.data?.message ?? apiError.message ?? fallback
 }
 
-const emptyForm = (): ReadingForm => ({ elecOld: '', elecNew: '', waterOld: '', waterNew: '' })
+const emptyForm = (): ReadingForm => ({
+  elecOld: '', elecNew: '', waterOld: '', waterNew: '',
+  elecReplaced: false, elecOldMeterFinal: '', elecNewMeterStart: '',
+  waterReplaced: false, waterOldMeterFinal: '', waterNewMeterStart: '',
+})
 const MAX_READING_DELTA = 100_000
 
 function currentYearMonth() {
@@ -141,6 +151,12 @@ export default function MeterReadingsPage() {
         elecNew: current?.elecNew != null ? String(current.elecNew) : '',
         waterOld: current?.waterOld != null ? String(current.waterOld) : previous?.waterNew != null ? String(previous.waterNew) : '',
         waterNew: current?.waterNew != null ? String(current.waterNew) : '',
+        elecReplaced: false,
+        elecOldMeterFinal: '',
+        elecNewMeterStart: '',
+        waterReplaced: false,
+        waterOldMeterFinal: '',
+        waterNewMeterStart: '',
       }
     }
     return nextForms
@@ -163,6 +179,12 @@ export default function MeterReadingsPage() {
             elecNew: String(saved.elecNew),
             waterOld: saved.waterOld != null ? String(saved.waterOld) : '',
             waterNew: saved.waterNew != null ? String(saved.waterNew) : '',
+            elecReplaced: false,
+            elecOldMeterFinal: '',
+            elecNewMeterStart: '',
+            waterReplaced: false,
+            waterOldMeterFinal: '',
+            waterNewMeterStart: '',
           },
         },
       }))
@@ -213,7 +235,7 @@ export default function MeterReadingsPage() {
     return activeForms[roomId] ?? emptyForm()
   }
 
-  function updateForm(roomId: string, field: keyof ReadingForm, value: string) {
+  function updateForm<K extends keyof ReadingForm>(roomId: string, field: K, value: ReadingForm[K]) {
     setForms((previous) => ({
       ...previous,
       [selectedMonth]: {
@@ -245,24 +267,55 @@ export default function MeterReadingsPage() {
     const previous = seed?.previous
     const elecOld = Number(form.elecOld)
     const elecNew = Number(form.elecNew)
-    const elecError = validateReading(elecOld, elecNew, 'Chỉ số điện')
-    if (elecError) {
-      showToast({ message: elecError, type: 'error' })
-      return
+
+    let elecOldMeterFinal: number | null = null
+    let elecNewMeterStart: number | null = null
+    if (form.elecReplaced) {
+      if (!form.elecOldMeterFinal.trim() || !form.elecNewMeterStart.trim()) {
+        showToast({ message: 'Đã thay đồng hồ điện: vui lòng nhập chỉ số đồng hồ cũ trước khi tháo và chỉ số đồng hồ mới lúc lắp', type: 'error' })
+        return
+      }
+      elecOldMeterFinal = Number(form.elecOldMeterFinal)
+      elecNewMeterStart = Number(form.elecNewMeterStart)
+      const oldSegError = validateReading(elecOld, elecOldMeterFinal, 'Chỉ số đồng hồ điện cũ (trước khi tháo)')
+      if (oldSegError) { showToast({ message: oldSegError, type: 'error' }); return }
+      const newSegError = validateReading(elecNewMeterStart, elecNew, 'Chỉ số đồng hồ điện mới')
+      if (newSegError) { showToast({ message: newSegError, type: 'error' }); return }
+    } else {
+      const elecError = validateReading(elecOld, elecNew, 'Chỉ số điện')
+      if (elecError) {
+        showToast({ message: elecError, type: 'error' })
+        return
+      }
     }
 
     const hasWater = form.waterOld.trim() || form.waterNew.trim()
     const waterOld = form.waterOld ? Number(form.waterOld) : null
     const waterNew = form.waterNew ? Number(form.waterNew) : null
+    let waterOldMeterFinal: number | null = null
+    let waterNewMeterStart: number | null = null
     if (hasWater) {
       if (waterOld == null || waterNew == null) {
         showToast({ message: 'Vui lòng nhập đủ chỉ số nước cũ và mới', type: 'error' })
         return
       }
-      const waterError = validateReading(waterOld, waterNew, 'Chỉ số nước')
-      if (waterError) {
-        showToast({ message: waterError, type: 'error' })
-        return
+      if (form.waterReplaced) {
+        if (!form.waterOldMeterFinal.trim() || !form.waterNewMeterStart.trim()) {
+          showToast({ message: 'Đã thay đồng hồ nước: vui lòng nhập chỉ số đồng hồ cũ trước khi tháo và chỉ số đồng hồ mới lúc lắp', type: 'error' })
+          return
+        }
+        waterOldMeterFinal = Number(form.waterOldMeterFinal)
+        waterNewMeterStart = Number(form.waterNewMeterStart)
+        const oldSegError = validateReading(waterOld, waterOldMeterFinal, 'Chỉ số đồng hồ nước cũ (trước khi tháo)')
+        if (oldSegError) { showToast({ message: oldSegError, type: 'error' }); return }
+        const newSegError = validateReading(waterNewMeterStart, waterNew, 'Chỉ số đồng hồ nước mới')
+        if (newSegError) { showToast({ message: newSegError, type: 'error' }); return }
+      } else {
+        const waterError = validateReading(waterOld, waterNew, 'Chỉ số nước')
+        if (waterError) {
+          showToast({ message: waterError, type: 'error' })
+          return
+        }
       }
     }
 
@@ -278,6 +331,12 @@ export default function MeterReadingsPage() {
         elecNew,
         waterOld: lockedWaterOld,
         waterNew,
+        elecReplaced: form.elecReplaced,
+        elecOldMeterFinal,
+        elecNewMeterStart,
+        waterReplaced: form.waterReplaced,
+        waterOldMeterFinal,
+        waterNewMeterStart,
         source: 'MANUAL',
       },
     })
@@ -435,6 +494,41 @@ export default function MeterReadingsPage() {
                               </div>
                             </div>
 
+                            {previous && (
+                              <div className="space-y-2">
+                                <label className="flex items-center gap-2 text-xs text-fg-muted">
+                                  <input
+                                    type="checkbox"
+                                    checked={form.elecReplaced}
+                                    onChange={(event) => updateForm(room.id, 'elecReplaced', event.target.checked)}
+                                  />
+                                  Đã thay đồng hồ điện kỳ này
+                                </label>
+                                {form.elecReplaced && (
+                                  <div className="grid grid-cols-2 gap-2 rounded-lg border border-warning/40 bg-warning-surface/40 p-2">
+                                    <div>
+                                      <label className="mb-1 block text-xs text-fg-muted">Điện cũ - trước khi tháo (kWh)</label>
+                                      <Input
+                                        type="number"
+                                        placeholder="0"
+                                        value={form.elecOldMeterFinal}
+                                        onChange={(event) => updateForm(room.id, 'elecOldMeterFinal', event.target.value)}
+                                      />
+                                    </div>
+                                    <div>
+                                      <label className="mb-1 block text-xs text-fg-muted">Điện mới - lúc lắp (kWh)</label>
+                                      <Input
+                                        type="number"
+                                        placeholder="0"
+                                        value={form.elecNewMeterStart}
+                                        onChange={(event) => updateForm(room.id, 'elecNewMeterStart', event.target.value)}
+                                      />
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            )}
+
                             <div className="grid grid-cols-2 gap-2">
                               <div>
                                 <label className="mb-1 block text-xs text-fg-muted">Nước cũ (m³)</label>
@@ -457,12 +551,52 @@ export default function MeterReadingsPage() {
                               </div>
                             </div>
 
+                            {previous?.waterNew != null && (
+                              <div className="space-y-2">
+                                <label className="flex items-center gap-2 text-xs text-fg-muted">
+                                  <input
+                                    type="checkbox"
+                                    checked={form.waterReplaced}
+                                    onChange={(event) => updateForm(room.id, 'waterReplaced', event.target.checked)}
+                                  />
+                                  Đã thay đồng hồ nước kỳ này
+                                </label>
+                                {form.waterReplaced && (
+                                  <div className="grid grid-cols-2 gap-2 rounded-lg border border-warning/40 bg-warning-surface/40 p-2">
+                                    <div>
+                                      <label className="mb-1 block text-xs text-fg-muted">Nước cũ - trước khi tháo (m³)</label>
+                                      <Input
+                                        type="number"
+                                        placeholder="0"
+                                        value={form.waterOldMeterFinal}
+                                        onChange={(event) => updateForm(room.id, 'waterOldMeterFinal', event.target.value)}
+                                      />
+                                    </div>
+                                    <div>
+                                      <label className="mb-1 block text-xs text-fg-muted">Nước mới - lúc lắp (m³)</label>
+                                      <Input
+                                        type="number"
+                                        placeholder="0"
+                                        value={form.waterNewMeterStart}
+                                        onChange={(event) => updateForm(room.id, 'waterNewMeterStart', event.target.value)}
+                                      />
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            )}
+
                             <Button
                               size="sm"
                               variant="primary"
                               className="w-full"
                               onClick={() => submitManualReading(room)}
-                              disabled={readingMutation.isPending || !form.elecOld.trim() || !form.elecNew.trim()}
+                              disabled={
+                                readingMutation.isPending ||
+                                !form.elecOld.trim() || !form.elecNew.trim() ||
+                                (form.elecReplaced && (!form.elecOldMeterFinal.trim() || !form.elecNewMeterStart.trim())) ||
+                                (form.waterReplaced && (!form.waterOldMeterFinal.trim() || !form.waterNewMeterStart.trim()))
+                              }
                             >
                               Lưu chỉ số manual
                             </Button>

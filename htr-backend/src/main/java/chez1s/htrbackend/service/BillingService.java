@@ -24,7 +24,9 @@ public class BillingService {
     }
 
     public BigDecimal calcElec(MeterReading reading, FeeConfig config) {
-        long usage = reading.getElecNew() - reading.getElecOld();
+        long usage = reading.isElecReplaced()
+                ? (reading.getElecOldMeterFinal() - reading.getElecOld()) + (reading.getElecNew() - reading.getElecNewMeterStart())
+                : reading.getElecNew() - reading.getElecOld();
         return BigDecimal.valueOf(usage).multiply(config.getElecPrice())
                 .setScale(2, RoundingMode.HALF_UP);
     }
@@ -37,7 +39,9 @@ public class BillingService {
         if (reading.getWaterOld() == null || reading.getWaterNew() == null) {
             return BigDecimal.ZERO;
         }
-        long usage = reading.getWaterNew() - reading.getWaterOld();
+        long usage = reading.isWaterReplaced()
+                ? (reading.getWaterOldMeterFinal() - reading.getWaterOld()) + (reading.getWaterNew() - reading.getWaterNewMeterStart())
+                : reading.getWaterNew() - reading.getWaterOld();
         return BigDecimal.valueOf(usage).multiply(config.getWaterPrice())
                 .setScale(2, RoundingMode.HALF_UP);
     }

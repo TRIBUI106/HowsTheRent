@@ -110,6 +110,20 @@ class BillingServiceTest {
         assertThat(billingService.calcElec(reading, config)).isEqualByComparingTo(BigDecimal.ZERO.setScale(2));
     }
 
+    @Test
+    void calcElec_meterReplaced_sumsOldAndNewMeterSegments() {
+        FeeConfig config = feeConfig(BigDecimal.ZERO, new BigDecimal("3500"), WaterMode.CUBIC, BigDecimal.ZERO, BigDecimal.ZERO);
+        MeterReading reading = new MeterReading();
+        reading.setElecOld(9800L);       // last reading of the old meter (prior period)
+        reading.setElecReplaced(true);
+        reading.setElecOldMeterFinal(9850L); // old meter used 50 more before removal
+        reading.setElecNewMeterStart(0L);    // new meter installed at 0
+        reading.setElecNew(120L);            // new meter now reads 120
+        BigDecimal result = billingService.calcElec(reading, config);
+        // usage = (9850 - 9800) + (120 - 0) = 170; 170 * 3500 = 595000
+        assertThat(result).isEqualByComparingTo(new BigDecimal("595000.00"));
+    }
+
     // ---- calcWater (CUBIC) ----
 
     @Test
@@ -121,6 +135,20 @@ class BillingServiceTest {
         BigDecimal result = billingService.calcWater(reading, config, 2);
         // 10 * 15000 = 150000
         assertThat(result).isEqualByComparingTo(new BigDecimal("150000.00"));
+    }
+
+    @Test
+    void calcWater_cubic_meterReplaced_sumsOldAndNewMeterSegments() {
+        FeeConfig config = feeConfig(BigDecimal.ZERO, BigDecimal.ZERO, WaterMode.CUBIC, new BigDecimal("15000"), BigDecimal.ZERO);
+        MeterReading reading = new MeterReading();
+        reading.setWaterOld(500L);
+        reading.setWaterReplaced(true);
+        reading.setWaterOldMeterFinal(505L); // 5 m3 more on the old meter
+        reading.setWaterNewMeterStart(0L);
+        reading.setWaterNew(3L);
+        BigDecimal result = billingService.calcWater(reading, config, 2);
+        // usage = (505 - 500) + (3 - 0) = 8; 8 * 15000 = 120000
+        assertThat(result).isEqualByComparingTo(new BigDecimal("120000.00"));
     }
 
     @Test

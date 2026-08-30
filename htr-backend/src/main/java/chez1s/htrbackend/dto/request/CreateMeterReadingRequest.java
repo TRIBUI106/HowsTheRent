@@ -21,4 +21,16 @@ public class CreateMeterReadingRequest {
     @PositiveOrZero @Max(1_000_000_000L)
     private Long waterNew;
     private MeterReadingSource source = MeterReadingSource.MANUAL;
+
+    private boolean elecReplaced;
+    @PositiveOrZero @Max(1_000_000_000L)
+    private Long elecOldMeterFinal;
+    @PositiveOrZero @Max(1_000_000_000L)
+    private Long elecNewMeterStart;
+
+    private boolean waterReplaced;
+    @PositiveOrZero @Max(1_000_000_000L)
+    private Long waterOldMeterFinal;
+    @PositiveOrZero @Max(1_000_000_000L)
+    private Long waterNewMeterStart;
 }

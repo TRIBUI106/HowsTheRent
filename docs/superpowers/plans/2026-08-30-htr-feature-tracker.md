@@ -66,25 +66,56 @@ Everywhere else, dates are read-only display (`formatDate()`), not editable.
 
 ## #2 — Handle digital electric/water meter replacement
 
-**Status:** ⬜ Not started — needs brainstorm/interview
+**Status:** ✅ Done (v1 — "get it working", per user's explicit "code
+first, perfect later") — implemented, automated-tested, not yet
+manually browser-verified this round
 
-**Problem statement (from user, needs clarification):** When a physical
-electric/water meter is replaced (broken unit swapped for a new one), the
-new meter's reading resets to 0 (or some other start value) — this breaks
-the "current reading − previous reading = usage" calculation the invoice
-generation currently assumes. Need a way to record "meter was replaced
-here" so the system doesn't compute a nonsensical (negative or huge) usage
-across the swap.
+**Key finding from research:** `MeterReading` is one row per room+month;
+each period's "old" value is force-copied from the prior period's "new"
+value at write time, and the old validation flatly rejected `new < old`
+— meaning a meter swap (new meter reading lower than the old one's last
+reading) had **no path through the system at all** before this feature.
 
-**Open questions for interview:**
-- Where in the data model do meter readings live today (need read of
-  `MeterReadingsPage.tsx` + backend meter entity)?
-- Does a meter have an identity/serial number today, or just a room+type
-  (electric/water)?
-- When a meter is replaced mid-cycle, should the system split that billing
-  period into two segments (old meter usage + new meter usage) or just let
-  the admin manually override/enter usage for that one period?
-- Who records the replacement — Admin, or Technician via maintenance flow?
+**Decisions made:**
+- Split-segment usage calc (precise, not a manual override number):
+  `usage = (oldMeterFinal − oldMeterPrevious) + (newMeterCurrent − newMeterStart)`
+- Electric and water replacement are independent flags (2 physically
+  separate meters)
+- Admin-only, via the existing Meter Readings page (no Maintenance
+  workflow tie-in)
+
+**What was built:**
+- Backend: `MeterReading` gets 6 new nullable columns (elecReplaced +
+  elecOldMeterFinal + elecNewMeterStart, mirrored for water).
+  `CreateMeterReadingRequest` carries the same. `MeterReadingService`
+  branches validation — replaced periods validate each segment
+  independently instead of the old blanket `new >= old` check.
+  `BillingService.calcElec/calcWater` branch to the split formula when
+  replaced. `MeterReadingResponse` exposes the new fields. 3 new
+  `MeterReadingServiceTest` cases (happy path + 2 validation failures),
+  2 new `BillingServiceTest` cases (split-calc math for elec and water).
+- Frontend: `MeterReadingsPage.tsx` — independent "Đã thay đồng hồ
+  điện/nước kỳ này" checkboxes per room card (only shown when a previous
+  reading exists to lock against), revealing "chỉ số cũ trước khi tháo" /
+  "chỉ số mới lúc lắp" inputs; client-side validation mirrors the
+  backend's segment checks; submit payload carries the 6 new fields.
+- Verify: 131/131 backend tests, 52/52 frontend tests, `tsc`/build
+  clean. **Skipped the manual full-stack browser pass this round** (user
+  said get it working now, polish later) — this is the one feature in
+  this session's list that touches money/billing math directly, so a
+  manual walkthrough (record 2 normal months, replace a meter, generate
+  an invoice, check the amount) is recommended before relying on this in
+  production, even though the unit-level math is tested.
+
+**Known gaps / follow-up ideas (not done, listed for the "perfect later"
+pass):**
+- No UI/audit trail showing *why* a given invoice's usage looks unusual
+  (e.g. a note referencing the replacement on the invoice detail page)
+- No validation preventing `elecReplaced` from being toggled back off
+  after fields were filled in (minor UX polish)
+- `MeterReadingHistory`/seed-fetch logic in the frontend doesn't surface
+  whether a *past* period was a replacement period when computing the
+  "kỳ trước" hint text
 
 ---
 
@@ -214,3 +245,9 @@ tweak to existing admin/tenant/technician flows.
   verified. User asked to commit after finishing each task going
   forward — committing #1, #3, #4 now as separate commits (catching up),
   then moving to #2 (meter reading) next.
+- 2026-08-30: #2 (meter replacement) implemented and automated-tested;
+  user explicitly asked to code the feature first and perfect it later,
+  so the manual browser walkthrough was skipped this round — flagged as
+  the top follow-up item since it's the one feature touching billing
+  math directly. Committing now. All 5 original items have a first pass
+  done except #5 (blog), which is next.
