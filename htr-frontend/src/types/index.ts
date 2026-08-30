@@ -11,7 +11,7 @@ export interface User {
   fullName: string
   email: string
   phone?: string
-  role: 'ADMIN' | 'PLATFORM_ADMIN' | 'LANDLORD_ADMIN' | 'TENANT' | 'TECHNICIAN'
+  role: 'ADMIN' | 'PLATFORM_ADMIN' | 'LANDLORD_ADMIN' | 'TENANT' | 'TECHNICIAN' | 'GUEST'
   avatarUrl?: string
   active: boolean
   specialties?: string
