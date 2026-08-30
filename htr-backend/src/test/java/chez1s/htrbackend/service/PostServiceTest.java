@@ -217,6 +217,21 @@ class PostServiceTest {
     }
 
     @Test
+    void uploadCoverImageStoresReturnedUrlOnPost() {
+        UUID propertyId = UUID.randomUUID();
+        Post post = Post.builder().id(UUID.randomUUID()).property(Property.builder().id(propertyId).name("Nhà A").build()).build();
+        org.springframework.web.multipart.MultipartFile file = new org.springframework.mock.web.MockMultipartFile(
+                "file", "cover.jpg", "image/jpeg", new byte[]{1, 2, 3});
+        when(postRepository.findByPropertyId(propertyId)).thenReturn(Optional.of(post));
+        when(storageService.upload("blog/" + propertyId, file)).thenReturn("http://storage/blog/cover.jpg");
+        when(postRepository.save(post)).thenReturn(post);
+
+        AdminPostDetailResponse result = postService.uploadCoverImage(propertyId, file);
+
+        assertThat(result.coverImageUrl()).isEqualTo("http://storage/blog/cover.jpg");
+    }
+
+    @Test
     void likeCreatesRowWhenNotAlreadyLiked() {
         UUID postId = UUID.randomUUID();
         UUID userId = UUID.randomUUID();

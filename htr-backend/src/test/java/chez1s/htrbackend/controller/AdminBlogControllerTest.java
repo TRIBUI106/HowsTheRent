@@ -54,6 +54,20 @@ class AdminBlogControllerTest {
     }
 
     @Test
+    void uploadCoverImageDelegatesToService() {
+        UUID propertyId = UUID.randomUUID();
+        org.springframework.web.multipart.MultipartFile file = new org.springframework.mock.web.MockMultipartFile(
+                "file", "cover.jpg", "image/jpeg", new byte[]{1, 2, 3});
+        AdminPostDetailResponse detail = new AdminPostDetailResponse(UUID.randomUUID(), propertyId, "Nhà A",
+                "Bài viết A", "bai-viet-a", null, "http://storage/blog/cover.jpg", false, null, null, null, null, null);
+        when(postService.uploadCoverImage(propertyId, file)).thenReturn(detail);
+
+        ResponseEntity<AdminPostDetailResponse> result = controller.uploadCoverImage(propertyId, file);
+
+        assertThat(result.getBody()).isEqualTo(detail);
+    }
+
+    @Test
     void getByPropertyIdDelegatesToService() {
         UUID propertyId = UUID.randomUUID();
         AdminPostDetailResponse detail = new AdminPostDetailResponse(UUID.randomUUID(), propertyId, "Nhà A",

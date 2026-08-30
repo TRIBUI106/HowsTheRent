@@ -16,7 +16,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.UUID;
@@ -37,6 +39,12 @@ public class AdminBlogController {
     @PostMapping("/posts/{propertyId}/draft")
     public ResponseEntity<GeneratedDraftResponse> generateDraft(@PathVariable UUID propertyId) {
         return ResponseEntity.ok(postService.generateDraft(propertyId));
+    }
+
+    @PostMapping("/posts/{propertyId}/cover-image")
+    public ResponseEntity<AdminPostDetailResponse> uploadCoverImage(@PathVariable UUID propertyId,
+                                                                     @RequestParam("file") MultipartFile file) {
+        return ResponseEntity.ok(postService.uploadCoverImage(propertyId, file));
     }
 
     @GetMapping("/posts/{propertyId}")

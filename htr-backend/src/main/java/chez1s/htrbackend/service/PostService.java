@@ -20,6 +20,7 @@ import chez1s.htrbackend.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.text.Normalizer;
 import java.util.List;
@@ -107,6 +108,14 @@ public class PostService {
         Post post = postRepository.findByPropertyId(propertyId)
                 .orElseThrow(() -> new ResourceNotFoundException("Post for property", propertyId));
         return AdminPostDetailResponse.from(post);
+    }
+
+    @Transactional
+    public AdminPostDetailResponse uploadCoverImage(UUID propertyId, MultipartFile file) {
+        Post post = postRepository.findByPropertyId(propertyId)
+                .orElseThrow(() -> new ResourceNotFoundException("Post for property", propertyId));
+        post.setCoverImageUrl(storageService.upload("blog/" + propertyId, file));
+        return AdminPostDetailResponse.from(postRepository.save(post));
     }
 
     @Transactional
