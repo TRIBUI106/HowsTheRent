@@ -66,9 +66,8 @@ Everywhere else, dates are read-only display (`formatDate()`), not editable.
 
 ## #2 — Handle digital electric/water meter replacement
 
-**Status:** ✅ Done (v1 — "get it working", per user's explicit "code
-first, perfect later") — implemented, automated-tested, not yet
-manually browser-verified this round
+**Status:** ✅ Done — implemented, automated-tested, AND manually
+verified end-to-end through the real UI/backend/DB/invoice pipeline
 
 **Key finding from research:** `MeterReading` is one row per room+month;
 each period's "old" value is force-copied from the prior period's "new"
@@ -100,12 +99,18 @@ reading) had **no path through the system at all** before this feature.
   "chỉ số mới lúc lắp" inputs; client-side validation mirrors the
   backend's segment checks; submit payload carries the 6 new fields.
 - Verify: 131/131 backend tests, 52/52 frontend tests, `tsc`/build
-  clean. **Skipped the manual full-stack browser pass this round** (user
-  said get it working now, polish later) — this is the one feature in
-  this session's list that touches money/billing math directly, so a
-  manual walkthrough (record 2 normal months, replace a meter, generate
-  an invoice, check the amount) is recommended before relying on this in
-  production, even though the unit-level math is tested.
+  clean. **Manual full-stack walkthrough done (real DB, real backend,
+  real browser, real MinIO):** created a property/room/tenant/contract
+  via API, a normal July reading (elecOld 1000 → elecNew 1100), then
+  through the actual `MeterReadingsPage` UI ticked "Đã thay đồng hồ điện
+  kỳ này" for August, entered old-meter-final=1150 / new-meter-start=0 /
+  new-meter-current=80 (water left normal: 58→70), saved, generated the
+  invoice — and pulled it back via the API to check the real number:
+  `elecAmount: 455000.00` = (1150−1100)+(80−0) = 130 kWh × 3500 ✓,
+  `waterAmount: 180000.00` = (70−58) × 15000 ✓ (confirms non-replaced
+  water on the same reading is unaffected), `totalAmount: 3635000.00`
+  all reconciles. Cleaned up after (docker down -v, processes killed,
+  git status clean).
 
 **Known gaps / follow-up ideas (not done, listed for the "perfect later"
 pass):**
@@ -245,9 +250,10 @@ tweak to existing admin/tenant/technician flows.
   verified. User asked to commit after finishing each task going
   forward — committing #1, #3, #4 now as separate commits (catching up),
   then moving to #2 (meter reading) next.
-- 2026-08-30: #2 (meter replacement) implemented and automated-tested;
-  user explicitly asked to code the feature first and perfect it later,
-  so the manual browser walkthrough was skipped this round — flagged as
-  the top follow-up item since it's the one feature touching billing
-  math directly. Committing now. All 5 original items have a first pass
-  done except #5 (blog), which is next.
+- 2026-08-30: #2 (meter replacement) implemented, automated-tested, and
+  committed. User asked to verify it manually before moving on — did a
+  full real-stack walkthrough (see #2's entry above); the split-calc
+  billing math checked out exactly against a real generated invoice.
+  All 5 original items now have a working first pass except #5 (blog),
+  which is next — and per the user, #5 is now scoped as a **full
+  standalone blog website**, not a small module inside HTR.
