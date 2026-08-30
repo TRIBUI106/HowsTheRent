@@ -4,6 +4,7 @@ import chez1s.htrbackend.domain.entity.Post;
 import chez1s.htrbackend.domain.entity.PostComment;
 import chez1s.htrbackend.domain.entity.PostLike;
 import chez1s.htrbackend.domain.entity.Property;
+import chez1s.htrbackend.domain.entity.Room;
 import chez1s.htrbackend.domain.entity.User;
 import chez1s.htrbackend.domain.enums.RoomStatus;
 import chez1s.htrbackend.domain.repository.*;
@@ -12,6 +13,7 @@ import chez1s.htrbackend.dto.response.AdminPostDetailResponse;
 import chez1s.htrbackend.dto.response.AdminPostSummaryResponse;
 import chez1s.htrbackend.dto.response.BlogPostDetailResponse;
 import chez1s.htrbackend.dto.response.BlogPostSummaryResponse;
+import chez1s.htrbackend.dto.response.GeneratedDraftResponse;
 import chez1s.htrbackend.dto.response.LikeStatusResponse;
 import chez1s.htrbackend.dto.response.PostCommentResponse;
 import chez1s.htrbackend.exception.ResourceNotFoundException;
@@ -141,6 +143,25 @@ class PostServiceTest {
         AdminPostSummaryResponse rowB = result.stream().filter(r -> r.propertyId().equals(propertyWithoutPostId)).findFirst().orElseThrow();
         assertThat(rowB.published()).isFalse();
         assertThat(rowB.postId()).isNull();
+    }
+
+    @Test
+    void generateDraftBuildsHtmlFromPropertyAndRooms() {
+        UUID propertyId = UUID.randomUUID();
+        Property property = Property.builder().id(propertyId).name("Nhà trọ Xanh").address("12 Lê Lợi").build();
+        Room room1 = Room.builder().roomNumber("A1").status(chez1s.htrbackend.domain.enums.RoomStatus.EMPTY)
+                .direction(chez1s.htrbackend.domain.enums.RoomDirection.NORTH)
+                .images(new java.util.ArrayList<>(List.of("http://img/a1.jpg"))).build();
+        Room room2 = Room.builder().roomNumber("A2").status(chez1s.htrbackend.domain.enums.RoomStatus.RENTED)
+                .images(new java.util.ArrayList<>()).build();
+        when(propertyService.getById(propertyId)).thenReturn(property);
+        when(roomRepository.findByPropertyId(propertyId)).thenReturn(List.of(room1, room2));
+
+        GeneratedDraftResponse result = postService.generateDraft(propertyId);
+
+        assertThat(result.title()).contains("Nhà trọ Xanh");
+        assertThat(result.content()).contains("A1").contains("Bắc").contains("12 Lê Lợi").contains("1/2 phòng còn trống");
+        assertThat(result.coverImageUrl()).isEqualTo("http://img/a1.jpg");
     }
 
     @Test

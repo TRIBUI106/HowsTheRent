@@ -13,6 +13,7 @@ import chez1s.htrbackend.dto.response.AdminPostDetailResponse;
 import chez1s.htrbackend.dto.response.AdminPostSummaryResponse;
 import chez1s.htrbackend.dto.response.BlogPostDetailResponse;
 import chez1s.htrbackend.dto.response.BlogPostSummaryResponse;
+import chez1s.htrbackend.dto.response.GeneratedDraftResponse;
 import chez1s.htrbackend.dto.response.LikeStatusResponse;
 import chez1s.htrbackend.dto.response.PostCommentResponse;
 import chez1s.htrbackend.exception.ResourceNotFoundException;
@@ -65,6 +66,40 @@ public class PostService {
                     );
                 })
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public GeneratedDraftResponse generateDraft(UUID propertyId) {
+        Property property = propertyService.getById(propertyId);
+        List<Room> rooms = roomRepository.findByPropertyId(propertyId);
+        long emptyCount = rooms.stream().filter(room -> room.getStatus() == RoomStatus.EMPTY).count();
+
+        StringBuilder html = new StringBuilder();
+        html.append("<h2>").append(escapeHtml(property.getName())).append("</h2>");
+        html.append("<p>").append(escapeHtml(property.getAddress())).append("</p>");
+        if (property.getDescription() != null && !property.getDescription().isBlank()) {
+            html.append("<p>").append(escapeHtml(property.getDescription())).append("</p>");
+        }
+        html.append("<p><strong>").append(emptyCount).append("/").append(rooms.size()).append(" phòng còn trống</strong></p>");
+        html.append("<h3>Danh sách phòng</h3><ul>");
+        for (Room room : rooms) {
+            html.append("<li>Phòng ").append(escapeHtml(room.getRoomNumber()));
+            if (room.getDirection() != null) {
+                html.append(" — hướng ").append(directionLabel(room.getDirection()));
+            }
+            if (room.getDescription() != null && !room.getDescription().isBlank()) {
+                html.append(": ").append(escapeHtml(room.getDescription()));
+            }
+            html.append("</li>");
+        }
+        html.append("</ul>");
+
+        String coverImageUrl = rooms.stream()
+                .flatMap(room -> room.getImages().stream())
+                .findFirst()
+                .orElse(null);
+
+        return new GeneratedDraftResponse(property.getName() + " - Cho thuê phòng trọ", html.toString(), coverImageUrl);
     }
 
     @Transactional(readOnly = true)
@@ -146,6 +181,27 @@ public class PostService {
                 .orElseThrow(() -> new ResourceNotFoundException("Post", slug));
         postLikeRepository.deleteByPostIdAndUserId(post.getId(), userId);
         return new LikeStatusResponse(false, postLikeRepository.countByPostId(post.getId()));
+    }
+
+    private String escapeHtml(String input) {
+        return input == null ? "" : input
+                .replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\"", "&quot;");
+    }
+
+    private String directionLabel(chez1s.htrbackend.domain.enums.RoomDirection direction) {
+        return switch (direction) {
+            case NORTH -> "Bắc";
+            case SOUTH -> "Nam";
+            case EAST -> "Đông";
+            case WEST -> "Tây";
+            case NORTHEAST -> "Đông Bắc";
+            case NORTHWEST -> "Tây Bắc";
+            case SOUTHEAST -> "Đông Nam";
+            case SOUTHWEST -> "Tây Nam";
+        };
     }
 
     private String resolveDefaultCoverImage(UUID propertyId) {

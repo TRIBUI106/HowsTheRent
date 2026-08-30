@@ -3,6 +3,7 @@ package chez1s.htrbackend.controller;
 import chez1s.htrbackend.dto.request.UpdatePostRequest;
 import chez1s.htrbackend.dto.response.AdminPostDetailResponse;
 import chez1s.htrbackend.dto.response.AdminPostSummaryResponse;
+import chez1s.htrbackend.dto.response.GeneratedDraftResponse;
 import chez1s.htrbackend.service.PostService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,6 +40,17 @@ class AdminBlogControllerTest {
         ResponseEntity<List<AdminPostSummaryResponse>> result = controller.listAll();
 
         assertThat(result.getBody()).containsExactly(row);
+    }
+
+    @Test
+    void generateDraftDelegatesToService() {
+        UUID propertyId = UUID.randomUUID();
+        GeneratedDraftResponse draft = new GeneratedDraftResponse("Nhà trọ Xanh - Cho thuê phòng trọ", "<h2>...</h2>", null);
+        when(postService.generateDraft(propertyId)).thenReturn(draft);
+
+        ResponseEntity<GeneratedDraftResponse> result = controller.generateDraft(propertyId);
+
+        assertThat(result.getBody()).isEqualTo(draft);
     }
 
     @Test
