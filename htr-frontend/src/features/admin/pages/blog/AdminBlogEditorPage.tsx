@@ -17,7 +17,7 @@ export default function AdminBlogEditorPage() {
   const [slug, setSlug] = useState('')
   const [coverImageUrl, setCoverImageUrl] = useState<string | null>(null)
 
-  const { data: post, isError } = useQuery({
+  const { data: post, isLoading } = useQuery({
     queryKey: ['admin-blog-post', propertyId],
     queryFn: () => adminBlogApi.get(propertyId),
     enabled: !!propertyId,
@@ -95,7 +95,7 @@ export default function AdminBlogEditorPage() {
         </div>
       </div>
 
-      {isError && !post && (
+      {!post && !isLoading && (
         <p className="mt-4 text-sm text-fg-muted">
           Chưa có bài viết cho nhà trọ này — điền thông tin và lưu để tạo mới, hoặc bấm &quot;Tạo bản nháp tự động&quot;.
         </p>

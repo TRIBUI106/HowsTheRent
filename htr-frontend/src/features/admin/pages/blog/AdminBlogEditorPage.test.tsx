@@ -15,7 +15,7 @@ vi.mock('@/api', () => ({
 }))
 
 function mockNotFound() {
-  vi.mocked(adminBlogApi.get).mockRejectedValue({ isAxiosError: true, response: { status: 404 } })
+  vi.mocked(adminBlogApi.get).mockResolvedValue(undefined as unknown as Awaited<ReturnType<typeof adminBlogApi.get>>)
 }
 
 function renderAtProperty(propertyId: string) {
@@ -32,10 +32,7 @@ function renderAtProperty(propertyId: string) {
 }
 
 describe('AdminBlogEditorPage', () => {
-  beforeEach(() => {
-    vi.mocked(adminBlogApi.get).mockReset()
-    window.addEventListener('unhandledrejection', event => event.preventDefault(), { once: true })
-  })
+  beforeEach(() => vi.mocked(adminBlogApi.get).mockReset())
 
   it('shows a not-yet-created hint when no post exists for the property', async () => {
     mockNotFound()
