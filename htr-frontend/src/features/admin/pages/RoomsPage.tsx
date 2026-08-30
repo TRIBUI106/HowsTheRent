@@ -21,7 +21,7 @@ const directionOptions: { value: RoomDirection; label: string }[] = [
   'EAST', 'WEST', 'SOUTH', 'NORTH', 'NORTHEAST', 'NORTHWEST', 'SOUTHEAST', 'SOUTHWEST',
 ].map(value => ({ value: value as RoomDirection, label: directionLabel(value) }))
 
-const emptyForm = { roomNumber: '', floor: '', areaM2: '', maxPeople: '', rentOverride: '', status: 'EMPTY', direction: '' }
+const emptyForm = { roomNumber: '', floor: '', areaM2: '', maxPeople: '', rentOverride: '', status: 'EMPTY', direction: '', description: '' }
 
 export default function RoomsPage() {
   const qc = useQueryClient()
@@ -80,6 +80,7 @@ export default function RoomsPage() {
         maxPeople: Number(form.maxPeople),
         rentOverride: form.rentOverride ? parseCurrencyInput(form.rentOverride) : null,
         direction: form.direction ? (form.direction as RoomDirection) : null,
+        description: form.description.trim() || null,
       }
 
       const room = editingId
@@ -128,6 +129,7 @@ export default function RoomsPage() {
       rentOverride: formatCurrencyInput(room.rentOverride),
       status: room.status,
       direction: room.direction ?? '',
+      description: room.description ?? '',
     })
     setShowForm(true)
   }
@@ -187,6 +189,17 @@ export default function RoomsPage() {
                 </div>
               )}
 
+              <div className="space-y-1 md:col-span-3">
+                <label className="block text-sm font-medium text-fg">Mô tả phòng</label>
+                <textarea
+                  rows={2}
+                  className="w-full resize-none rounded-lg border border-border bg-surface px-3 py-2 text-sm text-fg placeholder:text-fg-subtle focus:outline-none focus:ring-2 focus:ring-accent/40"
+                  placeholder="Ví dụ: Phòng sạch, mới, nội thất đầy đủ, tone trắng xám, hướng tây bắc..."
+                  value={form.description}
+                  onChange={(event) => setForm({ ...form, description: event.target.value })}
+                />
+              </div>
+
               <div className="flex items-end gap-2 md:col-span-3">
                 <Button type="submit" loading={save.isPending}>
                   {save.isPending ? 'Đang lưu...' : editingId ? 'Lưu thay đổi' : 'Tạo phòng'}
@@ -204,7 +217,7 @@ export default function RoomsPage() {
         </div>
       ) : (
         <Card>
-          <Table headers={['Ảnh', 'Số phòng', 'Tầng', 'Diện tích', 'Tối đa', 'Giá', 'Hướng', 'Trạng thái', 'Thao tác']}>
+          <Table headers={['Ảnh', 'Số phòng', 'Tầng', 'Diện tích', 'Tối đa', 'Giá', 'Hướng', 'Mô tả', 'Trạng thái', 'Thao tác']}>
             {rooms?.map((room) => (
               <TableRow key={room.id}>
                 <TableCell>
@@ -222,6 +235,15 @@ export default function RoomsPage() {
                 <TableCell>{room.maxPeople} người</TableCell>
                 <TableCell>{formatCurrency(room.rentOverride ?? 0)}</TableCell>
                 <TableCell>{directionLabel(room.direction)}</TableCell>
+                <TableCell>
+                  {room.description ? (
+                    <span className="block max-w-[160px] truncate text-fg-muted" title={room.description}>
+                      {room.description}
+                    </span>
+                  ) : (
+                    <span className="text-fg-subtle">—</span>
+                  )}
+                </TableCell>
                 <TableCell><Badge status={room.status} /></TableCell>
                 <TableCell>
                   <div className="flex gap-2">

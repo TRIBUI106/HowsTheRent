@@ -18,4 +18,5 @@ public class CreateRoomRequest {
     private Integer maxPeople;
     private BigDecimal rentOverride;
     private RoomDirection direction;
+    private String description;
 }

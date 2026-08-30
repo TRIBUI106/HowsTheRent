@@ -140,6 +140,11 @@ export default function RoomDetailPage() {
               <dd className="font-medium text-fg">{directionLabel(room?.direction)}</dd>
             </div>
           </dl>
+          {room?.description && (
+            <p className="mt-4 border-t border-border pt-4 text-sm leading-6 text-fg-muted whitespace-pre-line">
+              {room.description}
+            </p>
+          )}
         </CardContent>
       </Card>
 

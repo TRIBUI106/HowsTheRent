@@ -18,6 +18,7 @@ public record RoomResponse(
         BigDecimal rentOverride,
         String status,
         String direction,
+        String description,
         List<String> images,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
@@ -34,6 +35,7 @@ public record RoomResponse(
                 r.getRentOverride(),
                 r.getStatus().name(),
                 r.getDirection() != null ? r.getDirection().name() : null,
+                r.getDescription(),
                 r.getImages(),
                 r.getCreatedAt(),
                 r.getUpdatedAt()

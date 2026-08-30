@@ -16,6 +16,7 @@ export const roomApi = {
       maxPeople: number;
       rentOverride?: number | null;
       direction?: RoomDirection | null;
+      description?: string | null;
     },
   ) =>
     api.post<Room>(`/properties/${propertyId}/rooms`, data).then((r) => r.data),
@@ -29,6 +30,7 @@ export const roomApi = {
       maxPeople: number;
       rentOverride: number | null;
       direction: RoomDirection | null;
+      description: string | null;
     }>,
   ) =>
     api

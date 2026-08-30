@@ -48,6 +48,9 @@ public class Room extends BaseEntity {
     @Column(length = 20)
     private RoomDirection direction;
 
+    @Column(columnDefinition = "TEXT")
+    private String description;
+
     @ElementCollection
     @CollectionTable(name = "room_images", joinColumns = @JoinColumn(name = "room_id"))
     @Column(name = "image_url")

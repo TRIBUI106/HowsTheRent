@@ -63,6 +63,7 @@ export interface Room {
   rentOverride?: number
   status: 'EMPTY' | 'RENTED' | 'MAINTENANCE'
   direction?: RoomDirection
+  description?: string
   images: string[]
   createdAt: string
   updatedAt: string

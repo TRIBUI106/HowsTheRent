@@ -42,4 +42,22 @@ class RoomResponseTest {
 
         assertThat(response.direction()).isNull();
     }
+
+    @Test
+    void from_mapsDescriptionWhenSet() {
+        Room room = roomWithProperty().description("Phòng sạch, mới, nội thất đầy đủ, hướng tây bắc").build();
+
+        RoomResponse response = RoomResponse.from(room);
+
+        assertThat(response.description()).isEqualTo("Phòng sạch, mới, nội thất đầy đủ, hướng tây bắc");
+    }
+
+    @Test
+    void from_leavesDescriptionNullWhenUnset() {
+        Room room = roomWithProperty().build();
+
+        RoomResponse response = RoomResponse.from(room);
+
+        assertThat(response.description()).isNull();
+    }
 }
