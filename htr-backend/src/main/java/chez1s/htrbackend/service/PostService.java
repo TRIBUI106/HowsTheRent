@@ -9,6 +9,7 @@ import chez1s.htrbackend.domain.entity.User;
 import chez1s.htrbackend.domain.enums.RoomStatus;
 import chez1s.htrbackend.domain.repository.*;
 import chez1s.htrbackend.dto.request.UpdatePostRequest;
+import chez1s.htrbackend.dto.response.AdminPostCommentResponse;
 import chez1s.htrbackend.dto.response.AdminPostDetailResponse;
 import chez1s.htrbackend.dto.response.AdminPostSummaryResponse;
 import chez1s.htrbackend.dto.response.BlogPostDetailResponse;
@@ -48,6 +49,21 @@ public class PostService {
         return postRepository.findByPublishedTrueOrderByPublishedAtDesc().stream()
                 .map(this::toSummary)
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<AdminPostCommentResponse> listAllCommentsForAdmin() {
+        return postCommentRepository.findAllByOrderByCreatedAtDesc().stream()
+                .map(AdminPostCommentResponse::from)
+                .toList();
+    }
+
+    @Transactional
+    public void deleteComment(UUID commentId) {
+        if (!postCommentRepository.existsById(commentId)) {
+            throw new ResourceNotFoundException("PostComment", commentId);
+        }
+        postCommentRepository.deleteById(commentId);
     }
 
     @Transactional(readOnly = true)

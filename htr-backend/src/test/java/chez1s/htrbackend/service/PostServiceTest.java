@@ -9,6 +9,7 @@ import chez1s.htrbackend.domain.entity.User;
 import chez1s.htrbackend.domain.enums.RoomStatus;
 import chez1s.htrbackend.domain.repository.*;
 import chez1s.htrbackend.dto.request.UpdatePostRequest;
+import chez1s.htrbackend.dto.response.AdminPostCommentResponse;
 import chez1s.htrbackend.dto.response.AdminPostDetailResponse;
 import chez1s.htrbackend.dto.response.AdminPostSummaryResponse;
 import chez1s.htrbackend.dto.response.BlogPostDetailResponse;
@@ -121,6 +122,40 @@ class PostServiceTest {
 
         assertThat(result.content()).isEqualTo("Rất hài lòng");
         assertThat(result.userName()).isEqualTo("Khách A");
+    }
+
+    @Test
+    void listAllCommentsForAdminIncludesPostContext() {
+        Post post = Post.builder().id(UUID.randomUUID()).title("Bài viết A").slug("bai-viet-a").build();
+        User commenter = User.builder().id(UUID.randomUUID()).fullName("Khách A").build();
+        PostComment comment = PostComment.builder().id(UUID.randomUUID()).post(post).user(commenter).content("Đẹp quá").build();
+        when(postCommentRepository.findAllByOrderByCreatedAtDesc()).thenReturn(List.of(comment));
+
+        List<AdminPostCommentResponse> result = postService.listAllCommentsForAdmin();
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).postTitle()).isEqualTo("Bài viết A");
+        assertThat(result.get(0).postSlug()).isEqualTo("bai-viet-a");
+        assertThat(result.get(0).userName()).isEqualTo("Khách A");
+    }
+
+    @Test
+    void deleteCommentThrowsWhenMissing() {
+        UUID commentId = UUID.randomUUID();
+        when(postCommentRepository.existsById(commentId)).thenReturn(false);
+
+        assertThatThrownBy(() -> postService.deleteComment(commentId))
+                .isInstanceOf(ResourceNotFoundException.class);
+    }
+
+    @Test
+    void deleteCommentDeletesExistingComment() {
+        UUID commentId = UUID.randomUUID();
+        when(postCommentRepository.existsById(commentId)).thenReturn(true);
+
+        postService.deleteComment(commentId);
+
+        org.mockito.Mockito.verify(postCommentRepository).deleteById(commentId);
     }
 
     @Test

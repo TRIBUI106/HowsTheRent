@@ -1,6 +1,7 @@
 package chez1s.htrbackend.controller;
 
 import chez1s.htrbackend.dto.request.UpdatePostRequest;
+import chez1s.htrbackend.dto.response.AdminPostCommentResponse;
 import chez1s.htrbackend.dto.response.AdminPostDetailResponse;
 import chez1s.htrbackend.dto.response.AdminPostSummaryResponse;
 import chez1s.htrbackend.dto.response.GeneratedDraftResponse;
@@ -30,6 +31,27 @@ class AdminBlogControllerTest {
     @BeforeEach
     void setup() {
         controller = new AdminBlogController(postService);
+    }
+
+    @Test
+    void listAllCommentsDelegatesToService() {
+        AdminPostCommentResponse comment = new AdminPostCommentResponse(UUID.randomUUID(), "Đẹp quá",
+                UUID.randomUUID(), "Khách A", UUID.randomUUID(), "Bài viết A", "bai-viet-a", null);
+        when(postService.listAllCommentsForAdmin()).thenReturn(List.of(comment));
+
+        ResponseEntity<List<AdminPostCommentResponse>> result = controller.listAllComments();
+
+        assertThat(result.getBody()).containsExactly(comment);
+    }
+
+    @Test
+    void deleteCommentReturnsNoContent() {
+        UUID commentId = UUID.randomUUID();
+
+        ResponseEntity<Void> result = controller.deleteComment(commentId);
+
+        assertThat(result.getStatusCode().value()).isEqualTo(204);
+        org.mockito.Mockito.verify(postService).deleteComment(commentId);
     }
 
     @Test

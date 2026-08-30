@@ -1,6 +1,7 @@
 package chez1s.htrbackend.controller;
 
 import chez1s.htrbackend.dto.request.UpdatePostRequest;
+import chez1s.htrbackend.dto.response.AdminPostCommentResponse;
 import chez1s.htrbackend.dto.response.AdminPostDetailResponse;
 import chez1s.htrbackend.dto.response.AdminPostSummaryResponse;
 import chez1s.htrbackend.dto.response.GeneratedDraftResponse;
@@ -10,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -30,6 +32,17 @@ import java.util.UUID;
 public class AdminBlogController {
 
     private final PostService postService;
+
+    @GetMapping("/comments")
+    public ResponseEntity<List<AdminPostCommentResponse>> listAllComments() {
+        return ResponseEntity.ok(postService.listAllCommentsForAdmin());
+    }
+
+    @DeleteMapping("/comments/{id}")
+    public ResponseEntity<Void> deleteComment(@PathVariable UUID id) {
+        postService.deleteComment(id);
+        return ResponseEntity.noContent().build();
+    }
 
     @GetMapping("/posts")
     public ResponseEntity<List<AdminPostSummaryResponse>> listAll() {
