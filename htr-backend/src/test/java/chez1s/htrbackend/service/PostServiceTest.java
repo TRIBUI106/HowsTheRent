@@ -1,11 +1,14 @@
 package chez1s.htrbackend.service;
 
 import chez1s.htrbackend.domain.entity.Post;
+import chez1s.htrbackend.domain.entity.PostComment;
 import chez1s.htrbackend.domain.entity.Property;
+import chez1s.htrbackend.domain.entity.User;
 import chez1s.htrbackend.domain.enums.RoomStatus;
 import chez1s.htrbackend.domain.repository.*;
 import chez1s.htrbackend.dto.response.BlogPostDetailResponse;
 import chez1s.htrbackend.dto.response.BlogPostSummaryResponse;
+import chez1s.htrbackend.dto.response.PostCommentResponse;
 import chez1s.htrbackend.exception.ResourceNotFoundException;
 import chez1s.htrbackend.service.StorageService;
 import org.junit.jupiter.api.Test;
@@ -78,5 +81,21 @@ class PostServiceTest {
 
         assertThatThrownBy(() -> postService.getPublishedBySlug("missing"))
                 .isInstanceOf(ResourceNotFoundException.class);
+    }
+
+    @Test
+    void listCommentsReturnsInChronologicalOrder() {
+        UUID postId = UUID.randomUUID();
+        Post post = Post.builder().id(postId).published(true).build();
+        User commenter = User.builder().id(UUID.randomUUID()).fullName("Khách A").build();
+        PostComment comment = PostComment.builder().id(UUID.randomUUID()).post(post).user(commenter).content("Đẹp quá").build();
+        when(postRepository.findBySlugAndPublishedTrue("phong-tro-dep")).thenReturn(Optional.of(post));
+        when(postCommentRepository.findByPostIdOrderByCreatedAtAsc(postId)).thenReturn(List.of(comment));
+
+        List<PostCommentResponse> result = postService.listComments("phong-tro-dep");
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).content()).isEqualTo("Đẹp quá");
+        assertThat(result.get(0).userName()).isEqualTo("Khách A");
     }
 }

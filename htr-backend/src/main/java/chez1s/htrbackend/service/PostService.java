@@ -6,6 +6,7 @@ import chez1s.htrbackend.domain.enums.RoomStatus;
 import chez1s.htrbackend.domain.repository.*;
 import chez1s.htrbackend.dto.response.BlogPostDetailResponse;
 import chez1s.htrbackend.dto.response.BlogPostSummaryResponse;
+import chez1s.htrbackend.dto.response.PostCommentResponse;
 import chez1s.htrbackend.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -38,6 +39,15 @@ public class PostService {
         Post post = postRepository.findBySlugAndPublishedTrue(slug)
                 .orElseThrow(() -> new ResourceNotFoundException("Post", slug));
         return toDetail(post);
+    }
+
+    @Transactional(readOnly = true)
+    public List<PostCommentResponse> listComments(String slug) {
+        Post post = postRepository.findBySlugAndPublishedTrue(slug)
+                .orElseThrow(() -> new ResourceNotFoundException("Post", slug));
+        return postCommentRepository.findByPostIdOrderByCreatedAtAsc(post.getId()).stream()
+                .map(PostCommentResponse::from)
+                .toList();
     }
 
     private BlogPostSummaryResponse toSummary(Post post) {

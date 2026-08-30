@@ -2,6 +2,7 @@ package chez1s.htrbackend.controller;
 
 import chez1s.htrbackend.dto.response.BlogPostDetailResponse;
 import chez1s.htrbackend.dto.response.BlogPostSummaryResponse;
+import chez1s.htrbackend.dto.response.PostCommentResponse;
 import chez1s.htrbackend.service.PostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -27,5 +28,10 @@ public class PublicBlogController {
     @GetMapping("/posts/{slug}")
     public ResponseEntity<BlogPostDetailResponse> getBySlug(@PathVariable String slug) {
         return ResponseEntity.ok(postService.getPublishedBySlug(slug));
+    }
+
+    @GetMapping("/posts/{slug}/comments")
+    public ResponseEntity<List<PostCommentResponse>> listComments(@PathVariable String slug) {
+        return ResponseEntity.ok(postService.listComments(slug));
     }
 }

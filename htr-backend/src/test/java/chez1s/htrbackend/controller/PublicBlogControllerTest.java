@@ -2,6 +2,7 @@ package chez1s.htrbackend.controller;
 
 import chez1s.htrbackend.dto.response.BlogPostDetailResponse;
 import chez1s.htrbackend.dto.response.BlogPostSummaryResponse;
+import chez1s.htrbackend.dto.response.PostCommentResponse;
 import chez1s.htrbackend.service.PostService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -50,5 +51,15 @@ class PublicBlogControllerTest {
         ResponseEntity<BlogPostDetailResponse> result = controller.getBySlug("phong-tro-dep");
 
         assertThat(result.getBody()).isEqualTo(detail);
+    }
+
+    @Test
+    void listCommentsDelegatesToService() {
+        PostCommentResponse comment = new PostCommentResponse(UUID.randomUUID(), "Đẹp quá", UUID.randomUUID(), "Khách A", null);
+        when(postService.listComments("phong-tro-dep")).thenReturn(List.of(comment));
+
+        ResponseEntity<List<PostCommentResponse>> result = controller.listComments("phong-tro-dep");
+
+        assertThat(result.getBody()).containsExactly(comment);
     }
 }
