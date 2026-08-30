@@ -98,4 +98,21 @@ class PostServiceTest {
         assertThat(result.get(0).content()).isEqualTo("Đẹp quá");
         assertThat(result.get(0).userName()).isEqualTo("Khách A");
     }
+
+    @Test
+    void addCommentSavesAndReturnsIt() {
+        UUID postId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+        Post post = Post.builder().id(postId).published(true).build();
+        User user = User.builder().id(userId).fullName("Khách A").build();
+        when(postRepository.findBySlugAndPublishedTrue("phong-tro-dep")).thenReturn(Optional.of(post));
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(postCommentRepository.save(org.mockito.ArgumentMatchers.any(PostComment.class)))
+                .thenAnswer(inv -> inv.getArgument(0));
+
+        PostCommentResponse result = postService.addComment("phong-tro-dep", userId, "Rất hài lòng");
+
+        assertThat(result.content()).isEqualTo("Rất hài lòng");
+        assertThat(result.userName()).isEqualTo("Khách A");
+    }
 }

@@ -1,7 +1,9 @@
 package chez1s.htrbackend.service;
 
 import chez1s.htrbackend.domain.entity.Post;
+import chez1s.htrbackend.domain.entity.PostComment;
 import chez1s.htrbackend.domain.entity.Property;
+import chez1s.htrbackend.domain.entity.User;
 import chez1s.htrbackend.domain.enums.RoomStatus;
 import chez1s.htrbackend.domain.repository.*;
 import chez1s.htrbackend.dto.response.BlogPostDetailResponse;
@@ -48,6 +50,20 @@ public class PostService {
         return postCommentRepository.findByPostIdOrderByCreatedAtAsc(post.getId()).stream()
                 .map(PostCommentResponse::from)
                 .toList();
+    }
+
+    @Transactional
+    public PostCommentResponse addComment(String slug, java.util.UUID userId, String content) {
+        Post post = postRepository.findBySlugAndPublishedTrue(slug)
+                .orElseThrow(() -> new ResourceNotFoundException("Post", slug));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User", userId));
+        PostComment comment = PostComment.builder()
+                .post(post)
+                .user(user)
+                .content(content)
+                .build();
+        return PostCommentResponse.from(postCommentRepository.save(comment));
     }
 
     private BlogPostSummaryResponse toSummary(Post post) {

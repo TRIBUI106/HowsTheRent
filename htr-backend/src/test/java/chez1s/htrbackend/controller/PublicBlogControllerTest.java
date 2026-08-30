@@ -1,5 +1,6 @@
 package chez1s.htrbackend.controller;
 
+import chez1s.htrbackend.dto.request.CreatePostCommentRequest;
 import chez1s.htrbackend.dto.response.BlogPostDetailResponse;
 import chez1s.htrbackend.dto.response.BlogPostSummaryResponse;
 import chez1s.htrbackend.dto.response.PostCommentResponse;
@@ -9,7 +10,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 
 import java.util.List;
 import java.util.UUID;
@@ -61,5 +65,20 @@ class PublicBlogControllerTest {
         ResponseEntity<List<PostCommentResponse>> result = controller.listComments("phong-tro-dep");
 
         assertThat(result.getBody()).containsExactly(comment);
+    }
+
+    @Test
+    void addCommentReturns201WithCreatedComment() {
+        UUID userId = UUID.randomUUID();
+        Authentication auth = new UsernamePasswordAuthenticationToken(userId, null, List.of());
+        CreatePostCommentRequest req = new CreatePostCommentRequest();
+        req.setContent("Rất hài lòng");
+        PostCommentResponse created = new PostCommentResponse(UUID.randomUUID(), "Rất hài lòng", userId, "Khách A", null);
+        when(postService.addComment("phong-tro-dep", userId, "Rất hài lòng")).thenReturn(created);
+
+        ResponseEntity<PostCommentResponse> result = controller.addComment(auth, "phong-tro-dep", req);
+
+        assertThat(result.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        assertThat(result.getBody()).isEqualTo(created);
     }
 }
