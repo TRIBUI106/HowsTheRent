@@ -158,6 +158,16 @@ gallery component, no `roomApi` methods) plus one missing backend piece
   page, no console errors. Cleaned up after (docker down -v, processes
   killed, git status clean).
 
+**Follow-up (same session):** user clarified they also want a freeform
+description field (e.g. "Phòng sạch, mới, nội thất đầy đủ... hướng tây
+bắc") alongside — not instead of — the structured direction dropdown.
+Added `Room.description` (TEXT, optional), threaded through the same
+DTOs/service, textarea in the Rooms form, truncated-with-tooltip column
+in the Rooms list, full prose block on RoomDetailPage. 4 backend unit
+tests. Skipped a fresh manual-browser pass this time (4th full-stack
+spin-up in one session) — relied on `tsc`/build/52+126 automated tests,
+since it reuses the exact wiring already verified for direction.
+
 ---
 
 ## #5 — Blog feature (one post per rental property)
