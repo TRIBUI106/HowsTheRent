@@ -37,6 +37,7 @@ public class PropertyController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','PLATFORM_ADMIN','LANDLORD_ADMIN','TENANT','TECHNICIAN')")
     public ResponseEntity<PropertyResponse> getById(@PathVariable UUID id) {
         return ResponseEntity.ok(PropertyResponse.from(propertyService.getById(id)));
     }

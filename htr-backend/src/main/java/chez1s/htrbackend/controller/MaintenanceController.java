@@ -230,6 +230,7 @@ public class MaintenanceController {
 
     // Materials endpoints
     @GetMapping("/{id}/materials")
+    @PreAuthorize("hasAnyRole('ADMIN','PLATFORM_ADMIN','LANDLORD_ADMIN','TENANT','TECHNICIAN')")
     public ResponseEntity<List<MaintenanceMaterialResponse>> listMaterials(@PathVariable UUID id) {
         return ResponseEntity.ok(maintenanceService.listMaterials(id));
     }
@@ -250,11 +251,13 @@ public class MaintenanceController {
 
     // Notes endpoints
     @GetMapping("/{id}/notes")
+    @PreAuthorize("hasAnyRole('ADMIN','PLATFORM_ADMIN','LANDLORD_ADMIN','TENANT','TECHNICIAN')")
     public ResponseEntity<List<MaintenanceNoteResponse>> listNotes(@PathVariable UUID id) {
         return ResponseEntity.ok(maintenanceService.listNotes(id));
     }
 
     @PostMapping("/{id}/notes")
+    @PreAuthorize("hasAnyRole('ADMIN','PLATFORM_ADMIN','LANDLORD_ADMIN','TENANT','TECHNICIAN')")
     public ResponseEntity<MaintenanceNoteResponse> addNote(Authentication auth,
                                                            @PathVariable UUID id,
                                                            @RequestParam("note") String note) {

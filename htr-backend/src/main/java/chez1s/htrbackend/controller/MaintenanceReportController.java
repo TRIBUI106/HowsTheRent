@@ -94,16 +94,19 @@ public class MaintenanceReportController {
     }
 
     @GetMapping("/reviews/technician/{techId}")
+    @PreAuthorize("hasAnyRole('ADMIN','PLATFORM_ADMIN','LANDLORD_ADMIN','TENANT','TECHNICIAN')")
     public ResponseEntity<List<MaintenanceReviewResponse>> getTechnicianReviews(@PathVariable UUID techId) {
         return ResponseEntity.ok(reportService.listReviewsByTechnician(techId));
     }
 
     @GetMapping("/reviews")
+    @PreAuthorize("hasAnyRole('ADMIN','PLATFORM_ADMIN','LANDLORD_ADMIN','TENANT','TECHNICIAN')")
     public ResponseEntity<List<MaintenanceReviewResponse>> getAllReviews() {
         return ResponseEntity.ok(reportService.listAllReviews());
     }
 
     @GetMapping("/sla-rules")
+    @PreAuthorize("hasAnyRole('ADMIN','PLATFORM_ADMIN','LANDLORD_ADMIN','TENANT','TECHNICIAN')")
     public ResponseEntity<List<SlaRuleResponse>> getAllSlaRules() {
         return ResponseEntity.ok(slaService.listAllRules());
     }
