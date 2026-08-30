@@ -217,6 +217,50 @@ class PostServiceTest {
     }
 
     @Test
+    void publishSetsPublishedAtOnlyOnFirstPublish() {
+        UUID propertyId = UUID.randomUUID();
+        Post post = Post.builder().id(UUID.randomUUID()).property(Property.builder().id(propertyId).name("Nhà A").build())
+                .published(false).build();
+        when(postRepository.findByPropertyId(propertyId)).thenReturn(Optional.of(post));
+        when(postRepository.save(post)).thenReturn(post);
+
+        AdminPostDetailResponse result = postService.publish(propertyId);
+
+        assertThat(result.published()).isTrue();
+        assertThat(result.publishedAt()).isNotNull();
+    }
+
+    @Test
+    void publishPreservesExistingPublishedAtWhenAlreadyPublished() {
+        UUID propertyId = UUID.randomUUID();
+        java.time.LocalDateTime firstPublishedAt = java.time.LocalDateTime.now().minusDays(3);
+        Post post = Post.builder().id(UUID.randomUUID()).property(Property.builder().id(propertyId).name("Nhà A").build())
+                .published(true).publishedAt(firstPublishedAt).build();
+        when(postRepository.findByPropertyId(propertyId)).thenReturn(Optional.of(post));
+        when(postRepository.save(post)).thenReturn(post);
+
+        AdminPostDetailResponse result = postService.publish(propertyId);
+
+        assertThat(result.published()).isTrue();
+        assertThat(result.publishedAt()).isEqualTo(firstPublishedAt);
+    }
+
+    @Test
+    void unpublishClearsPublishedFlagButKeepsPublishedAt() {
+        UUID propertyId = UUID.randomUUID();
+        java.time.LocalDateTime firstPublishedAt = java.time.LocalDateTime.now().minusDays(3);
+        Post post = Post.builder().id(UUID.randomUUID()).property(Property.builder().id(propertyId).name("Nhà A").build())
+                .published(true).publishedAt(firstPublishedAt).build();
+        when(postRepository.findByPropertyId(propertyId)).thenReturn(Optional.of(post));
+        when(postRepository.save(post)).thenReturn(post);
+
+        AdminPostDetailResponse result = postService.unpublish(propertyId);
+
+        assertThat(result.published()).isFalse();
+        assertThat(result.publishedAt()).isEqualTo(firstPublishedAt);
+    }
+
+    @Test
     void uploadCoverImageStoresReturnedUrlOnPost() {
         UUID propertyId = UUID.randomUUID();
         Post post = Post.builder().id(UUID.randomUUID()).property(Property.builder().id(propertyId).name("Nhà A").build()).build();

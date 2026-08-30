@@ -68,6 +68,30 @@ class AdminBlogControllerTest {
     }
 
     @Test
+    void publishDelegatesToService() {
+        UUID propertyId = UUID.randomUUID();
+        AdminPostDetailResponse detail = new AdminPostDetailResponse(UUID.randomUUID(), propertyId, "Nhà A",
+                "Bài viết A", "bai-viet-a", null, null, true, null, null, null, null, null);
+        when(postService.publish(propertyId)).thenReturn(detail);
+
+        ResponseEntity<AdminPostDetailResponse> result = controller.publish(propertyId);
+
+        assertThat(result.getBody()).isEqualTo(detail);
+    }
+
+    @Test
+    void unpublishDelegatesToService() {
+        UUID propertyId = UUID.randomUUID();
+        AdminPostDetailResponse detail = new AdminPostDetailResponse(UUID.randomUUID(), propertyId, "Nhà A",
+                "Bài viết A", "bai-viet-a", null, null, false, null, null, null, null, null);
+        when(postService.unpublish(propertyId)).thenReturn(detail);
+
+        ResponseEntity<AdminPostDetailResponse> result = controller.unpublish(propertyId);
+
+        assertThat(result.getBody()).isEqualTo(detail);
+    }
+
+    @Test
     void getByPropertyIdDelegatesToService() {
         UUID propertyId = UUID.randomUUID();
         AdminPostDetailResponse detail = new AdminPostDetailResponse(UUID.randomUUID(), propertyId, "Nhà A",

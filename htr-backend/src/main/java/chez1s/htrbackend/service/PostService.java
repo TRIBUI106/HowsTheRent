@@ -23,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.text.Normalizer;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -108,6 +109,25 @@ public class PostService {
         Post post = postRepository.findByPropertyId(propertyId)
                 .orElseThrow(() -> new ResourceNotFoundException("Post for property", propertyId));
         return AdminPostDetailResponse.from(post);
+    }
+
+    @Transactional
+    public AdminPostDetailResponse publish(UUID propertyId) {
+        Post post = postRepository.findByPropertyId(propertyId)
+                .orElseThrow(() -> new ResourceNotFoundException("Post for property", propertyId));
+        if (!post.isPublished()) {
+            post.setPublished(true);
+            post.setPublishedAt(LocalDateTime.now());
+        }
+        return AdminPostDetailResponse.from(postRepository.save(post));
+    }
+
+    @Transactional
+    public AdminPostDetailResponse unpublish(UUID propertyId) {
+        Post post = postRepository.findByPropertyId(propertyId)
+                .orElseThrow(() -> new ResourceNotFoundException("Post for property", propertyId));
+        post.setPublished(false);
+        return AdminPostDetailResponse.from(postRepository.save(post));
     }
 
     @Transactional

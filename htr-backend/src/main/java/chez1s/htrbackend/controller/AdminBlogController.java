@@ -47,6 +47,16 @@ public class AdminBlogController {
         return ResponseEntity.ok(postService.uploadCoverImage(propertyId, file));
     }
 
+    @PostMapping("/posts/{propertyId}/publish")
+    public ResponseEntity<AdminPostDetailResponse> publish(@PathVariable UUID propertyId) {
+        return ResponseEntity.ok(postService.publish(propertyId));
+    }
+
+    @PostMapping("/posts/{propertyId}/unpublish")
+    public ResponseEntity<AdminPostDetailResponse> unpublish(@PathVariable UUID propertyId) {
+        return ResponseEntity.ok(postService.unpublish(propertyId));
+    }
+
     @GetMapping("/posts/{propertyId}")
     public ResponseEntity<AdminPostDetailResponse> getByPropertyId(@PathVariable UUID propertyId) {
         return ResponseEntity.ok(postService.getForAdmin(propertyId));
