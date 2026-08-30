@@ -6,11 +6,12 @@ import Layout from '@/components/Layout'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { DatePicker } from '@/components/ui/date-picker'
 import { Badge } from '@/components/ui/badge'
 import { TableSkeleton } from '@/components/ui/feedback'
 import api from '@/lib/api'
 import { getRoomPropertyName, normalizeContract } from '@/lib/apiMappers'
-import { formatCurrency, formatCurrencyInput, formatDate, formatDateInput, parseCurrencyInput, parseDateInput } from '@/lib/utils'
+import { formatCurrency, formatCurrencyInput, formatDate, parseCurrencyInput } from '@/lib/utils'
 import { userApi } from '@/api'
 import type { Contract, Room, User } from '@/types'
 import { Download } from 'lucide-react'
@@ -111,7 +112,7 @@ export default function ContractsPage() {
 
   function handleCreate(e: React.FormEvent) {
     e.preventDefault()
-    const moveInDate = parseDateInput(form.moveInDate)
+    const moveInDate = form.moveInDate
     if (!form.roomId || !form.tenantId || !moveInDate || !form.depositAmount) {
       setFormError('Vui lòng điền đầy đủ các trường bắt buộc')
       return
@@ -212,14 +213,11 @@ export default function ContractsPage() {
                 </div>
 
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-fg">Ngày vào <span className="text-error">*</span></label>
-                  <Input
-                    type="text"
-                    inputMode="numeric"
-                    placeholder="dd/mm/yyyy"
+                  <DatePicker
+                    label="Ngày vào"
                     required
                     value={form.moveInDate}
-                    onChange={e => setForm(current => ({ ...current, moveInDate: formatDateInput(e.target.value) }))}
+                    onChange={iso => setForm(current => ({ ...current, moveInDate: iso }))}
                   />
                 </div>
 
@@ -303,13 +301,10 @@ export default function ContractsPage() {
                         ) : renewing === contract.id ? (
                           <div className="flex flex-col gap-2">
                             <div className="flex gap-1">
-                              <input
-                                type="text"
-                                inputMode="numeric"
-                                placeholder="dd/mm/yyyy"
+                              <DatePicker
                                 value={renewForm.newEndDate}
-                                onChange={e => setRenewForm(current => ({ ...current, newEndDate: formatDateInput(e.target.value) }))}
-                                className="w-32 rounded-lg border border-border/80 bg-surface px-2 py-1 text-xs text-fg"
+                                onChange={iso => setRenewForm(current => ({ ...current, newEndDate: iso }))}
+                                className="w-36"
                               />
                               <input
                                 type="text"
@@ -326,8 +321,7 @@ export default function ContractsPage() {
                                 size="sm"
                                 variant="primary"
                                 onClick={() => {
-                                  const newEndDate = parseDateInput(renewForm.newEndDate)
-                                  if (!newEndDate) {
+                                  if (!renewForm.newEndDate) {
                                     setRenewError('Cần chọn ngày kết thúc')
                                     return
                                   }
@@ -336,7 +330,7 @@ export default function ContractsPage() {
                                     id: contract.id,
                                     data: {
                                       newStartDate: new Date().toISOString().slice(0, 10),
-                                      newEndDate,
+                                      newEndDate: renewForm.newEndDate,
                                       newDepositAmount: parseCurrencyInput(renewForm.newDepositAmount) || null,
                                     },
                                   })
