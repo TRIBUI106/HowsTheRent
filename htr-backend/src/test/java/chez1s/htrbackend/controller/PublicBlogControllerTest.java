@@ -3,6 +3,7 @@ package chez1s.htrbackend.controller;
 import chez1s.htrbackend.dto.request.CreatePostCommentRequest;
 import chez1s.htrbackend.dto.response.BlogPostDetailResponse;
 import chez1s.htrbackend.dto.response.BlogPostSummaryResponse;
+import chez1s.htrbackend.dto.response.LikeStatusResponse;
 import chez1s.htrbackend.dto.response.PostCommentResponse;
 import chez1s.htrbackend.service.PostService;
 import org.junit.jupiter.api.BeforeEach;
@@ -80,5 +81,29 @@ class PublicBlogControllerTest {
 
         assertThat(result.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         assertThat(result.getBody()).isEqualTo(created);
+    }
+
+    @Test
+    void likeDelegatesToService() {
+        UUID userId = UUID.randomUUID();
+        Authentication auth = new UsernamePasswordAuthenticationToken(userId, null, List.of());
+        LikeStatusResponse status = new LikeStatusResponse(true, 1L);
+        when(postService.like("phong-tro-dep", userId)).thenReturn(status);
+
+        ResponseEntity<LikeStatusResponse> result = controller.like(auth, "phong-tro-dep");
+
+        assertThat(result.getBody()).isEqualTo(status);
+    }
+
+    @Test
+    void unlikeDelegatesToService() {
+        UUID userId = UUID.randomUUID();
+        Authentication auth = new UsernamePasswordAuthenticationToken(userId, null, List.of());
+        LikeStatusResponse status = new LikeStatusResponse(false, 0L);
+        when(postService.unlike("phong-tro-dep", userId)).thenReturn(status);
+
+        ResponseEntity<LikeStatusResponse> result = controller.unlike(auth, "phong-tro-dep");
+
+        assertThat(result.getBody()).isEqualTo(status);
     }
 }

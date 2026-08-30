@@ -2,12 +2,14 @@ package chez1s.htrbackend.service;
 
 import chez1s.htrbackend.domain.entity.Post;
 import chez1s.htrbackend.domain.entity.PostComment;
+import chez1s.htrbackend.domain.entity.PostLike;
 import chez1s.htrbackend.domain.entity.Property;
 import chez1s.htrbackend.domain.entity.User;
 import chez1s.htrbackend.domain.enums.RoomStatus;
 import chez1s.htrbackend.domain.repository.*;
 import chez1s.htrbackend.dto.response.BlogPostDetailResponse;
 import chez1s.htrbackend.dto.response.BlogPostSummaryResponse;
+import chez1s.htrbackend.dto.response.LikeStatusResponse;
 import chez1s.htrbackend.dto.response.PostCommentResponse;
 import chez1s.htrbackend.exception.ResourceNotFoundException;
 import chez1s.htrbackend.service.StorageService;
@@ -114,5 +116,52 @@ class PostServiceTest {
 
         assertThat(result.content()).isEqualTo("Rất hài lòng");
         assertThat(result.userName()).isEqualTo("Khách A");
+    }
+
+    @Test
+    void likeCreatesRowWhenNotAlreadyLiked() {
+        UUID postId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+        Post post = Post.builder().id(postId).published(true).build();
+        User user = User.builder().id(userId).build();
+        when(postRepository.findBySlugAndPublishedTrue("phong-tro-dep")).thenReturn(Optional.of(post));
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(postLikeRepository.existsByPostIdAndUserId(postId, userId)).thenReturn(false);
+        when(postLikeRepository.countByPostId(postId)).thenReturn(1L);
+
+        LikeStatusResponse result = postService.like("phong-tro-dep", userId);
+
+        assertThat(result.liked()).isTrue();
+        assertThat(result.likeCount()).isEqualTo(1L);
+        org.mockito.Mockito.verify(postLikeRepository).save(org.mockito.ArgumentMatchers.any(PostLike.class));
+    }
+
+    @Test
+    void likeIsIdempotentWhenAlreadyLiked() {
+        UUID postId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+        Post post = Post.builder().id(postId).published(true).build();
+        when(postRepository.findBySlugAndPublishedTrue("phong-tro-dep")).thenReturn(Optional.of(post));
+        when(userRepository.findById(userId)).thenReturn(Optional.of(User.builder().id(userId).build()));
+        when(postLikeRepository.existsByPostIdAndUserId(postId, userId)).thenReturn(true);
+        when(postLikeRepository.countByPostId(postId)).thenReturn(1L);
+
+        postService.like("phong-tro-dep", userId);
+
+        org.mockito.Mockito.verify(postLikeRepository, org.mockito.Mockito.never()).save(org.mockito.ArgumentMatchers.any(PostLike.class));
+    }
+
+    @Test
+    void unlikeDeletesTheRow() {
+        UUID postId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+        Post post = Post.builder().id(postId).published(true).build();
+        when(postRepository.findBySlugAndPublishedTrue("phong-tro-dep")).thenReturn(Optional.of(post));
+        when(postLikeRepository.countByPostId(postId)).thenReturn(0L);
+
+        LikeStatusResponse result = postService.unlike("phong-tro-dep", userId);
+
+        assertThat(result.liked()).isFalse();
+        org.mockito.Mockito.verify(postLikeRepository).deleteByPostIdAndUserId(postId, userId);
     }
 }

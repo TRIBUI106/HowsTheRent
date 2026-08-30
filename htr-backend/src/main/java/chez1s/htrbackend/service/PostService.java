@@ -2,12 +2,14 @@ package chez1s.htrbackend.service;
 
 import chez1s.htrbackend.domain.entity.Post;
 import chez1s.htrbackend.domain.entity.PostComment;
+import chez1s.htrbackend.domain.entity.PostLike;
 import chez1s.htrbackend.domain.entity.Property;
 import chez1s.htrbackend.domain.entity.User;
 import chez1s.htrbackend.domain.enums.RoomStatus;
 import chez1s.htrbackend.domain.repository.*;
 import chez1s.htrbackend.dto.response.BlogPostDetailResponse;
 import chez1s.htrbackend.dto.response.BlogPostSummaryResponse;
+import chez1s.htrbackend.dto.response.LikeStatusResponse;
 import chez1s.htrbackend.dto.response.PostCommentResponse;
 import chez1s.htrbackend.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -64,6 +66,26 @@ public class PostService {
                 .content(content)
                 .build();
         return PostCommentResponse.from(postCommentRepository.save(comment));
+    }
+
+    @Transactional
+    public LikeStatusResponse like(String slug, java.util.UUID userId) {
+        Post post = postRepository.findBySlugAndPublishedTrue(slug)
+                .orElseThrow(() -> new ResourceNotFoundException("Post", slug));
+        if (!postLikeRepository.existsByPostIdAndUserId(post.getId(), userId)) {
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new ResourceNotFoundException("User", userId));
+            postLikeRepository.save(PostLike.builder().post(post).user(user).build());
+        }
+        return new LikeStatusResponse(true, postLikeRepository.countByPostId(post.getId()));
+    }
+
+    @Transactional
+    public LikeStatusResponse unlike(String slug, java.util.UUID userId) {
+        Post post = postRepository.findBySlugAndPublishedTrue(slug)
+                .orElseThrow(() -> new ResourceNotFoundException("Post", slug));
+        postLikeRepository.deleteByPostIdAndUserId(post.getId(), userId);
+        return new LikeStatusResponse(false, postLikeRepository.countByPostId(post.getId()));
     }
 
     private BlogPostSummaryResponse toSummary(Post post) {
