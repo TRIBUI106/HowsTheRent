@@ -5,5 +5,6 @@ public enum UserRole {
     PLATFORM_ADMIN,
     LANDLORD_ADMIN,
     TENANT,
-    TECHNICIAN
+    TECHNICIAN,
+    GUEST
 }
