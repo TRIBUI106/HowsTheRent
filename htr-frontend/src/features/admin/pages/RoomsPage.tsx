@@ -10,13 +10,18 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Dialog } from '@/components/ui/dialog'
-import { formatCurrency, formatCurrencyInput, parseCurrencyInput } from '@/lib/utils'
+import { directionLabel, formatCurrency, formatCurrencyInput, parseCurrencyInput } from '@/lib/utils'
 import { Table, TableCell, TableRow } from '@/components/ui/table'
 import { getErrorMessage } from '@/lib/apiError'
 import { showToast } from '@/lib/toast'
-import type { Property, Room } from '@/types'
+import { ImageOff } from 'lucide-react'
+import type { Property, Room, RoomDirection } from '@/types'
 
-const emptyForm = { roomNumber: '', floor: '', areaM2: '', maxPeople: '', rentOverride: '', status: 'EMPTY' }
+const directionOptions: { value: RoomDirection; label: string }[] = [
+  'EAST', 'WEST', 'SOUTH', 'NORTH', 'NORTHEAST', 'NORTHWEST', 'SOUTHEAST', 'SOUTHWEST',
+].map(value => ({ value: value as RoomDirection, label: directionLabel(value) }))
+
+const emptyForm = { roomNumber: '', floor: '', areaM2: '', maxPeople: '', rentOverride: '', status: 'EMPTY', direction: '' }
 
 export default function RoomsPage() {
   const qc = useQueryClient()
@@ -74,6 +79,7 @@ export default function RoomsPage() {
         areaM2: form.areaM2 ? Number(form.areaM2) : null,
         maxPeople: Number(form.maxPeople),
         rentOverride: form.rentOverride ? parseCurrencyInput(form.rentOverride) : null,
+        direction: form.direction ? (form.direction as RoomDirection) : null,
       }
 
       const room = editingId
@@ -121,6 +127,7 @@ export default function RoomsPage() {
       maxPeople: room.maxPeople.toString(),
       rentOverride: formatCurrencyInput(room.rentOverride),
       status: room.status,
+      direction: room.direction ?? '',
     })
     setShowForm(true)
   }
@@ -152,6 +159,19 @@ export default function RoomsPage() {
               <Input label="Diện tích (m²)" type="number" value={form.areaM2} onChange={(event) => setForm({ ...form, areaM2: event.target.value })} />
               <Input label="Số người tối đa" type="number" value={form.maxPeople} onChange={(event) => setForm({ ...form, maxPeople: event.target.value })} required />
               <Input label="Giá thuê (override)" type="text" inputMode="numeric" value={form.rentOverride} onChange={(event) => setForm({ ...form, rentOverride: formatCurrencyInput(event.target.value) })} />
+              <div className="space-y-1">
+                <label className="block text-sm font-medium text-fg">Hướng phòng</label>
+                <select
+                  className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-fg"
+                  value={form.direction}
+                  onChange={(event) => setForm({ ...form, direction: event.target.value })}
+                >
+                  <option value="">Không chọn</option>
+                  {directionOptions.map(({ value, label }) => (
+                    <option key={value} value={value}>{label}</option>
+                  ))}
+                </select>
+              </div>
               {editingId && (
                 <div className="space-y-1">
                   <label className="block text-sm font-medium text-fg">Trạng thái</label>
@@ -184,14 +204,24 @@ export default function RoomsPage() {
         </div>
       ) : (
         <Card>
-          <Table headers={['Số phòng', 'Tầng', 'Diện tích', 'Tối đa', 'Giá', 'Trạng thái', 'Thao tác']}>
+          <Table headers={['Ảnh', 'Số phòng', 'Tầng', 'Diện tích', 'Tối đa', 'Giá', 'Hướng', 'Trạng thái', 'Thao tác']}>
             {rooms?.map((room) => (
               <TableRow key={room.id}>
+                <TableCell>
+                  {room.images?.[0] ? (
+                    <img src={room.images[0]} alt="" className="h-9 w-9 rounded-lg object-cover border border-border" />
+                  ) : (
+                    <span className="flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-sidebar/50 text-fg-subtle">
+                      <ImageOff size={14} />
+                    </span>
+                  )}
+                </TableCell>
                 <TableCell>{room.roomNumber}</TableCell>
                 <TableCell>{room.floor ?? '-'}</TableCell>
                 <TableCell>{room.areaM2 ? `${room.areaM2}m²` : '-'}</TableCell>
                 <TableCell>{room.maxPeople} người</TableCell>
                 <TableCell>{formatCurrency(room.rentOverride ?? 0)}</TableCell>
+                <TableCell>{directionLabel(room.direction)}</TableCell>
                 <TableCell><Badge status={room.status} /></TableCell>
                 <TableCell>
                   <div className="flex gap-2">

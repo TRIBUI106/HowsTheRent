@@ -157,6 +157,20 @@ export function nextDayLabel(): string {
   return `${weekday} (${dd}/${mm})`
 }
 
+export function directionLabel(direction?: string | null): string {
+  const map: Record<string, string> = {
+    NORTH: 'Bắc',
+    SOUTH: 'Nam',
+    EAST: 'Đông',
+    WEST: 'Tây',
+    NORTHEAST: 'Đông Bắc',
+    NORTHWEST: 'Tây Bắc',
+    SOUTHEAST: 'Đông Nam',
+    SOUTHWEST: 'Tây Nam',
+  }
+  return direction ? (map[direction] ?? direction) : '—'
+}
+
 export function categoryLabel(category?: string): string {
   const map: Record<string, string> = {
     ELECTRIC: 'Điện',

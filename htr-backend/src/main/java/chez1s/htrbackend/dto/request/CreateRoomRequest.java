@@ -1,5 +1,6 @@
 package chez1s.htrbackend.dto.request;
 
+import chez1s.htrbackend.domain.enums.RoomDirection;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -16,4 +17,5 @@ public class CreateRoomRequest {
     @NotNull @Positive
     private Integer maxPeople;
     private BigDecimal rentOverride;
+    private RoomDirection direction;
 }

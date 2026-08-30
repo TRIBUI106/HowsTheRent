@@ -8,7 +8,8 @@ import Layout from '@/components/Layout'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { formatCurrency, formatDate } from '@/lib/utils'
+import { ImageGallery } from '@/components/ui/image-gallery'
+import { directionLabel, formatCurrency, formatDate } from '@/lib/utils'
 import { getErrorMessage } from '@/lib/apiError'
 import { showToast } from '@/lib/toast'
 import type { RoomTimelineEntry } from '@/types'
@@ -66,6 +67,27 @@ export default function RoomDetailPage() {
     },
   })
 
+  const uploadImages = useGuardedMutation({
+    mutationFn: (files: File[]) => roomApi.uploadImages(propertyId!, roomId!, files),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['room', propertyId, roomId] }),
+    onError: (err: unknown) => {
+      showToast({ message: getErrorMessage(err, 'Tải ảnh lên thất bại'), type: 'error' })
+    },
+  })
+
+  const [deletingImageUrl, setDeletingImageUrl] = useState<string | null>(null)
+  const deleteImage = useGuardedMutation({
+    mutationFn: (imageUrl: string) => {
+      setDeletingImageUrl(imageUrl)
+      return roomApi.deleteImage(propertyId!, roomId!, imageUrl)
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['room', propertyId, roomId] }),
+    onError: (err: unknown) => {
+      showToast({ message: getErrorMessage(err, 'Xóa ảnh thất bại'), type: 'error' })
+    },
+    onSettled: () => setDeletingImageUrl(null),
+  })
+
   if (roomLoading) {
     return (
       <Layout title="Chi tiết phòng">
@@ -113,7 +135,25 @@ export default function RoomDetailPage() {
                 {room?.rentOverride ? formatCurrency(room.rentOverride) : 'Theo toà nhà'}
               </dd>
             </div>
+            <div>
+              <dt className="text-fg-subtle">Hướng phòng</dt>
+              <dd className="font-medium text-fg">{directionLabel(room?.direction)}</dd>
+            </div>
           </dl>
+        </CardContent>
+      </Card>
+
+      {/* Photos */}
+      <Card className="mb-6">
+        <CardHeader>Hình ảnh phòng</CardHeader>
+        <CardContent>
+          <ImageGallery
+            images={room?.images ?? []}
+            onUpload={files => uploadImages.mutate(files)}
+            onDelete={url => deleteImage.mutate(url)}
+            uploading={uploadImages.isPending}
+            deletingUrl={deletingImageUrl}
+          />
         </CardContent>
       </Card>
 

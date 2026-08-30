@@ -63,6 +63,7 @@ public class RoomService {
                 .areaM2(req.getAreaM2())
                 .maxPeople(req.getMaxPeople())
                 .rentOverride(req.getRentOverride())
+                .direction(req.getDirection())
                 .status(RoomStatus.EMPTY)
                 .build();
         return roomRepository.save(room);
@@ -76,6 +77,7 @@ public class RoomService {
         room.setAreaM2(req.getAreaM2());
         room.setMaxPeople(req.getMaxPeople());
         room.setRentOverride(req.getRentOverride());
+        room.setDirection(req.getDirection());
         return roomRepository.save(room);
     }
 

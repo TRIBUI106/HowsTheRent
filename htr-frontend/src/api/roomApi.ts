@@ -1,5 +1,5 @@
 import api from "@/lib/api";
-import type { Room } from "@/types";
+import type { Room, RoomDirection } from "@/types";
 
 export const roomApi = {
   listByProperty: (propertyId: string) =>
@@ -15,6 +15,7 @@ export const roomApi = {
       areaM2?: number | null;
       maxPeople: number;
       rentOverride?: number | null;
+      direction?: RoomDirection | null;
     },
   ) =>
     api.post<Room>(`/properties/${propertyId}/rooms`, data).then((r) => r.data),
@@ -27,6 +28,7 @@ export const roomApi = {
       areaM2: number | null;
       maxPeople: number;
       rentOverride: number | null;
+      direction: RoomDirection | null;
     }>,
   ) =>
     api
@@ -40,4 +42,17 @@ export const roomApi = {
       .then((r) => r.data),
   remove: (propertyId: string, id: string) =>
     api.delete(`/properties/${propertyId}/rooms/${id}`),
+  uploadImages: (propertyId: string, id: string, files: File[]) => {
+    const formData = new FormData();
+    files.forEach((file) => formData.append("files", file));
+    return api
+      .post<string[]>(`/properties/${propertyId}/rooms/${id}/images`, formData)
+      .then((r) => r.data);
+  },
+  deleteImage: (propertyId: string, id: string, imageUrl: string) =>
+    api
+      .delete<string[]>(`/properties/${propertyId}/rooms/${id}/images`, {
+        params: { imageUrl },
+      })
+      .then((r) => r.data),
 };

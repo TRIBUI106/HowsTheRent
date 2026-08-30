@@ -80,4 +80,15 @@ public class RoomController {
         roomService.save(room);
         return ResponseEntity.ok(urls);
     }
+
+    @DeleteMapping("/{id}/images")
+    @PreAuthorize("hasAnyRole('ADMIN','PLATFORM_ADMIN','LANDLORD_ADMIN')")
+    public ResponseEntity<List<String>> deleteImage(@PathVariable UUID propertyId, @PathVariable UUID id,
+                                                     @RequestParam String imageUrl) {
+        Room room = roomService.getById(id);
+        room.getImages().remove(imageUrl);
+        Room saved = roomService.save(room);
+        storageService.delete(imageUrl);
+        return ResponseEntity.ok(saved.getImages());
+    }
 }

@@ -47,6 +47,10 @@ export interface Property {
   updatedAt: string
 }
 
+export type RoomDirection =
+  | 'NORTH' | 'SOUTH' | 'EAST' | 'WEST'
+  | 'NORTHEAST' | 'NORTHWEST' | 'SOUTHEAST' | 'SOUTHWEST'
+
 export interface Room {
   id: string
   property?: Property
@@ -58,6 +62,7 @@ export interface Room {
   maxPeople: number
   rentOverride?: number
   status: 'EMPTY' | 'RENTED' | 'MAINTENANCE'
+  direction?: RoomDirection
   images: string[]
   createdAt: string
   updatedAt: string

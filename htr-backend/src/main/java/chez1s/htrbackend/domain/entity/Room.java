@@ -1,5 +1,6 @@
 package chez1s.htrbackend.domain.entity;
 
+import chez1s.htrbackend.domain.enums.RoomDirection;
 import chez1s.htrbackend.domain.enums.RoomStatus;
 import jakarta.persistence.*;
 import lombok.*;
@@ -42,6 +43,10 @@ public class Room extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private RoomStatus status = RoomStatus.EMPTY;
+
+    @Enumerated(EnumType.STRING)
+    @Column(length = 20)
+    private RoomDirection direction;
 
     @ElementCollection
     @CollectionTable(name = "room_images", joinColumns = @JoinColumn(name = "room_id"))
