@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { directionLabel } from './utils'
+import { directionLabel, postStatusLabel } from './utils'
 
 describe('directionLabel', () => {
   it('maps each of the 8 directions to a Vietnamese label', () => {
@@ -21,5 +21,13 @@ describe('directionLabel', () => {
 
   it('falls back to the raw value for an unrecognized direction', () => {
     expect(directionLabel('UNKNOWN')).toBe('UNKNOWN')
+  })
+})
+
+describe('postStatusLabel', () => {
+  it('maps each status to a Vietnamese label', () => {
+    expect(postStatusLabel('PUBLISHED')).toBe('Đã xuất bản')
+    expect(postStatusLabel('DRAFT')).toBe('Bản nháp')
+    expect(postStatusLabel('NONE')).toBe('Chưa có bài viết')
   })
 })

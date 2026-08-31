@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /blog
+Allow: /blog/*
+Disallow: /admin
+Disallow: /tenant
+Disallow: /tech
+
+Sitemap: https://REPLACE_WITH_PRODUCTION_DOMAIN/sitemap.xml

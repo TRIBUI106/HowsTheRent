@@ -3,6 +3,7 @@ package chez1s.htrbackend.controller;
 import chez1s.htrbackend.dto.request.ForgotPasswordRequest;
 import chez1s.htrbackend.dto.request.LoginRequest;
 import chez1s.htrbackend.dto.request.RefreshRequest;
+import chez1s.htrbackend.dto.request.RegisterGuestRequest;
 import chez1s.htrbackend.dto.request.ResetPasswordRequest;
 import chez1s.htrbackend.dto.response.AuthResponse;
 import chez1s.htrbackend.exception.BusinessException;
@@ -12,6 +13,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -57,6 +59,14 @@ public class AuthController {
         AuthResponse auth = authService.login(request);
         setTokenCookies(response, auth.getAccessToken(), auth.getRefreshToken());
         return ResponseEntity.ok(new AuthResponse(null, null, auth.getUser()));
+    }
+
+    @PostMapping("/register-guest")
+    public ResponseEntity<AuthResponse> registerGuest(@Valid @RequestBody RegisterGuestRequest request,
+                                                       HttpServletResponse response) {
+        AuthResponse authResponse = authService.registerGuest(request);
+        setTokenCookies(response, authResponse.getAccessToken(), authResponse.getRefreshToken());
+        return ResponseEntity.status(HttpStatus.CREATED).body(authResponse);
     }
 
     @PostMapping("/refresh")

@@ -57,6 +57,7 @@ public class UserController {
     }
 
     @GetMapping("/me")
+    @PreAuthorize("hasAnyRole('ADMIN','PLATFORM_ADMIN','LANDLORD_ADMIN','TENANT','TECHNICIAN')")
     public ResponseEntity<UserResponse> getMe(Authentication auth) {
         UUID userId = (UUID) auth.getPrincipal();
         User user = userRepository.findById(userId)

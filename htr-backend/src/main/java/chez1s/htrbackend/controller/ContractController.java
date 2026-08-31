@@ -63,6 +63,7 @@ public class ContractController {
     }
 
     @GetMapping("/contracts/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','PLATFORM_ADMIN','LANDLORD_ADMIN','TENANT','TECHNICIAN')")
     public ResponseEntity<ContractResponse> getById(Authentication authentication, @PathVariable UUID id) {
         ActorContext actor = ActorContext.require(authentication);
         Contract contract = actor.role() == chez1s.htrbackend.domain.enums.UserRole.TENANT

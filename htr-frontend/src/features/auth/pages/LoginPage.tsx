@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom'
 import axios from 'axios'
 import { authApi } from '@/api'
 import { consumeSessionExpiryReason } from '@/lib/sessionExpiryMessage'
+import { homePathForRole } from '@/lib/homePath'
 import { useAuthStore } from '@/stores/authStore'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -46,8 +47,7 @@ export default function LoginPage() {
   try {
       const { user } = await authApi.login(email, password)
       setUser(user)
-      const role = user.role.toLowerCase()
-      navigate(role === 'admin' ? '/admin' : role === 'tenant' ? '/tenant' : '/tech')
+      navigate(homePathForRole(user.role))
     } catch (err: unknown) {
       setError(getLoginErrorMessage(err))
     } finally {

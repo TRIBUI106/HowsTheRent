@@ -53,6 +53,7 @@ public class InvoiceController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','PLATFORM_ADMIN','LANDLORD_ADMIN','TENANT','TECHNICIAN')")
     public ResponseEntity<InvoiceResponse> getById(Authentication authentication, @PathVariable UUID id) {
         return ResponseEntity.ok(InvoiceResponse.from(requireInvoiceAccess(ActorContext.require(authentication), id)));
     }

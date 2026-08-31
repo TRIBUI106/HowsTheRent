@@ -1,9 +1,11 @@
 package chez1s.htrbackend.service;
 
 import chez1s.htrbackend.domain.entity.User;
+import chez1s.htrbackend.domain.enums.UserRole;
 import chez1s.htrbackend.domain.repository.UserRepository;
 import chez1s.htrbackend.dto.request.LoginRequest;
 import chez1s.htrbackend.dto.request.RefreshRequest;
+import chez1s.htrbackend.dto.request.RegisterGuestRequest;
 import chez1s.htrbackend.dto.response.AuthResponse;
 import chez1s.htrbackend.dto.response.UserResponse;
 import chez1s.htrbackend.exception.BusinessException;
@@ -95,6 +97,25 @@ public class AuthService {
         user.setPasswordHash(passwordEncoder.encode(newPassword));
         userRepository.save(user);
         PASSWORD_RESET_OTPS.remove(key);
+    }
+
+    public AuthResponse registerGuest(RegisterGuestRequest request) {
+        String email = normalizeEmail(request.getEmail());
+        if (userRepository.existsByEmail(email)) {
+            throw new BusinessException("Email đã được sử dụng");
+        }
+        User user = User.builder()
+                .fullName(request.getFullName())
+                .email(email)
+                .phone(request.getPhone())
+                .passwordHash(passwordEncoder.encode(request.getPassword()))
+                .role(UserRole.GUEST)
+                .active(true)
+                .build();
+        user = userRepository.save(user);
+        String accessToken = tokenProvider.generateAccessToken(user.getId(), user.getEmail(), user.getRole().name(), user.getAuthVersion());
+        String refreshToken = tokenProvider.generateRefreshToken(user.getId(), user.getEmail(), user.getRole().name(), user.getAuthVersion());
+        return new AuthResponse(accessToken, refreshToken, UserResponse.from(user));
     }
 
     public void changePassword(java.util.UUID userId, String currentPassword, String newPassword) {

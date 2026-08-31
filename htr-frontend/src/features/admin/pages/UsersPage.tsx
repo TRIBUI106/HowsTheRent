@@ -15,13 +15,19 @@ import type { User } from '@/types'
 const FILTER_ROLES = ['ALL', 'ADMIN', 'PLATFORM_ADMIN', 'LANDLORD_ADMIN', 'TENANT', 'TECHNICIAN'] as const
 const USER_ROLES = ['ADMIN', 'PLATFORM_ADMIN', 'LANDLORD_ADMIN', 'TENANT', 'TECHNICIAN'] as const
 
-const ROLE_LABELS: Record<(typeof FILTER_ROLES)[number], string> = {
+// Keyed by (typeof FILTER_ROLES)[number] | 'GUEST' rather than FILTER_ROLES
+// alone: GUEST accounts are self-registered via the public blog (Task 6),
+// not created/filtered from this admin page, so GUEST intentionally stays
+// out of FILTER_ROLES/USER_ROLES — but u.role (User['role']) can still be
+// 'GUEST' at runtime, so this label map must stay exhaustive against it.
+const ROLE_LABELS: Record<(typeof FILTER_ROLES)[number] | 'GUEST', string> = {
   ALL: 'Tất cả',
   ADMIN: 'Quản trị vận hành',
   PLATFORM_ADMIN: 'Quản trị nền tảng',
   LANDLORD_ADMIN: 'Quản trị chủ nhà',
   TENANT: 'Khách thuê',
   TECHNICIAN: 'Kỹ thuật viên',
+  GUEST: 'Khách',
 }
 
 const emptyCreateForm = {

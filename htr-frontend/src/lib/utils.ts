@@ -171,6 +171,15 @@ export function directionLabel(direction?: string | null): string {
   return direction ? (map[direction] ?? direction) : '—'
 }
 
+export function postStatusLabel(status: 'PUBLISHED' | 'DRAFT' | 'NONE'): string {
+  const map: Record<string, string> = {
+    PUBLISHED: 'Đã xuất bản',
+    DRAFT: 'Bản nháp',
+    NONE: 'Chưa có bài viết',
+  }
+  return map[status] ?? status
+}
+
 export function categoryLabel(category?: string): string {
   const map: Record<string, string> = {
     ELECTRIC: 'Điện',
