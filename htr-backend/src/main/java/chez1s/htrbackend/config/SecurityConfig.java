@@ -38,6 +38,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/payment/callback").permitAll()
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/public/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/sitemap.xml").permitAll()
                 .anyRequest().authenticated()
             )
             .exceptionHandling(ex -> ex
