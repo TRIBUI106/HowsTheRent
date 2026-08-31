@@ -13,13 +13,13 @@ public interface PostRepository extends JpaRepository<Post, UUID> {
     @EntityGraph(attributePaths = {"room", "room.property", "room.images", "author"})
     Optional<Post> findBySlugAndPublishedTrue(String slug);
 
-    @EntityGraph(attributePaths = {"room", "room.property", "room.images", "author"})
+    @EntityGraph(attributePaths = {"room", "room.property", "author"})
     Optional<Post> findById(UUID id);
 
-    @EntityGraph(attributePaths = {"room", "room.property", "room.images"})
+    @EntityGraph(attributePaths = {"room", "room.property"})
     List<Post> findByPublishedTrueOrderByPublishedAtDesc();
 
-    @EntityGraph(attributePaths = {"room", "room.property", "room.images"})
+    @EntityGraph(attributePaths = {"room", "room.property"})
     List<Post> findAllByOrderByUpdatedAtDesc();
 
     boolean existsBySlug(String slug);
