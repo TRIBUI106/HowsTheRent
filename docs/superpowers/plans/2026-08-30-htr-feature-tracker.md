@@ -206,28 +206,41 @@ since it reuses the exact wiring already verified for direction.
 
 ---
 
-## #5 — Blog feature (one post per rental property)
+## #5 — Blog feature (multiple posts per room)
 
-**Status:** ✅ Done — implemented via a 29-task plan on an isolated
-worktree/branch, executed with subagent-driven development (fresh
-implementer + independent reviewer per task, plus a final whole-branch
-review), merged to `master` (`017f1d9`), verified with the full
-automated suite on `master` post-merge.
+**Status:** ✅ Done — initially implemented from the 29-task plan, then
+reworked to the correct domain model: a property has many rooms, a blog post
+belongs to one room, and each room can have many posts over time. The rework
+is committed directly on `master` and verified by backend/frontend suites.
 
 **Spec:** `docs/superpowers/specs/2026-08-30-htr-blog-design.md`
 **Plan:** `docs/superpowers/plans/2026-08-30-htr-blog-implementation.md`
 
-**Answers to the interview questions above:** public-facing/no-login for
-reading (SEO-friendly, `permitAll()` GET), Admin/PLATFORM_ADMIN-only
-authoring (no per-property-owner scoping), a "Tạo bản nháp tự động"
-one-shot template generator from property/room data (address, photos,
-direction, vacancy) feeding an editable Tiptap rich-text editor (not
-fully custom-from-scratch, not template-locked), new backend entities
-(`Post`/`PostComment`/`PostLike`, 1:1 `Post`↔`Property`) plus a full new
-endpoint surface, and yes — one post per `Property`, editable in place,
-no multi-post/versioning.
+**Current product model:** public-facing/no-login reading (SEO-friendly,
+`permitAll()` GET), ADMIN/PLATFORM_ADMIN-only authoring (no
+per-property-owner scoping), and a "Tạo bản nháp tự động" template that
+uses one chosen room's facts. `Post` now has a many-to-one `room_id` relation:
+a property has many rooms and the same room can receive many independently
+created, edited, published, unpublished, or deleted posts over time.
 
 **What was built:**
+- **Room-based multi-post rework (2026-08-31):** `Post.property` 1:1 was
+  replaced with `Post.room` many-to-one; repositories/services/controllers
+  were re-keyed around real `postId`s and room-scoped creation. Admin blog is
+  now a flat post table with create/publish/unpublish/edit/delete actions,
+  `/admin/blog/new` groups selectable rooms by property, and existing posts
+  edit at `/admin/blog/:postId`. Deletion removes post comments and likes
+  first.
+- **Public-site integration (2026-08-31):** `/` is `LandingPage` again;
+  its spacing was tightened, it now has a latest-posts teaser, and the shared
+  public navigation exposes `/blog`. Blog listing cards show each post's room
+  and current room status rather than repeating a property-wide vacancy count.
+  Blog detail is a responsive three-column layout with property/related-post
+  context on the left, article/comments in the center, and room facts/images/
+  CTA on the right. The public property-wide vacancy indicator remains live in
+  the center content.
+
+**What was built initially:**
 - **New role:** self-registerable `GUEST` (`POST /api/auth/register-guest`,
   reuses the existing `accessToken`/`refreshToken` cookies unchanged — no
   new/renamed cookie, per this repo's cookie-regression history).
@@ -259,15 +272,16 @@ no multi-post/versioning.
   role→redirect implementations in `App.tsx`/`LoginPage.tsx` (both
   previously mishandled roles silently), per-post SEO meta tags
   (`useDocumentMeta`), `robots.txt`.
-- **Verify:** every one of the 29 tasks had its own fresh-subagent
+- **Verify:** every one of the initial 29 tasks had its own fresh-subagent
   implementation + independent review pass (all approved, one fix round
   on Task 26 for a controller ruling on Vitest's rejected-query
   handling); a final whole-branch review covered security/lazy-loading
-  safety/plan-alignment across the whole diff. Post-merge on `master`:
-  backend 189/189 tests, frontend 79/79 tests, production build clean.
-  Full manual browser walkthrough (Task 29 in the plan) was **not**
-  run — the user directed merging to `master` and continuing inline
-  before that step; flagged as an open follow-up below.
+  safety/plan-alignment. The later room-based multi-post rework added
+  backend create/update/delete and room-data regression coverage; backend
+  tests passed 212/212. Frontend tests passed 88/88, lint clean, and the
+  production build clean. A fresh manual full-stack walkthrough is still
+  the final verification task for the room-based create → publish → public
+  view → delete workflow.
 
 **Known gaps / follow-up ideas (not done, listed for the "perfect later"
 pass):**
@@ -329,3 +343,13 @@ pass):**
   the commit history). Post-merge sanity on `master`: backend 189/189,
   frontend 79/79, build clean. All 5 original tracker items now have a
   working, tested implementation.
+- 2026-08-31: User clarified the initial blog domain model was wrong:
+  posts must be created repeatedly for individual rooms, not one editable
+  post per property. Reworked `Post` to a many-to-one room relation and
+  replaced property-keyed upsert routes/UI with post-ID create/edit/delete
+  flows, while preserving ADMIN/PLATFORM_ADMIN-only authoring and public
+  read access. `/` was restored to the landing page, blog became an
+  explicitly linked public page, landing spacing was tightened, and the
+  public article gained property/related-post and room-details sidebars.
+  Backend 212/212; frontend 88/88; lint and production build clean.
+  A final room-based manual full-stack walkthrough remains to be run.
