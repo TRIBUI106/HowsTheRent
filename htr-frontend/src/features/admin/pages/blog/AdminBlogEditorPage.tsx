@@ -109,7 +109,7 @@ export default function AdminBlogEditorPage() {
     onError: (err: unknown) => showToast({ message: getErrorMessage(err, 'Xóa bài viết thất bại'), type: 'error' }),
   })
 
-  const roomsByProperty = rooms?.reduce<Record<string, typeof rooms>>((groups, room) => {
+  const roomsByProperty = rooms?.reduce<Record<string, NonNullable<typeof rooms>>>((groups, room) => {
     ;(groups[room.propertyName] ??= []).push(room)
     return groups
   }, {})

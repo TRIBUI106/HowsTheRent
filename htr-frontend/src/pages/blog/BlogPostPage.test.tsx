@@ -8,6 +8,7 @@ import BlogPostPage from './BlogPostPage'
 
 vi.mock('@/api', () => ({
   blogApi: {
+    list: vi.fn(),
     getBySlug: vi.fn(),
     getVacancy: vi.fn(),
     listComments: vi.fn(),
@@ -30,18 +31,23 @@ function renderAtSlug(slug: string) {
   )
 }
 
+const post = {
+  id: '1', slug: 'phong-tro-dep', title: 'Phòng trọ đẹp', content: '<p>Nội dung</p>', coverImageUrl: null,
+  roomId: 'r1', roomNumber: 'A101', roomStatus: 'EMPTY' as const, roomDirection: 'NORTH' as const,
+  roomAreaM2: 24, roomMaxPeople: 2, roomImages: ['https://example.test/room-a101.jpg'],
+  propertyId: 'p1', propertyName: 'Nhà trọ Xanh', propertyAddress: '12 Lê Lợi', publishedAt: null,
+  likeCount: 3, liked: false,
+}
+
 describe('BlogPostPage', () => {
   beforeEach(() => {
     vi.mocked(blogApi.like).mockClear()
     vi.mocked(blogApi.unlike).mockClear()
     useAuthStore.setState({ user: null })
-    vi.mocked(blogApi.getBySlug).mockResolvedValue({
-      id: '1', slug: 'phong-tro-dep', title: 'Phòng trọ đẹp', content: '<p>Nội dung</p>', coverImageUrl: null,
-      propertyId: 'p1', propertyName: 'Nhà trọ Xanh', propertyAddress: '12 Lê Lợi', publishedAt: null,
-      likeCount: 3, liked: false,
-    })
+    vi.mocked(blogApi.getBySlug).mockResolvedValue(post)
     vi.mocked(blogApi.getVacancy).mockResolvedValue({ emptyCount: 2, rentedCount: 3, totalCount: 5 })
     vi.mocked(blogApi.listComments).mockResolvedValue([])
+    vi.mocked(blogApi.list).mockResolvedValue([])
   })
 
   it('renders post content and the live vacancy widget', async () => {
@@ -49,6 +55,30 @@ describe('BlogPostPage', () => {
 
     expect(await screen.findByText('Phòng trọ đẹp')).toBeInTheDocument()
     await waitFor(() => expect(screen.getByText(/2\/5 phòng còn trống/i)).toBeInTheDocument())
+  })
+
+  it('renders room facts and the property sidebar', async () => {
+    renderAtSlug('phong-tro-dep')
+
+    expect(await screen.findByText('Thông tin phòng')).toBeInTheDocument()
+    expect(screen.getByText('Phòng A101')).toBeInTheDocument()
+    expect(screen.getByText('24 m²')).toBeInTheDocument()
+    expect(screen.getByText('Bắc')).toBeInTheDocument()
+    expect(screen.getByText('Nhà trọ Xanh')).toBeInTheDocument()
+  })
+
+  it('lists related posts from the same property, excluding the current post', async () => {
+    vi.mocked(blogApi.list).mockResolvedValue([
+      { id: '1', slug: 'phong-tro-dep', title: 'Phòng trọ đẹp', coverImageUrl: null, roomId: 'r1', roomNumber: 'A101', roomStatus: 'EMPTY', propertyId: 'p1', propertyName: 'Nhà trọ Xanh', propertyAddress: '12 Lê Lợi', publishedAt: null },
+      { id: '2', slug: 'phong-khac', title: 'Phòng cùng nhà', coverImageUrl: null, roomId: 'r2', roomNumber: 'A102', roomStatus: 'RENTED', propertyId: 'p1', propertyName: 'Nhà trọ Xanh', propertyAddress: '12 Lê Lợi', publishedAt: null },
+      { id: '3', slug: 'phong-khac-nha', title: 'Phòng nhà khác', coverImageUrl: null, roomId: 'r3', roomNumber: 'B101', roomStatus: 'EMPTY', propertyId: 'p2', propertyName: 'Nhà trọ Đỏ', propertyAddress: '5 Trần Phú', publishedAt: null },
+    ])
+
+    renderAtSlug('phong-tro-dep')
+
+    expect(await screen.findByText('Các bài khác của tòa nhà này')).toBeInTheDocument()
+    expect(screen.getByText('Phòng cùng nhà')).toBeInTheDocument()
+    expect(screen.queryByText('Phòng nhà khác')).not.toBeInTheDocument()
   })
 
   it('shows a login prompt instead of the comment form when logged out', async () => {
@@ -79,11 +109,7 @@ describe('BlogPostPage', () => {
   })
 
   it('unlikes an already-liked post by calling blogApi.unlike, not like', async () => {
-    vi.mocked(blogApi.getBySlug).mockResolvedValue({
-      id: '1', slug: 'phong-tro-dep', title: 'Phòng trọ đẹp', content: '<p>Nội dung</p>', coverImageUrl: null,
-      propertyId: 'p1', propertyName: 'Nhà trọ Xanh', propertyAddress: '12 Lê Lợi', publishedAt: null,
-      likeCount: 4, liked: true,
-    })
+    vi.mocked(blogApi.getBySlug).mockResolvedValue({ ...post, likeCount: 4, liked: true })
     vi.mocked(blogApi.unlike).mockResolvedValue({ liked: false, likeCount: 3 })
     renderAtSlug('phong-tro-dep')
 

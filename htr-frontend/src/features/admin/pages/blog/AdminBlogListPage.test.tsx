@@ -1,13 +1,13 @@
 import type { ReactNode } from 'react'
-import { describe, it, expect, vi } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { adminBlogApi } from '@/api'
 import AdminBlogListPage from './AdminBlogListPage'
 
 vi.mock('@/api', () => ({
-  adminBlogApi: { listAll: vi.fn() },
+  adminBlogApi: { listAll: vi.fn(), publish: vi.fn(), unpublish: vi.fn(), delete: vi.fn() },
 }))
 
 // Layout pulls in Sidebar/Header, which in turn pull in useNotifications' SSE
@@ -29,17 +29,32 @@ function renderPage() {
 }
 
 describe('AdminBlogListPage', () => {
-  it('shows each property with its post status', async () => {
+  beforeEach(() => {
+    vi.mocked(adminBlogApi.delete).mockReset()
     vi.mocked(adminBlogApi.listAll).mockResolvedValue([
-      { propertyId: 'p1', propertyName: 'Nhà A', postId: '1', title: 'Bài A', slug: 'bai-a', published: true, updatedAt: null },
-      { propertyId: 'p2', propertyName: 'Nhà B', postId: null, title: null, slug: null, published: false, updatedAt: null },
+      { postId: '1', roomId: 'r1', roomNumber: 'A101', propertyId: 'p1', propertyName: 'Nhà A', title: 'Bài A', slug: 'bai-a', published: true, updatedAt: null },
+      { postId: '2', roomId: 'r1', roomNumber: 'A101', propertyId: 'p1', propertyName: 'Nhà A', title: 'Bài B', slug: 'bai-b', published: false, updatedAt: null },
     ])
+  })
 
+  it('shows every post, including multiple posts for one room', async () => {
     renderPage()
 
-    expect(await screen.findByText('Nhà A')).toBeInTheDocument()
+    expect(await screen.findByText('Bài A')).toBeInTheDocument()
+    expect(screen.getByText('Bài B')).toBeInTheDocument()
+    expect(screen.getAllByText('A101')).toHaveLength(2)
     expect(screen.getByText('Đã xuất bản')).toBeInTheDocument()
-    expect(screen.getByText('Nhà B')).toBeInTheDocument()
-    expect(screen.getByText('Chưa có bài viết')).toBeInTheDocument()
+    expect(screen.getByText('Bản nháp')).toBeInTheDocument()
+  })
+
+  it('deletes a post only after confirmation', async () => {
+    vi.mocked(adminBlogApi.delete).mockResolvedValue(undefined)
+    renderPage()
+
+    fireEvent.click(await screen.findAllByRole('button', { name: 'Xóa' }).then(buttons => buttons[0]))
+
+    expect(adminBlogApi.delete).not.toHaveBeenCalled()
+    fireEvent.click(screen.getByRole('button', { name: 'Xóa bài viết' }))
+    await waitFor(() => expect(adminBlogApi.delete).toHaveBeenCalledWith('1'))
   })
 })
