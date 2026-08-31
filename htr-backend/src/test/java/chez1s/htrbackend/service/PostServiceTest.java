@@ -69,7 +69,7 @@ class PostServiceTest {
     }
 
     @Test
-    void getPublishedBySlugReturnsDetail() {
+    void getPublishedBySlugReturnsDetailWithLikedFalseForAnonymousViewer() {
         UUID propertyId = UUID.randomUUID();
         Property property = Property.builder().id(propertyId).name("Nhà trọ Xanh").address("12 Lê Lợi").build();
         Post post = Post.builder().id(UUID.randomUUID()).property(property).title("Phòng trọ đẹp")
@@ -77,17 +77,34 @@ class PostServiceTest {
         when(postRepository.findBySlugAndPublishedTrue("phong-tro-dep")).thenReturn(Optional.of(post));
         when(postLikeRepository.countByPostId(post.getId())).thenReturn(7L);
 
-        BlogPostDetailResponse result = postService.getPublishedBySlug("phong-tro-dep");
+        BlogPostDetailResponse result = postService.getPublishedBySlug("phong-tro-dep", null);
 
         assertThat(result.content()).isEqualTo("<p>Nội dung</p>");
         assertThat(result.likeCount()).isEqualTo(7L);
+        assertThat(result.liked()).isFalse();
+    }
+
+    @Test
+    void getPublishedBySlugReturnsLikedTrueWhenViewerAlreadyLiked() {
+        UUID propertyId = UUID.randomUUID();
+        UUID viewerId = UUID.randomUUID();
+        Property property = Property.builder().id(propertyId).name("Nhà trọ Xanh").address("12 Lê Lợi").build();
+        Post post = Post.builder().id(UUID.randomUUID()).property(property).title("Phòng trọ đẹp")
+                .slug("phong-tro-dep").content("<p>Nội dung</p>").published(true).build();
+        when(postRepository.findBySlugAndPublishedTrue("phong-tro-dep")).thenReturn(Optional.of(post));
+        when(postLikeRepository.countByPostId(post.getId())).thenReturn(7L);
+        when(postLikeRepository.existsByPostIdAndUserId(post.getId(), viewerId)).thenReturn(true);
+
+        BlogPostDetailResponse result = postService.getPublishedBySlug("phong-tro-dep", viewerId);
+
+        assertThat(result.liked()).isTrue();
     }
 
     @Test
     void getPublishedBySlugThrowsWhenMissing() {
         when(postRepository.findBySlugAndPublishedTrue("missing")).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> postService.getPublishedBySlug("missing"))
+        assertThatThrownBy(() -> postService.getPublishedBySlug("missing", null))
                 .isInstanceOf(ResourceNotFoundException.class);
     }
 

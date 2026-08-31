@@ -13,6 +13,7 @@ public record BlogPostDetailResponse(
         String propertyName,
         String propertyAddress,
         LocalDateTime publishedAt,
-        long likeCount
+        long likeCount,
+        boolean liked
 ) {
 }

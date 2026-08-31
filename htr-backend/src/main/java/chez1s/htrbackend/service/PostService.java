@@ -179,10 +179,10 @@ public class PostService {
     }
 
     @Transactional(readOnly = true)
-    public BlogPostDetailResponse getPublishedBySlug(String slug) {
+    public BlogPostDetailResponse getPublishedBySlug(String slug, UUID viewerId) {
         Post post = postRepository.findBySlugAndPublishedTrue(slug)
                 .orElseThrow(() -> new ResourceNotFoundException("Post", slug));
-        return toDetail(post);
+        return toDetail(post, viewerId);
     }
 
     @Transactional(readOnly = true)
@@ -291,12 +291,13 @@ public class PostService {
         );
     }
 
-    private BlogPostDetailResponse toDetail(Post post) {
+    private BlogPostDetailResponse toDetail(Post post, UUID viewerId) {
         Property property = post.getProperty();
         long likeCount = postLikeRepository.countByPostId(post.getId());
+        boolean liked = viewerId != null && postLikeRepository.existsByPostIdAndUserId(post.getId(), viewerId);
         return new BlogPostDetailResponse(
                 post.getId(), post.getSlug(), post.getTitle(), post.getContent(), post.getCoverImageUrl(),
-                property.getId(), property.getName(), property.getAddress(), post.getPublishedAt(), likeCount
+                property.getId(), property.getName(), property.getAddress(), post.getPublishedAt(), likeCount, liked
         );
     }
 }

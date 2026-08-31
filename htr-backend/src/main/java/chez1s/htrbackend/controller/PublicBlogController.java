@@ -36,8 +36,9 @@ public class PublicBlogController {
     }
 
     @GetMapping("/posts/{slug}")
-    public ResponseEntity<BlogPostDetailResponse> getBySlug(@PathVariable String slug) {
-        return ResponseEntity.ok(postService.getPublishedBySlug(slug));
+    public ResponseEntity<BlogPostDetailResponse> getBySlug(Authentication auth, @PathVariable String slug) {
+        UUID viewerId = (auth != null && auth.getPrincipal() instanceof UUID) ? (UUID) auth.getPrincipal() : null;
+        return ResponseEntity.ok(postService.getPublishedBySlug(slug, viewerId));
     }
 
     @GetMapping("/posts/{slug}/comments")

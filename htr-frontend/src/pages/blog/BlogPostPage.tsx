@@ -49,9 +49,7 @@ export default function BlogPostPage() {
   })
 
   const toggleLike = useGuardedMutation({
-    mutationFn: () => (post && 'liked' in (qc.getQueryData<{ liked?: boolean }>(['blog-post-liked', slug]) ?? {})
-      ? blogApi.unlike(slug)
-      : blogApi.like(slug)),
+    mutationFn: () => (post?.liked ? blogApi.unlike(slug) : blogApi.like(slug)),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['blog-post', slug] }),
     onError: (err: unknown) => showToast({ message: getErrorMessage(err, 'Không thể cập nhật lượt thích'), type: 'error' }),
   })
@@ -83,8 +81,13 @@ export default function BlogPostPage() {
         <div className="prose mt-8 max-w-none" dangerouslySetInnerHTML={{ __html: post.content }} />
 
         <div className="mt-10 flex items-center gap-3 border-t border-border pt-6">
-          <Button type="button" variant="secondary" onClick={() => toggleLike.mutate(undefined)} loading={toggleLike.isPending}>
-            ♥ {post.likeCount} lượt thích
+          <Button
+            type="button"
+            variant={post.liked ? 'primary' : 'secondary'}
+            onClick={() => toggleLike.mutate(undefined)}
+            loading={toggleLike.isPending}
+          >
+            {post.liked ? '♥ Đã thích' : '♡ Thích'} · {post.likeCount}
           </Button>
         </div>
 

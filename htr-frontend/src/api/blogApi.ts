@@ -25,6 +25,7 @@ export interface BlogPostDetail {
   propertyAddress: string
   publishedAt: string | null
   likeCount: number
+  liked: boolean
 }
 
 export interface Vacancy {

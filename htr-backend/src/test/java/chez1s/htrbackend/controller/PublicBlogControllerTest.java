@@ -47,13 +47,27 @@ class PublicBlogControllerTest {
     }
 
     @Test
-    void getBySlugDelegatesToService() {
+    void getBySlugPassesNullViewerIdForAnAnonymousRequest() {
         BlogPostDetailResponse detail = new BlogPostDetailResponse(
                 UUID.randomUUID(), "phong-tro-dep", "Phòng trọ đẹp", "<p>Nội dung</p>", null,
-                UUID.randomUUID(), "Nhà trọ Xanh", "12 Lê Lợi", null, 0L);
-        when(postService.getPublishedBySlug("phong-tro-dep")).thenReturn(detail);
+                UUID.randomUUID(), "Nhà trọ Xanh", "12 Lê Lợi", null, 0L, false);
+        when(postService.getPublishedBySlug("phong-tro-dep", null)).thenReturn(detail);
 
-        ResponseEntity<BlogPostDetailResponse> result = controller.getBySlug("phong-tro-dep");
+        ResponseEntity<BlogPostDetailResponse> result = controller.getBySlug(null, "phong-tro-dep");
+
+        assertThat(result.getBody()).isEqualTo(detail);
+    }
+
+    @Test
+    void getBySlugPassesViewerIdForAnAuthenticatedRequest() {
+        UUID userId = UUID.randomUUID();
+        Authentication auth = new UsernamePasswordAuthenticationToken(userId, null, List.of());
+        BlogPostDetailResponse detail = new BlogPostDetailResponse(
+                UUID.randomUUID(), "phong-tro-dep", "Phòng trọ đẹp", "<p>Nội dung</p>", null,
+                UUID.randomUUID(), "Nhà trọ Xanh", "12 Lê Lợi", null, 1L, true);
+        when(postService.getPublishedBySlug("phong-tro-dep", userId)).thenReturn(detail);
+
+        ResponseEntity<BlogPostDetailResponse> result = controller.getBySlug(auth, "phong-tro-dep");
 
         assertThat(result.getBody()).isEqualTo(detail);
     }
