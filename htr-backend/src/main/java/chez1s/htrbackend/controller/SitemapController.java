@@ -24,9 +24,24 @@ public class SitemapController {
         StringBuilder xml = new StringBuilder("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
         xml.append("<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">");
         for (Post post : postRepository.findByPublishedTrueOrderByPublishedAtDesc()) {
-            xml.append("<url><loc>").append(publicBaseUrl).append("/blog/").append(post.getSlug()).append("</loc></url>");
+            String loc = escapeXml(publicBaseUrl) + "/blog/" + escapeXml(post.getSlug());
+            xml.append("<url><loc>").append(loc).append("</loc></url>");
         }
         xml.append("</urlset>");
         return xml.toString();
+    }
+
+    // The slug itself can never contain XML-unsafe characters in practice
+    // (PostService.slugify() strips everything but [a-z0-9-]), but the
+    // configured public base URL is a raw config value — escape both for
+    // defense in depth against a misconfigured PUBLIC_BASE_URL, or a future
+    // slug source that bypasses slugify(), producing malformed XML.
+    private String escapeXml(String input) {
+        return input == null ? "" : input
+                .replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\"", "&quot;")
+                .replace("'", "&apos;");
     }
 }
