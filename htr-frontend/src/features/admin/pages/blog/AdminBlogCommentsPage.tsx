@@ -6,6 +6,7 @@ import { showToast } from '@/lib/toast'
 import { getErrorMessage } from '@/lib/apiError'
 import { Dialog } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
+import AdminBlogTabs from './AdminBlogTabs'
 
 export default function AdminBlogCommentsPage() {
   const qc = useQueryClient()
@@ -28,6 +29,10 @@ export default function AdminBlogCommentsPage() {
   return (
     <div className="p-8">
       <h1 className="text-xl font-semibold text-fg">Kiểm duyệt bình luận</h1>
+
+      <div className="mt-4">
+        <AdminBlogTabs />
+      </div>
 
       {isLoading && <p className="mt-6 text-sm text-fg-muted">Đang tải…</p>}
 

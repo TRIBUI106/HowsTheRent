@@ -1,6 +1,6 @@
 import {
   LayoutDashboard, Building2, Home, FileText, Receipt,
-  Wrench, Bell, Settings, Users, Gauge, CreditCard, BarChart3, Clock,
+  Wrench, Bell, Settings, Users, Gauge, CreditCard, BarChart3, Clock, Newspaper,
 } from 'lucide-react'
 
 export const navItems = [
@@ -15,6 +15,7 @@ export const navItems = [
   { to: '/admin/sla-config', exact: false, icon: Clock, label: 'Cấu hình SLA', roles: ['ADMIN'] },
   { to: '/admin/fee-config', exact: false, icon: Settings, label: 'Cài đặt phí', roles: ['ADMIN'] },
   { to: '/admin/users', exact: false, icon: Users, label: 'Người dùng', roles: ['ADMIN'] },
+  { to: '/admin/blog', exact: false, icon: Newspaper, label: 'Blog', roles: ['ADMIN'] },
   { to: '/admin/notifications', exact: false, icon: Bell, label: 'Thông báo', roles: ['ADMIN'] },
   { to: '/admin/audit-log', exact: false, icon: FileText, label: 'Nhật ký', roles: ['ADMIN'] },
   { to: '/tenant', exact: true, icon: LayoutDashboard, label: 'Tổng quan', roles: ['TENANT'] },

@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { adminBlogApi } from '@/api'
 import { postStatusLabel } from '@/lib/utils'
+import AdminBlogTabs from './AdminBlogTabs'
 
 export default function AdminBlogListPage() {
   const { data: rows, isLoading } = useQuery({
@@ -13,6 +14,10 @@ export default function AdminBlogListPage() {
     <div className="p-8">
       <h1 className="text-xl font-semibold text-fg">Blog bất động sản</h1>
       <p className="mt-1 text-sm text-fg-muted">Quản lý bài viết cho từng nhà trọ.</p>
+
+      <div className="mt-4">
+        <AdminBlogTabs />
+      </div>
 
       {isLoading && <p className="mt-6 text-sm text-fg-muted">Đang tải…</p>}
 
