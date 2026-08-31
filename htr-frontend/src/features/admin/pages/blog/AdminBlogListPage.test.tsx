@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
@@ -7,6 +8,15 @@ import AdminBlogListPage from './AdminBlogListPage'
 
 vi.mock('@/api', () => ({
   adminBlogApi: { listAll: vi.fn() },
+}))
+
+// Layout pulls in Sidebar/Header, which in turn pull in useNotifications' SSE
+// EventSource connection — not polyfilled in this test environment, and
+// irrelevant to what this test verifies. Shallow-mock it to a passthrough,
+// matching the rest of the admin page suite (no other admin page test
+// renders through the real Layout either).
+vi.mock('@/components/Layout', () => ({
+  default: ({ children }: { children: ReactNode }) => children,
 }))
 
 function renderPage() {

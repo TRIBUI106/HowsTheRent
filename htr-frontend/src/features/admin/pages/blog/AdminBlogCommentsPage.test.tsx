@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
@@ -7,6 +8,11 @@ import AdminBlogCommentsPage from './AdminBlogCommentsPage'
 
 vi.mock('@/api', () => ({
   adminBlogApi: { listComments: vi.fn(), deleteComment: vi.fn() },
+}))
+
+// See AdminBlogListPage.test.tsx for why Layout is shallow-mocked here.
+vi.mock('@/components/Layout', () => ({
+  default: ({ children }: { children: ReactNode }) => children,
 }))
 
 function renderPage() {

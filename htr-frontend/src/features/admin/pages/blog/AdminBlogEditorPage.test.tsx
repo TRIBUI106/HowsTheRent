@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
@@ -12,6 +13,11 @@ vi.mock('@tiptap/react', () => ({
 vi.mock('@tiptap/starter-kit', () => ({ default: {} }))
 vi.mock('@/api', () => ({
   adminBlogApi: { get: vi.fn(), update: vi.fn(), generateDraft: vi.fn(), uploadCoverImage: vi.fn(), publish: vi.fn(), unpublish: vi.fn() },
+}))
+
+// See AdminBlogListPage.test.tsx for why Layout is shallow-mocked here.
+vi.mock('@/components/Layout', () => ({
+  default: ({ children }: { children: ReactNode }) => children,
 }))
 
 function mockNotFound() {

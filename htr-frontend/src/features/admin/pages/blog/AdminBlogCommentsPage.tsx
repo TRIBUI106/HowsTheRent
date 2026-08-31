@@ -6,6 +6,7 @@ import { showToast } from '@/lib/toast'
 import { getErrorMessage } from '@/lib/apiError'
 import { Dialog } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
+import Layout from '@/components/Layout'
 import AdminBlogTabs from './AdminBlogTabs'
 
 export default function AdminBlogCommentsPage() {
@@ -27,10 +28,8 @@ export default function AdminBlogCommentsPage() {
   })
 
   return (
-    <div className="p-8">
-      <h1 className="text-xl font-semibold text-fg">Kiểm duyệt bình luận</h1>
-
-      <div className="mt-4">
+    <Layout title="Kiểm duyệt bình luận">
+      <div>
         <AdminBlogTabs />
       </div>
 
@@ -70,6 +69,6 @@ export default function AdminBlogCommentsPage() {
           </div>
         </div>
       </Dialog>
-    </div>
+    </Layout>
   )
 }

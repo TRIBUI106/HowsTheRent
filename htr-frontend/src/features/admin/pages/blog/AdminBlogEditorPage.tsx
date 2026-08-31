@@ -9,6 +9,7 @@ import { showToast } from '@/lib/toast'
 import { getErrorMessage } from '@/lib/apiError'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import Layout from '@/components/Layout'
 
 export default function AdminBlogEditorPage() {
   const { propertyId = '' } = useParams<{ propertyId: string }>()
@@ -75,9 +76,8 @@ export default function AdminBlogEditorPage() {
   })
 
   return (
-    <div className="p-8">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold text-fg">Soạn bài viết</h1>
+    <Layout title="Soạn bài viết">
+      <div className="flex items-center justify-end">
         <div className="flex items-center gap-2">
           {post?.published && (
             <a href={`/blog/${post.slug}`} target="_blank" rel="noreferrer" className="text-sm font-medium text-accent hover:text-accent-hover">
@@ -129,6 +129,6 @@ export default function AdminBlogEditorPage() {
           Lưu bài viết
         </Button>
       </div>
-    </div>
+    </Layout>
   )
 }
