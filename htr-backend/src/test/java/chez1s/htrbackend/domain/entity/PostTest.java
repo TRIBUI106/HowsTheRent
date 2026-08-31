@@ -11,9 +11,10 @@ class PostTest {
     @Test
     void builderProducesAnUnpublishedDraftByDefault() {
         Property property = Property.builder().id(UUID.randomUUID()).build();
+        Room room = Room.builder().id(UUID.randomUUID()).roomNumber("A1").property(property).build();
 
         Post post = Post.builder()
-                .property(property)
+                .room(room)
                 .title("Nhà trọ Xanh")
                 .slug("nha-tro-xanh")
                 .content("<p>Xin chào</p>")
@@ -21,6 +22,6 @@ class PostTest {
 
         assertThat(post.isPublished()).isFalse();
         assertThat(post.getPublishedAt()).isNull();
-        assertThat(post.getProperty()).isSameAs(property);
+        assertThat(post.getRoom()).isSameAs(room);
     }
 }

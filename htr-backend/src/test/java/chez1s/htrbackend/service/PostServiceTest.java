@@ -6,8 +6,10 @@ import chez1s.htrbackend.domain.entity.PostLike;
 import chez1s.htrbackend.domain.entity.Property;
 import chez1s.htrbackend.domain.entity.Room;
 import chez1s.htrbackend.domain.entity.User;
+import chez1s.htrbackend.domain.enums.RoomDirection;
 import chez1s.htrbackend.domain.enums.RoomStatus;
 import chez1s.htrbackend.domain.repository.*;
+import chez1s.htrbackend.dto.request.CreatePostRequest;
 import chez1s.htrbackend.dto.request.UpdatePostRequest;
 import chez1s.htrbackend.dto.response.AdminPostCommentResponse;
 import chez1s.htrbackend.dto.response.AdminPostDetailResponse;
@@ -18,21 +20,29 @@ import chez1s.htrbackend.dto.response.GeneratedDraftResponse;
 import chez1s.htrbackend.dto.response.LikeStatusResponse;
 import chez1s.htrbackend.dto.response.PostCommentResponse;
 import chez1s.htrbackend.exception.ResourceNotFoundException;
-import chez1s.htrbackend.service.StorageService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -43,36 +53,32 @@ class PostServiceTest {
     @Mock PostCommentRepository postCommentRepository;
     @Mock PostLikeRepository postLikeRepository;
     @Mock RoomRepository roomRepository;
-    @Mock PropertyRepository propertyRepository;
     @Mock UserRepository userRepository;
-    @Mock PropertyService propertyService;
     @Mock StorageService storageService;
 
     @InjectMocks PostService postService;
 
     @Test
-    void listPublishedIncludesLiveVacancyCounts() {
-        UUID propertyId = UUID.randomUUID();
-        Property property = Property.builder().id(propertyId).name("Nhà trọ Xanh").address("12 Lê Lợi").build();
-        Post post = Post.builder().id(UUID.randomUUID()).property(property).title("Phòng trọ đẹp")
+    void listPublishedIncludesRoomStatus() {
+        Property property = Property.builder().id(UUID.randomUUID()).name("Nhà trọ Xanh").address("12 Lê Lợi").build();
+        Room room = Room.builder().id(UUID.randomUUID()).roomNumber("A1").status(RoomStatus.EMPTY).property(property).build();
+        Post post = Post.builder().id(UUID.randomUUID()).room(room).title("Phòng trọ đẹp")
                 .slug("phong-tro-dep").coverImageUrl("http://img/1.jpg").published(true).build();
         when(postRepository.findByPublishedTrueOrderByPublishedAtDesc()).thenReturn(List.of(post));
-        when(roomRepository.countByPropertyIdAndStatus(propertyId, RoomStatus.EMPTY)).thenReturn(1L);
-        when(roomRepository.countByPropertyIdAndStatus(propertyId, RoomStatus.RENTED)).thenReturn(3L);
 
         List<BlogPostSummaryResponse> result = postService.listPublished();
 
         assertThat(result).hasSize(1);
-        assertThat(result.get(0).emptyRoomCount()).isEqualTo(1L);
-        assertThat(result.get(0).totalRoomCount()).isEqualTo(4L);
+        assertThat(result.get(0).roomNumber()).isEqualTo("A1");
+        assertThat(result.get(0).roomStatus()).isEqualTo("EMPTY");
         assertThat(result.get(0).propertyName()).isEqualTo("Nhà trọ Xanh");
     }
 
     @Test
     void getPublishedBySlugReturnsDetailWithLikedFalseForAnonymousViewer() {
-        UUID propertyId = UUID.randomUUID();
-        Property property = Property.builder().id(propertyId).name("Nhà trọ Xanh").address("12 Lê Lợi").build();
-        Post post = Post.builder().id(UUID.randomUUID()).property(property).title("Phòng trọ đẹp")
+        Property property = Property.builder().id(UUID.randomUUID()).name("Nhà trọ Xanh").address("12 Lê Lợi").build();
+        Room room = Room.builder().id(UUID.randomUUID()).roomNumber("A1").status(RoomStatus.EMPTY).property(property).build();
+        Post post = Post.builder().id(UUID.randomUUID()).room(room).title("Phòng trọ đẹp")
                 .slug("phong-tro-dep").content("<p>Nội dung</p>").published(true).build();
         when(postRepository.findBySlugAndPublishedTrue("phong-tro-dep")).thenReturn(Optional.of(post));
         when(postLikeRepository.countByPostId(post.getId())).thenReturn(7L);
@@ -86,10 +92,10 @@ class PostServiceTest {
 
     @Test
     void getPublishedBySlugReturnsLikedTrueWhenViewerAlreadyLiked() {
-        UUID propertyId = UUID.randomUUID();
         UUID viewerId = UUID.randomUUID();
-        Property property = Property.builder().id(propertyId).name("Nhà trọ Xanh").address("12 Lê Lợi").build();
-        Post post = Post.builder().id(UUID.randomUUID()).property(property).title("Phòng trọ đẹp")
+        Property property = Property.builder().id(UUID.randomUUID()).name("Nhà trọ Xanh").address("12 Lê Lợi").build();
+        Room room = Room.builder().id(UUID.randomUUID()).roomNumber("A1").status(RoomStatus.EMPTY).property(property).build();
+        Post post = Post.builder().id(UUID.randomUUID()).room(room).title("Phòng trọ đẹp")
                 .slug("phong-tro-dep").content("<p>Nội dung</p>").published(true).build();
         when(postRepository.findBySlugAndPublishedTrue("phong-tro-dep")).thenReturn(Optional.of(post));
         when(postLikeRepository.countByPostId(post.getId())).thenReturn(7L);
@@ -132,7 +138,7 @@ class PostServiceTest {
         User user = User.builder().id(userId).fullName("Khách A").build();
         when(postRepository.findBySlugAndPublishedTrue("phong-tro-dep")).thenReturn(Optional.of(post));
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-        when(postCommentRepository.save(org.mockito.ArgumentMatchers.any(PostComment.class)))
+        when(postCommentRepository.save(any(PostComment.class)))
                 .thenAnswer(inv -> inv.getArgument(0));
 
         PostCommentResponse result = postService.addComment("phong-tro-dep", userId, "Rất hài lòng");
@@ -172,111 +178,183 @@ class PostServiceTest {
 
         postService.deleteComment(commentId);
 
-        org.mockito.Mockito.verify(postCommentRepository).deleteById(commentId);
+        Mockito.verify(postCommentRepository).deleteById(commentId);
     }
 
     @Test
-    void listAllForAdminIncludesPropertiesWithNoPostYet() {
-        UUID propertyWithPostId = UUID.randomUUID();
-        UUID propertyWithoutPostId = UUID.randomUUID();
-        Property withPost = Property.builder().id(propertyWithPostId).name("Nhà A").build();
-        Property withoutPost = Property.builder().id(propertyWithoutPostId).name("Nhà B").build();
-        Post post = Post.builder().id(UUID.randomUUID()).property(withPost).title("Bài viết A")
+    void listAllForAdminReturnsFlatListOfAllPosts() {
+        UUID roomId = UUID.randomUUID();
+        Property property = Property.builder().id(UUID.randomUUID()).name("Nhà A").build();
+        Room room = Room.builder().id(roomId).roomNumber("A1").property(property).build();
+        // Two posts sharing the SAME room — the direct proof the old 1-post-per-property
+        // constraint (which previously crashed via Collectors.toMap on duplicate keys) is gone.
+        Post post1 = Post.builder().id(UUID.randomUUID()).room(room).title("Bài viết A")
                 .slug("bai-viet-a").published(true).build();
-        when(propertyRepository.findAll()).thenReturn(List.of(withPost, withoutPost));
-        when(postRepository.findAll()).thenReturn(List.of(post));
+        Post post2 = Post.builder().id(UUID.randomUUID()).room(room).title("Bài viết B")
+                .slug("bai-viet-b").published(false).build();
+        when(postRepository.findAllByOrderByUpdatedAtDesc()).thenReturn(List.of(post1, post2));
 
         List<AdminPostSummaryResponse> result = postService.listAllForAdmin();
 
         assertThat(result).hasSize(2);
-        AdminPostSummaryResponse rowA = result.stream().filter(r -> r.propertyId().equals(propertyWithPostId)).findFirst().orElseThrow();
+        assertThat(result).extracting(AdminPostSummaryResponse::roomId).containsOnly(roomId);
+        AdminPostSummaryResponse rowA = result.stream().filter(r -> r.slug().equals("bai-viet-a")).findFirst().orElseThrow();
         assertThat(rowA.published()).isTrue();
-        assertThat(rowA.slug()).isEqualTo("bai-viet-a");
-        AdminPostSummaryResponse rowB = result.stream().filter(r -> r.propertyId().equals(propertyWithoutPostId)).findFirst().orElseThrow();
+        AdminPostSummaryResponse rowB = result.stream().filter(r -> r.slug().equals("bai-viet-b")).findFirst().orElseThrow();
         assertThat(rowB.published()).isFalse();
-        assertThat(rowB.postId()).isNull();
     }
 
     @Test
-    void generateDraftBuildsHtmlFromPropertyAndRooms() {
-        UUID propertyId = UUID.randomUUID();
-        Property property = Property.builder().id(propertyId).name("Nhà trọ Xanh").address("12 Lê Lợi").build();
-        Room room1 = Room.builder().roomNumber("A1").status(chez1s.htrbackend.domain.enums.RoomStatus.EMPTY)
-                .direction(chez1s.htrbackend.domain.enums.RoomDirection.NORTH)
-                .images(new java.util.ArrayList<>(List.of("http://img/a1.jpg"))).build();
-        Room room2 = Room.builder().roomNumber("A2").status(chez1s.htrbackend.domain.enums.RoomStatus.RENTED)
-                .images(new java.util.ArrayList<>()).build();
-        when(propertyService.getById(propertyId)).thenReturn(property);
-        when(roomRepository.findByPropertyId(propertyId)).thenReturn(List.of(room1, room2));
+    void generateDraftBuildsHtmlFromSingleRoom() {
+        UUID roomId = UUID.randomUUID();
+        Property property = Property.builder().id(UUID.randomUUID()).name("Nhà trọ Xanh").address("12 Lê Lợi").build();
+        Room room = Room.builder().id(roomId).roomNumber("A1").property(property)
+                .status(RoomStatus.EMPTY).direction(RoomDirection.NORTH)
+                .areaM2(new BigDecimal("20.5")).maxPeople(2)
+                .images(new ArrayList<>(List.of("http://img/a1.jpg"))).build();
+        when(roomRepository.findById(roomId)).thenReturn(Optional.of(room));
 
-        GeneratedDraftResponse result = postService.generateDraft(propertyId);
+        GeneratedDraftResponse result = postService.generateDraft(roomId);
 
-        assertThat(result.title()).contains("Nhà trọ Xanh");
-        assertThat(result.content()).contains("A1").contains("Bắc").contains("12 Lê Lợi").contains("1/2 phòng còn trống");
+        assertThat(result.title()).contains("Nhà trọ Xanh").contains("A1");
+        assertThat(result.content()).contains("A1").contains("Bắc").contains("12 Lê Lợi").contains("Còn trống");
         assertThat(result.coverImageUrl()).isEqualTo("http://img/a1.jpg");
     }
 
     @Test
-    void getForAdminThrowsWhenNoPostExistsYet() {
-        UUID propertyId = UUID.randomUUID();
-        when(postRepository.findByPropertyId(propertyId)).thenReturn(Optional.empty());
+    void getForAdminThrowsWhenPostIdMissing() {
+        UUID postId = UUID.randomUUID();
+        when(postRepository.findById(postId)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> postService.getForAdmin(propertyId))
+        assertThatThrownBy(() -> postService.getForAdmin(postId))
                 .isInstanceOf(ResourceNotFoundException.class);
     }
 
     @Test
-    void upsertPostCreatesOnFirstCallWithGeneratedSlug() {
-        UUID propertyId = UUID.randomUUID();
+    void createPostGeneratesSlugFromTitle() {
+        UUID roomId = UUID.randomUUID();
         UUID authorId = UUID.randomUUID();
-        Property property = Property.builder().id(propertyId).name("Nhà trọ Xanh").build();
+        Property property = Property.builder().id(UUID.randomUUID()).name("Nhà trọ Xanh").build();
+        Room room = Room.builder().id(roomId).roomNumber("A1").property(property).images(new ArrayList<>()).build();
         User author = User.builder().id(authorId).fullName("Admin A").build();
-        UpdatePostRequest req = new UpdatePostRequest();
+        CreatePostRequest req = new CreatePostRequest();
+        req.setRoomId(roomId);
         req.setTitle("Phòng Trọ Đẹp Quận 1");
         req.setContent("<p>Nội dung</p>");
-        when(postRepository.findByPropertyId(propertyId)).thenReturn(Optional.empty());
-        when(propertyService.getById(propertyId)).thenReturn(property);
+        when(roomRepository.findById(roomId)).thenReturn(Optional.of(room));
         when(userRepository.findById(authorId)).thenReturn(Optional.of(author));
-        when(roomRepository.findByPropertyId(propertyId)).thenReturn(List.of());
         when(postRepository.existsBySlug("phong-tro-dep-quan-1")).thenReturn(false);
-        when(postRepository.save(org.mockito.ArgumentMatchers.any(Post.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(postRepository.save(any(Post.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        AdminPostDetailResponse result = postService.upsertPost(propertyId, req, authorId);
+        AdminPostDetailResponse result = postService.createPost(roomId, req, authorId);
 
         assertThat(result.slug()).isEqualTo("phong-tro-dep-quan-1");
         assertThat(result.title()).isEqualTo("Phòng Trọ Đẹp Quận 1");
         assertThat(result.published()).isFalse();
+        assertThat(result.roomId()).isEqualTo(roomId);
     }
 
     @Test
-    void upsertPostAppendsSuffixOnSlugCollision() {
-        UUID propertyId = UUID.randomUUID();
+    void createPostAppendsSuffixOnSlugCollision() {
+        UUID roomId = UUID.randomUUID();
         UUID authorId = UUID.randomUUID();
-        Property property = Property.builder().id(propertyId).name("Nhà trọ Xanh").build();
-        UpdatePostRequest req = new UpdatePostRequest();
+        Property property = Property.builder().id(UUID.randomUUID()).name("Nhà trọ Xanh").build();
+        Room room = Room.builder().id(roomId).roomNumber("A1").property(property).images(new ArrayList<>()).build();
+        CreatePostRequest req = new CreatePostRequest();
+        req.setRoomId(roomId);
         req.setTitle("Phòng Đẹp");
-        when(postRepository.findByPropertyId(propertyId)).thenReturn(Optional.empty());
-        when(propertyService.getById(propertyId)).thenReturn(property);
+        when(roomRepository.findById(roomId)).thenReturn(Optional.of(room));
         when(userRepository.findById(authorId)).thenReturn(Optional.of(User.builder().id(authorId).build()));
-        when(roomRepository.findByPropertyId(propertyId)).thenReturn(List.of());
         when(postRepository.existsBySlug("phong-dep")).thenReturn(true);
         when(postRepository.existsBySlug("phong-dep-2")).thenReturn(false);
-        when(postRepository.save(org.mockito.ArgumentMatchers.any(Post.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(postRepository.save(any(Post.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        AdminPostDetailResponse result = postService.upsertPost(propertyId, req, authorId);
+        AdminPostDetailResponse result = postService.createPost(roomId, req, authorId);
 
         assertThat(result.slug()).isEqualTo("phong-dep-2");
     }
 
     @Test
+    void createPostAllowsMultiplePostsOnSameRoom() {
+        UUID roomId = UUID.randomUUID();
+        UUID authorId = UUID.randomUUID();
+        Property property = Property.builder().id(UUID.randomUUID()).name("Nhà A").build();
+        Room room = Room.builder().id(roomId).roomNumber("A1").property(property).images(new ArrayList<>()).build();
+        User author = User.builder().id(authorId).build();
+        when(roomRepository.findById(roomId)).thenReturn(Optional.of(room));
+        when(userRepository.findById(authorId)).thenReturn(Optional.of(author));
+        when(postRepository.existsBySlug(anyString())).thenReturn(false);
+        when(postRepository.save(any(Post.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        CreatePostRequest req1 = new CreatePostRequest();
+        req1.setRoomId(roomId);
+        req1.setTitle("Bài viết lần 1");
+        CreatePostRequest req2 = new CreatePostRequest();
+        req2.setRoomId(roomId);
+        req2.setTitle("Bài viết lần 2");
+
+        AdminPostDetailResponse result1 = postService.createPost(roomId, req1, authorId);
+        AdminPostDetailResponse result2 = postService.createPost(roomId, req2, authorId);
+
+        assertThat(result1.roomId()).isEqualTo(roomId);
+        assertThat(result2.roomId()).isEqualTo(roomId);
+        assertThat(result1.slug()).isNotEqualTo(result2.slug());
+    }
+
+    @Test
+    void updatePostRegeneratesSlugExcludingSelf() {
+        UUID postId = UUID.randomUUID();
+        UUID authorId = UUID.randomUUID();
+        Property property = Property.builder().id(UUID.randomUUID()).name("Nhà A").build();
+        Room room = Room.builder().id(UUID.randomUUID()).roomNumber("A1").property(property).images(new ArrayList<>()).build();
+        Post post = Post.builder().id(postId).room(room).title("Old").slug("old-slug").build();
+        User author = User.builder().id(authorId).fullName("Admin A").build();
+        UpdatePostRequest req = new UpdatePostRequest();
+        req.setTitle("Phòng Mới");
+        when(postRepository.findById(postId)).thenReturn(Optional.of(post));
+        when(userRepository.findById(authorId)).thenReturn(Optional.of(author));
+        when(postRepository.existsBySlugAndIdNot("phong-moi", postId)).thenReturn(false);
+        when(postRepository.save(any(Post.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        AdminPostDetailResponse result = postService.updatePost(postId, req, authorId);
+
+        assertThat(result.slug()).isEqualTo("phong-moi");
+        Mockito.verify(postRepository).existsBySlugAndIdNot("phong-moi", postId);
+        Mockito.verify(postRepository, Mockito.never()).existsBySlug(anyString());
+    }
+
+    @Test
+    void deletePostRemovesCommentsAndLikesBeforeThePost() {
+        UUID postId = UUID.randomUUID();
+        when(postRepository.existsById(postId)).thenReturn(true);
+
+        postService.deletePost(postId);
+
+        InOrder inOrder = Mockito.inOrder(postCommentRepository, postLikeRepository, postRepository);
+        inOrder.verify(postCommentRepository).deleteAllByPostId(postId);
+        inOrder.verify(postLikeRepository).deleteAllByPostId(postId);
+        inOrder.verify(postRepository).deleteById(postId);
+    }
+
+    @Test
+    void deletePostThrowsWhenMissing() {
+        UUID postId = UUID.randomUUID();
+        when(postRepository.existsById(postId)).thenReturn(false);
+
+        assertThatThrownBy(() -> postService.deletePost(postId))
+                .isInstanceOf(ResourceNotFoundException.class);
+    }
+
+    @Test
     void publishSetsPublishedAtOnlyOnFirstPublish() {
-        UUID propertyId = UUID.randomUUID();
-        Post post = Post.builder().id(UUID.randomUUID()).property(Property.builder().id(propertyId).name("Nhà A").build())
-                .published(false).build();
-        when(postRepository.findByPropertyId(propertyId)).thenReturn(Optional.of(post));
+        UUID postId = UUID.randomUUID();
+        Property property = Property.builder().id(UUID.randomUUID()).name("Nhà A").build();
+        Room room = Room.builder().id(UUID.randomUUID()).roomNumber("A1").property(property).build();
+        Post post = Post.builder().id(postId).room(room).published(false).build();
+        when(postRepository.findById(postId)).thenReturn(Optional.of(post));
         when(postRepository.save(post)).thenReturn(post);
 
-        AdminPostDetailResponse result = postService.publish(propertyId);
+        AdminPostDetailResponse result = postService.publish(postId);
 
         assertThat(result.published()).isTrue();
         assertThat(result.publishedAt()).isNotNull();
@@ -284,14 +362,15 @@ class PostServiceTest {
 
     @Test
     void publishPreservesExistingPublishedAtWhenAlreadyPublished() {
-        UUID propertyId = UUID.randomUUID();
-        java.time.LocalDateTime firstPublishedAt = java.time.LocalDateTime.now().minusDays(3);
-        Post post = Post.builder().id(UUID.randomUUID()).property(Property.builder().id(propertyId).name("Nhà A").build())
-                .published(true).publishedAt(firstPublishedAt).build();
-        when(postRepository.findByPropertyId(propertyId)).thenReturn(Optional.of(post));
+        UUID postId = UUID.randomUUID();
+        LocalDateTime firstPublishedAt = LocalDateTime.now().minusDays(3);
+        Property property = Property.builder().id(UUID.randomUUID()).name("Nhà A").build();
+        Room room = Room.builder().id(UUID.randomUUID()).roomNumber("A1").property(property).build();
+        Post post = Post.builder().id(postId).room(room).published(true).publishedAt(firstPublishedAt).build();
+        when(postRepository.findById(postId)).thenReturn(Optional.of(post));
         when(postRepository.save(post)).thenReturn(post);
 
-        AdminPostDetailResponse result = postService.publish(propertyId);
+        AdminPostDetailResponse result = postService.publish(postId);
 
         assertThat(result.published()).isTrue();
         assertThat(result.publishedAt()).isEqualTo(firstPublishedAt);
@@ -299,14 +378,15 @@ class PostServiceTest {
 
     @Test
     void unpublishClearsPublishedFlagButKeepsPublishedAt() {
-        UUID propertyId = UUID.randomUUID();
-        java.time.LocalDateTime firstPublishedAt = java.time.LocalDateTime.now().minusDays(3);
-        Post post = Post.builder().id(UUID.randomUUID()).property(Property.builder().id(propertyId).name("Nhà A").build())
-                .published(true).publishedAt(firstPublishedAt).build();
-        when(postRepository.findByPropertyId(propertyId)).thenReturn(Optional.of(post));
+        UUID postId = UUID.randomUUID();
+        LocalDateTime firstPublishedAt = LocalDateTime.now().minusDays(3);
+        Property property = Property.builder().id(UUID.randomUUID()).name("Nhà A").build();
+        Room room = Room.builder().id(UUID.randomUUID()).roomNumber("A1").property(property).build();
+        Post post = Post.builder().id(postId).room(room).published(true).publishedAt(firstPublishedAt).build();
+        when(postRepository.findById(postId)).thenReturn(Optional.of(post));
         when(postRepository.save(post)).thenReturn(post);
 
-        AdminPostDetailResponse result = postService.unpublish(propertyId);
+        AdminPostDetailResponse result = postService.unpublish(postId);
 
         assertThat(result.published()).isFalse();
         assertThat(result.publishedAt()).isEqualTo(firstPublishedAt);
@@ -314,15 +394,16 @@ class PostServiceTest {
 
     @Test
     void uploadCoverImageStoresReturnedUrlOnPost() {
-        UUID propertyId = UUID.randomUUID();
-        Post post = Post.builder().id(UUID.randomUUID()).property(Property.builder().id(propertyId).name("Nhà A").build()).build();
-        org.springframework.web.multipart.MultipartFile file = new org.springframework.mock.web.MockMultipartFile(
-                "file", "cover.jpg", "image/jpeg", new byte[]{1, 2, 3});
-        when(postRepository.findByPropertyId(propertyId)).thenReturn(Optional.of(post));
-        when(storageService.upload("blog/" + propertyId, file)).thenReturn("http://storage/blog/cover.jpg");
+        UUID postId = UUID.randomUUID();
+        Property property = Property.builder().id(UUID.randomUUID()).name("Nhà A").build();
+        Room room = Room.builder().id(UUID.randomUUID()).roomNumber("A1").property(property).build();
+        Post post = Post.builder().id(postId).room(room).build();
+        MultipartFile file = new MockMultipartFile("file", "cover.jpg", "image/jpeg", new byte[]{1, 2, 3});
+        when(postRepository.findById(postId)).thenReturn(Optional.of(post));
+        when(storageService.upload("blog/" + postId, file)).thenReturn("http://storage/blog/cover.jpg");
         when(postRepository.save(post)).thenReturn(post);
 
-        AdminPostDetailResponse result = postService.uploadCoverImage(propertyId, file);
+        AdminPostDetailResponse result = postService.uploadCoverImage(postId, file);
 
         assertThat(result.coverImageUrl()).isEqualTo("http://storage/blog/cover.jpg");
     }
@@ -342,7 +423,7 @@ class PostServiceTest {
 
         assertThat(result.liked()).isTrue();
         assertThat(result.likeCount()).isEqualTo(1L);
-        org.mockito.Mockito.verify(postLikeRepository).save(org.mockito.ArgumentMatchers.any(PostLike.class));
+        Mockito.verify(postLikeRepository).save(any(PostLike.class));
     }
 
     @Test
@@ -357,7 +438,7 @@ class PostServiceTest {
 
         postService.like("phong-tro-dep", userId);
 
-        org.mockito.Mockito.verify(postLikeRepository, org.mockito.Mockito.never()).save(org.mockito.ArgumentMatchers.any(PostLike.class));
+        Mockito.verify(postLikeRepository, Mockito.never()).save(any(PostLike.class));
     }
 
     @Test
@@ -371,6 +452,6 @@ class PostServiceTest {
         LikeStatusResponse result = postService.unlike("phong-tro-dep", userId);
 
         assertThat(result.liked()).isFalse();
-        org.mockito.Mockito.verify(postLikeRepository).deleteByPostIdAndUserId(postId, userId);
+        Mockito.verify(postLikeRepository).deleteByPostIdAndUserId(postId, userId);
     }
 }

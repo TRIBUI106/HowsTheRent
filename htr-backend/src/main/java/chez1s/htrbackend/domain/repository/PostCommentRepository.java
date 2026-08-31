@@ -14,4 +14,6 @@ public interface PostCommentRepository extends JpaRepository<PostComment, UUID> 
 
     @EntityGraph(attributePaths = {"user", "post"})
     List<PostComment> findAllByOrderByCreatedAtDesc();
+
+    void deleteAllByPostId(UUID postId);
 }

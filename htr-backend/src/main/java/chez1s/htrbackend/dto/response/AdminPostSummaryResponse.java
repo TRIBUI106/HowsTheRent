@@ -4,9 +4,11 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 public record AdminPostSummaryResponse(
+        UUID postId,
+        UUID roomId,
+        String roomNumber,
         UUID propertyId,
         String propertyName,
-        UUID postId,
         String title,
         String slug,
         boolean published,

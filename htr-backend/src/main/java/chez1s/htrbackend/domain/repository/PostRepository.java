@@ -10,14 +10,17 @@ import java.util.UUID;
 
 public interface PostRepository extends JpaRepository<Post, UUID> {
 
-    @EntityGraph(attributePaths = {"property", "author"})
+    @EntityGraph(attributePaths = {"room", "room.property", "author"})
     Optional<Post> findBySlugAndPublishedTrue(String slug);
 
-    @EntityGraph(attributePaths = {"property", "author"})
-    Optional<Post> findByPropertyId(UUID propertyId);
+    @EntityGraph(attributePaths = {"room", "room.property", "author"})
+    Optional<Post> findById(UUID id);
 
-    @EntityGraph(attributePaths = {"property"})
+    @EntityGraph(attributePaths = {"room", "room.property"})
     List<Post> findByPublishedTrueOrderByPublishedAtDesc();
+
+    @EntityGraph(attributePaths = {"room", "room.property"})
+    List<Post> findAllByOrderByUpdatedAtDesc();
 
     boolean existsBySlug(String slug);
 

@@ -8,11 +8,12 @@ public record BlogPostSummaryResponse(
         String slug,
         String title,
         String coverImageUrl,
+        UUID roomId,
+        String roomNumber,
+        String roomStatus,
         UUID propertyId,
         String propertyName,
         String propertyAddress,
-        long emptyRoomCount,
-        long totalRoomCount,
         LocalDateTime publishedAt
 ) {
 }

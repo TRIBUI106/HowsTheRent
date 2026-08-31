@@ -1,12 +1,16 @@
 package chez1s.htrbackend.dto.response;
 
 import chez1s.htrbackend.domain.entity.Post;
+import chez1s.htrbackend.domain.entity.Property;
+import chez1s.htrbackend.domain.entity.Room;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 public record AdminPostDetailResponse(
         UUID id,
+        UUID roomId,
+        String roomNumber,
         UUID propertyId,
         String propertyName,
         String title,
@@ -21,10 +25,14 @@ public record AdminPostDetailResponse(
         LocalDateTime updatedAt
 ) {
     public static AdminPostDetailResponse from(Post post) {
+        Room room = post.getRoom();
+        Property property = room.getProperty();
         return new AdminPostDetailResponse(
                 post.getId(),
-                post.getProperty().getId(),
-                post.getProperty().getName(),
+                room.getId(),
+                room.getRoomNumber(),
+                property.getId(),
+                property.getName(),
                 post.getTitle(),
                 post.getSlug(),
                 post.getContent(),

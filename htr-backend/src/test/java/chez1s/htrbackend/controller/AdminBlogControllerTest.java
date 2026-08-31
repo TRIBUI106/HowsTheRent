@@ -1,5 +1,6 @@
 package chez1s.htrbackend.controller;
 
+import chez1s.htrbackend.dto.request.CreatePostRequest;
 import chez1s.htrbackend.dto.request.UpdatePostRequest;
 import chez1s.htrbackend.dto.response.AdminPostCommentResponse;
 import chez1s.htrbackend.dto.response.AdminPostDetailResponse;
@@ -10,10 +11,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.UUID;
@@ -51,12 +55,14 @@ class AdminBlogControllerTest {
         ResponseEntity<Void> result = controller.deleteComment(commentId);
 
         assertThat(result.getStatusCode().value()).isEqualTo(204);
-        org.mockito.Mockito.verify(postService).deleteComment(commentId);
+        Mockito.verify(postService).deleteComment(commentId);
     }
 
     @Test
     void listAllDelegatesToService() {
-        AdminPostSummaryResponse row = new AdminPostSummaryResponse(UUID.randomUUID(), "Nhà A", null, null, null, false, null);
+        AdminPostSummaryResponse row = new AdminPostSummaryResponse(
+                UUID.randomUUID(), UUID.randomUUID(), "A1", UUID.randomUUID(), "Nhà A",
+                "Bài viết A", "bai-viet-a", false, null);
         when(postService.listAllForAdmin()).thenReturn(List.of(row));
 
         ResponseEntity<List<AdminPostSummaryResponse>> result = controller.listAll();
@@ -65,79 +71,106 @@ class AdminBlogControllerTest {
     }
 
     @Test
-    void generateDraftDelegatesToService() {
-        UUID propertyId = UUID.randomUUID();
-        GeneratedDraftResponse draft = new GeneratedDraftResponse("Nhà trọ Xanh - Cho thuê phòng trọ", "<h2>...</h2>", null);
-        when(postService.generateDraft(propertyId)).thenReturn(draft);
+    void createDelegatesToServiceWithAuthorFromAuthentication() {
+        UUID roomId = UUID.randomUUID();
+        UUID authorId = UUID.randomUUID();
+        Authentication auth = new UsernamePasswordAuthenticationToken(authorId, null, List.of());
+        CreatePostRequest req = new CreatePostRequest();
+        req.setRoomId(roomId);
+        req.setTitle("Bài viết A");
+        AdminPostDetailResponse detail = new AdminPostDetailResponse(UUID.randomUUID(), roomId, "A1", UUID.randomUUID(), "Nhà A",
+                "Bài viết A", "bai-viet-a", null, null, false, null, authorId, "Admin A", null, null);
+        when(postService.createPost(roomId, req, authorId)).thenReturn(detail);
 
-        ResponseEntity<GeneratedDraftResponse> result = controller.generateDraft(propertyId);
+        ResponseEntity<AdminPostDetailResponse> result = controller.create(auth, req);
 
-        assertThat(result.getBody()).isEqualTo(draft);
-    }
-
-    @Test
-    void uploadCoverImageDelegatesToService() {
-        UUID propertyId = UUID.randomUUID();
-        org.springframework.web.multipart.MultipartFile file = new org.springframework.mock.web.MockMultipartFile(
-                "file", "cover.jpg", "image/jpeg", new byte[]{1, 2, 3});
-        AdminPostDetailResponse detail = new AdminPostDetailResponse(UUID.randomUUID(), propertyId, "Nhà A",
-                "Bài viết A", "bai-viet-a", null, "http://storage/blog/cover.jpg", false, null, null, null, null, null);
-        when(postService.uploadCoverImage(propertyId, file)).thenReturn(detail);
-
-        ResponseEntity<AdminPostDetailResponse> result = controller.uploadCoverImage(propertyId, file);
-
+        assertThat(result.getStatusCode().value()).isEqualTo(201);
         assertThat(result.getBody()).isEqualTo(detail);
     }
 
     @Test
-    void publishDelegatesToService() {
-        UUID propertyId = UUID.randomUUID();
-        AdminPostDetailResponse detail = new AdminPostDetailResponse(UUID.randomUUID(), propertyId, "Nhà A",
-                "Bài viết A", "bai-viet-a", null, null, true, null, null, null, null, null);
-        when(postService.publish(propertyId)).thenReturn(detail);
-
-        ResponseEntity<AdminPostDetailResponse> result = controller.publish(propertyId);
-
-        assertThat(result.getBody()).isEqualTo(detail);
-    }
-
-    @Test
-    void unpublishDelegatesToService() {
-        UUID propertyId = UUID.randomUUID();
-        AdminPostDetailResponse detail = new AdminPostDetailResponse(UUID.randomUUID(), propertyId, "Nhà A",
-                "Bài viết A", "bai-viet-a", null, null, false, null, null, null, null, null);
-        when(postService.unpublish(propertyId)).thenReturn(detail);
-
-        ResponseEntity<AdminPostDetailResponse> result = controller.unpublish(propertyId);
-
-        assertThat(result.getBody()).isEqualTo(detail);
-    }
-
-    @Test
-    void getByPropertyIdDelegatesToService() {
-        UUID propertyId = UUID.randomUUID();
-        AdminPostDetailResponse detail = new AdminPostDetailResponse(UUID.randomUUID(), propertyId, "Nhà A",
+    void getDelegatesToService() {
+        UUID postId = UUID.randomUUID();
+        AdminPostDetailResponse detail = new AdminPostDetailResponse(postId, UUID.randomUUID(), "A1", UUID.randomUUID(), "Nhà A",
                 "Bài viết A", "bai-viet-a", "<p>...</p>", null, false, null, null, null, null, null);
-        when(postService.getForAdmin(propertyId)).thenReturn(detail);
+        when(postService.getForAdmin(postId)).thenReturn(detail);
 
-        ResponseEntity<AdminPostDetailResponse> result = controller.getByPropertyId(propertyId);
+        ResponseEntity<AdminPostDetailResponse> result = controller.get(postId);
 
         assertThat(result.getBody()).isEqualTo(detail);
     }
 
     @Test
     void updateDelegatesToServiceWithAuthorFromAuthentication() {
-        UUID propertyId = UUID.randomUUID();
+        UUID postId = UUID.randomUUID();
         UUID authorId = UUID.randomUUID();
         Authentication auth = new UsernamePasswordAuthenticationToken(authorId, null, List.of());
         UpdatePostRequest req = new UpdatePostRequest();
         req.setTitle("Bài viết A");
-        AdminPostDetailResponse detail = new AdminPostDetailResponse(UUID.randomUUID(), propertyId, "Nhà A",
+        AdminPostDetailResponse detail = new AdminPostDetailResponse(postId, UUID.randomUUID(), "A1", UUID.randomUUID(), "Nhà A",
                 "Bài viết A", "bai-viet-a", null, null, false, null, authorId, "Admin A", null, null);
-        when(postService.upsertPost(propertyId, req, authorId)).thenReturn(detail);
+        when(postService.updatePost(postId, req, authorId)).thenReturn(detail);
 
-        ResponseEntity<AdminPostDetailResponse> result = controller.update(auth, propertyId, req);
+        ResponseEntity<AdminPostDetailResponse> result = controller.update(auth, postId, req);
 
         assertThat(result.getBody()).isEqualTo(detail);
+    }
+
+    @Test
+    void deleteReturnsNoContent() {
+        UUID postId = UUID.randomUUID();
+
+        ResponseEntity<Void> result = controller.delete(postId);
+
+        assertThat(result.getStatusCode().value()).isEqualTo(204);
+        Mockito.verify(postService).deletePost(postId);
+    }
+
+    @Test
+    void uploadCoverImageDelegatesToService() {
+        UUID postId = UUID.randomUUID();
+        MultipartFile file = new MockMultipartFile("file", "cover.jpg", "image/jpeg", new byte[]{1, 2, 3});
+        AdminPostDetailResponse detail = new AdminPostDetailResponse(postId, UUID.randomUUID(), "A1", UUID.randomUUID(), "Nhà A",
+                "Bài viết A", "bai-viet-a", null, "http://storage/blog/cover.jpg", false, null, null, null, null, null);
+        when(postService.uploadCoverImage(postId, file)).thenReturn(detail);
+
+        ResponseEntity<AdminPostDetailResponse> result = controller.uploadCoverImage(postId, file);
+
+        assertThat(result.getBody()).isEqualTo(detail);
+    }
+
+    @Test
+    void publishDelegatesToService() {
+        UUID postId = UUID.randomUUID();
+        AdminPostDetailResponse detail = new AdminPostDetailResponse(postId, UUID.randomUUID(), "A1", UUID.randomUUID(), "Nhà A",
+                "Bài viết A", "bai-viet-a", null, null, true, null, null, null, null, null);
+        when(postService.publish(postId)).thenReturn(detail);
+
+        ResponseEntity<AdminPostDetailResponse> result = controller.publish(postId);
+
+        assertThat(result.getBody()).isEqualTo(detail);
+    }
+
+    @Test
+    void unpublishDelegatesToService() {
+        UUID postId = UUID.randomUUID();
+        AdminPostDetailResponse detail = new AdminPostDetailResponse(postId, UUID.randomUUID(), "A1", UUID.randomUUID(), "Nhà A",
+                "Bài viết A", "bai-viet-a", null, null, false, null, null, null, null, null);
+        when(postService.unpublish(postId)).thenReturn(detail);
+
+        ResponseEntity<AdminPostDetailResponse> result = controller.unpublish(postId);
+
+        assertThat(result.getBody()).isEqualTo(detail);
+    }
+
+    @Test
+    void generateDraftDelegatesToService() {
+        UUID roomId = UUID.randomUUID();
+        GeneratedDraftResponse draft = new GeneratedDraftResponse("Nhà trọ Xanh - Phòng A1", "<h2>...</h2>", null);
+        when(postService.generateDraft(roomId)).thenReturn(draft);
+
+        ResponseEntity<GeneratedDraftResponse> result = controller.generateDraft(roomId);
+
+        assertThat(result.getBody()).isEqualTo(draft);
     }
 }

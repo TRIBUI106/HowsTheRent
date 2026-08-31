@@ -1,5 +1,6 @@
 package chez1s.htrbackend.controller;
 
+import chez1s.htrbackend.dto.request.CreatePostRequest;
 import chez1s.htrbackend.dto.request.UpdatePostRequest;
 import chez1s.htrbackend.dto.response.AdminPostCommentResponse;
 import chez1s.htrbackend.dto.response.AdminPostDetailResponse;
@@ -8,6 +9,7 @@ import chez1s.htrbackend.dto.response.GeneratedDraftResponse;
 import chez1s.htrbackend.service.PostService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -49,36 +51,49 @@ public class AdminBlogController {
         return ResponseEntity.ok(postService.listAllForAdmin());
     }
 
-    @PostMapping("/posts/{propertyId}/draft")
-    public ResponseEntity<GeneratedDraftResponse> generateDraft(@PathVariable UUID propertyId) {
-        return ResponseEntity.ok(postService.generateDraft(propertyId));
+    @PostMapping("/posts")
+    public ResponseEntity<AdminPostDetailResponse> create(Authentication auth,
+                                                           @Valid @RequestBody CreatePostRequest req) {
+        UUID authorId = (UUID) auth.getPrincipal();
+        return ResponseEntity.status(HttpStatus.CREATED).body(postService.createPost(req.getRoomId(), req, authorId));
     }
 
-    @PostMapping("/posts/{propertyId}/cover-image")
-    public ResponseEntity<AdminPostDetailResponse> uploadCoverImage(@PathVariable UUID propertyId,
-                                                                     @RequestParam("file") MultipartFile file) {
-        return ResponseEntity.ok(postService.uploadCoverImage(propertyId, file));
+    @GetMapping("/posts/{postId}")
+    public ResponseEntity<AdminPostDetailResponse> get(@PathVariable UUID postId) {
+        return ResponseEntity.ok(postService.getForAdmin(postId));
     }
 
-    @PostMapping("/posts/{propertyId}/publish")
-    public ResponseEntity<AdminPostDetailResponse> publish(@PathVariable UUID propertyId) {
-        return ResponseEntity.ok(postService.publish(propertyId));
-    }
-
-    @PostMapping("/posts/{propertyId}/unpublish")
-    public ResponseEntity<AdminPostDetailResponse> unpublish(@PathVariable UUID propertyId) {
-        return ResponseEntity.ok(postService.unpublish(propertyId));
-    }
-
-    @GetMapping("/posts/{propertyId}")
-    public ResponseEntity<AdminPostDetailResponse> getByPropertyId(@PathVariable UUID propertyId) {
-        return ResponseEntity.ok(postService.getForAdmin(propertyId));
-    }
-
-    @PutMapping("/posts/{propertyId}")
-    public ResponseEntity<AdminPostDetailResponse> update(Authentication auth, @PathVariable UUID propertyId,
+    @PutMapping("/posts/{postId}")
+    public ResponseEntity<AdminPostDetailResponse> update(Authentication auth, @PathVariable UUID postId,
                                                            @Valid @RequestBody UpdatePostRequest req) {
         UUID authorId = (UUID) auth.getPrincipal();
-        return ResponseEntity.ok(postService.upsertPost(propertyId, req, authorId));
+        return ResponseEntity.ok(postService.updatePost(postId, req, authorId));
+    }
+
+    @DeleteMapping("/posts/{postId}")
+    public ResponseEntity<Void> delete(@PathVariable UUID postId) {
+        postService.deletePost(postId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/posts/{postId}/cover-image")
+    public ResponseEntity<AdminPostDetailResponse> uploadCoverImage(@PathVariable UUID postId,
+                                                                     @RequestParam("file") MultipartFile file) {
+        return ResponseEntity.ok(postService.uploadCoverImage(postId, file));
+    }
+
+    @PostMapping("/posts/{postId}/publish")
+    public ResponseEntity<AdminPostDetailResponse> publish(@PathVariable UUID postId) {
+        return ResponseEntity.ok(postService.publish(postId));
+    }
+
+    @PostMapping("/posts/{postId}/unpublish")
+    public ResponseEntity<AdminPostDetailResponse> unpublish(@PathVariable UUID postId) {
+        return ResponseEntity.ok(postService.unpublish(postId));
+    }
+
+    @PostMapping("/rooms/{roomId}/draft")
+    public ResponseEntity<GeneratedDraftResponse> generateDraft(@PathVariable UUID roomId) {
+        return ResponseEntity.ok(postService.generateDraft(roomId));
     }
 }

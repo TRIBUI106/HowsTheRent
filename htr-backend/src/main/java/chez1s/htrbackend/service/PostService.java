@@ -8,6 +8,7 @@ import chez1s.htrbackend.domain.entity.Room;
 import chez1s.htrbackend.domain.entity.User;
 import chez1s.htrbackend.domain.enums.RoomStatus;
 import chez1s.htrbackend.domain.repository.*;
+import chez1s.htrbackend.dto.request.CreatePostRequest;
 import chez1s.htrbackend.dto.request.UpdatePostRequest;
 import chez1s.htrbackend.dto.response.AdminPostCommentResponse;
 import chez1s.htrbackend.dto.response.AdminPostDetailResponse;
@@ -27,9 +28,7 @@ import java.text.Normalizer;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -39,9 +38,7 @@ public class PostService {
     private final PostCommentRepository postCommentRepository;
     private final PostLikeRepository postLikeRepository;
     private final RoomRepository roomRepository;
-    private final PropertyRepository propertyRepository;
     private final UserRepository userRepository;
-    private final PropertyService propertyService;
     private final StorageService storageService;
 
     @Transactional(readOnly = true)
@@ -68,69 +65,117 @@ public class PostService {
 
     @Transactional(readOnly = true)
     public List<AdminPostSummaryResponse> listAllForAdmin() {
-        Map<UUID, Post> postsByPropertyId = postRepository.findAll().stream()
-                .collect(Collectors.toMap(post -> post.getProperty().getId(), post -> post));
-        return propertyRepository.findAll().stream()
-                .map(property -> {
-                    Post post = postsByPropertyId.get(property.getId());
+        return postRepository.findAllByOrderByUpdatedAtDesc().stream()
+                .map(post -> {
+                    Room room = post.getRoom();
+                    Property property = room.getProperty();
                     return new AdminPostSummaryResponse(
-                            property.getId(),
-                            property.getName(),
-                            post != null ? post.getId() : null,
-                            post != null ? post.getTitle() : null,
-                            post != null ? post.getSlug() : null,
-                            post != null && post.isPublished(),
-                            post != null ? post.getUpdatedAt() : null
+                            post.getId(), room.getId(), room.getRoomNumber(),
+                            property.getId(), property.getName(),
+                            post.getTitle(), post.getSlug(), post.isPublished(), post.getUpdatedAt()
                     );
                 })
                 .toList();
     }
 
     @Transactional(readOnly = true)
-    public GeneratedDraftResponse generateDraft(UUID propertyId) {
-        Property property = propertyService.getById(propertyId);
-        List<Room> rooms = roomRepository.findByPropertyId(propertyId);
-        long emptyCount = rooms.stream().filter(room -> room.getStatus() == RoomStatus.EMPTY).count();
+    public GeneratedDraftResponse generateDraft(UUID roomId) {
+        Room room = roomRepository.findById(roomId)
+                .orElseThrow(() -> new ResourceNotFoundException("Room", roomId));
+        Property property = room.getProperty();
 
         StringBuilder html = new StringBuilder();
-        html.append("<h2>").append(escapeHtml(property.getName())).append("</h2>");
+        html.append("<h2>").append(escapeHtml(property.getName()))
+                .append(" — Phòng ").append(escapeHtml(room.getRoomNumber())).append("</h2>");
         html.append("<p>").append(escapeHtml(property.getAddress())).append("</p>");
-        if (property.getDescription() != null && !property.getDescription().isBlank()) {
-            html.append("<p>").append(escapeHtml(property.getDescription())).append("</p>");
+        html.append("<p><strong>").append(roomStatusSentence(room.getStatus())).append("</strong></p>");
+        html.append("<ul>");
+        if (room.getAreaM2() != null) {
+            html.append("<li>Diện tích: ").append(room.getAreaM2()).append(" m²</li>");
         }
-        html.append("<p><strong>").append(emptyCount).append("/").append(rooms.size()).append(" phòng còn trống</strong></p>");
-        html.append("<h3>Danh sách phòng</h3><ul>");
-        for (Room room : rooms) {
-            html.append("<li>Phòng ").append(escapeHtml(room.getRoomNumber()));
-            if (room.getDirection() != null) {
-                html.append(" — hướng ").append(directionLabel(room.getDirection()));
-            }
-            if (room.getDescription() != null && !room.getDescription().isBlank()) {
-                html.append(": ").append(escapeHtml(room.getDescription()));
-            }
-            html.append("</li>");
+        if (room.getMaxPeople() != null) {
+            html.append("<li>Sức chứa: ").append(room.getMaxPeople()).append(" người</li>");
+        }
+        if (room.getDirection() != null) {
+            html.append("<li>Hướng: ").append(directionLabel(room.getDirection())).append("</li>");
         }
         html.append("</ul>");
+        if (room.getDescription() != null && !room.getDescription().isBlank()) {
+            html.append("<p>").append(escapeHtml(room.getDescription())).append("</p>");
+        }
 
-        String coverImageUrl = rooms.stream()
-                .flatMap(room -> room.getImages().stream())
-                .findFirst()
-                .orElse(null);
+        String coverImageUrl = resolveDefaultCoverImage(room);
 
-        return new GeneratedDraftResponse(property.getName() + " - Cho thuê phòng trọ", html.toString(), coverImageUrl);
+        return new GeneratedDraftResponse(
+                property.getName() + " - Phòng " + room.getRoomNumber(),
+                html.toString(),
+                coverImageUrl
+        );
     }
 
     @Transactional(readOnly = true)
-    public AdminPostDetailResponse getForAdmin(UUID propertyId) {
-        Post post = postRepository.findByPropertyId(propertyId)
-                .orElseThrow(() -> new ResourceNotFoundException("Post for property", propertyId));
+    public AdminPostDetailResponse getForAdmin(UUID postId) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new ResourceNotFoundException("Post", postId));
         return AdminPostDetailResponse.from(post);
     }
 
     @Transactional
-    public AdminPostDetailResponse publish(UUID propertyId) {
-        Post post = postRepository.findByPropertyId(propertyId)
-                .orElseThrow(() -> new ResourceNotFoundException("Post for property", propertyId));
+    public AdminPostDetailResponse createPost(UUID roomId, CreatePostRequest req, UUID authorId) {
+        Room room = roomRepository.findById(roomId)
+                .orElseThrow(() -> new ResourceNotFoundException("Room", roomId));
+        User author = userRepository.findById(authorId)
+                .orElseThrow(() -> new ResourceNotFoundException("User", authorId));
+
+        Post post = new Post();
+        post.setRoom(room);
+        post.setTitle(req.getTitle());
+        post.setContent(req.getContent());
+        post.setCoverImageUrl(req.getCoverImageUrl() != null ? req.getCoverImageUrl() : resolveDefaultCoverImage(room));
+        post.setAuthor(author);
+
+        String desiredSlug = req.getSlug() != null && !req.getSlug().isBlank()
+                ? slugify(req.getSlug())
+                : slugify(req.getTitle());
+        post.setSlug(uniqueSlug(desiredSlug, null));
+
+        return AdminPostDetailResponse.from(postRepository.save(post));
+    }
+
+    @Transactional
+    public AdminPostDetailResponse updatePost(UUID postId, UpdatePostRequest req, UUID authorId) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new ResourceNotFoundException("Post", postId));
+        User author = userRepository.findById(authorId)
+                .orElseThrow(() -> new ResourceNotFoundException("User", authorId));
+
+        post.setTitle(req.getTitle());
+        post.setContent(req.getContent());
+        post.setCoverImageUrl(req.getCoverImageUrl() != null ? req.getCoverImageUrl() : resolveDefaultCoverImage(post.getRoom()));
+        post.setAuthor(author);
+
+        String desiredSlug = req.getSlug() != null && !req.getSlug().isBlank()
+                ? slugify(req.getSlug())
+                : slugify(req.getTitle());
+        post.setSlug(uniqueSlug(desiredSlug, postId));
+
+        return AdminPostDetailResponse.from(postRepository.save(post));
+    }
+
+    @Transactional
+    public void deletePost(UUID postId) {
+        if (!postRepository.existsById(postId)) {
+            throw new ResourceNotFoundException("Post", postId);
+        }
+        postCommentRepository.deleteAllByPostId(postId);
+        postLikeRepository.deleteAllByPostId(postId);
+        postRepository.deleteById(postId);
+    }
+
+    @Transactional
+    public AdminPostDetailResponse publish(UUID postId) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new ResourceNotFoundException("Post", postId));
         if (!post.isPublished()) {
             post.setPublished(true);
             post.setPublishedAt(LocalDateTime.now());
@@ -139,42 +184,18 @@ public class PostService {
     }
 
     @Transactional
-    public AdminPostDetailResponse unpublish(UUID propertyId) {
-        Post post = postRepository.findByPropertyId(propertyId)
-                .orElseThrow(() -> new ResourceNotFoundException("Post for property", propertyId));
+    public AdminPostDetailResponse unpublish(UUID postId) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new ResourceNotFoundException("Post", postId));
         post.setPublished(false);
         return AdminPostDetailResponse.from(postRepository.save(post));
     }
 
     @Transactional
-    public AdminPostDetailResponse uploadCoverImage(UUID propertyId, MultipartFile file) {
-        Post post = postRepository.findByPropertyId(propertyId)
-                .orElseThrow(() -> new ResourceNotFoundException("Post for property", propertyId));
-        post.setCoverImageUrl(storageService.upload("blog/" + propertyId, file));
-        return AdminPostDetailResponse.from(postRepository.save(post));
-    }
-
-    @Transactional
-    public AdminPostDetailResponse upsertPost(UUID propertyId, UpdatePostRequest req, UUID authorId) {
-        Property property = propertyService.getById(propertyId);
-        Post post = postRepository.findByPropertyId(propertyId).orElseGet(() -> {
-            Post created = new Post();
-            created.setProperty(property);
-            return created;
-        });
-        User author = userRepository.findById(authorId)
-                .orElseThrow(() -> new ResourceNotFoundException("User", authorId));
-
-        post.setTitle(req.getTitle());
-        post.setContent(req.getContent());
-        post.setCoverImageUrl(req.getCoverImageUrl() != null ? req.getCoverImageUrl() : resolveDefaultCoverImage(propertyId));
-        post.setAuthor(author);
-
-        String desiredSlug = req.getSlug() != null && !req.getSlug().isBlank()
-                ? slugify(req.getSlug())
-                : slugify(req.getTitle());
-        post.setSlug(uniqueSlug(desiredSlug, post.getId()));
-
+    public AdminPostDetailResponse uploadCoverImage(UUID postId, MultipartFile file) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new ResourceNotFoundException("Post", postId));
+        post.setCoverImageUrl(storageService.upload("blog/" + postId, file));
         return AdminPostDetailResponse.from(postRepository.save(post));
     }
 
@@ -249,11 +270,16 @@ public class PostService {
         };
     }
 
-    private String resolveDefaultCoverImage(UUID propertyId) {
-        return roomRepository.findByPropertyId(propertyId).stream()
-                .flatMap(room -> room.getImages().stream())
-                .findFirst()
-                .orElse(null);
+    private String roomStatusSentence(RoomStatus status) {
+        return switch (status) {
+            case EMPTY -> "Còn trống";
+            case RENTED -> "Đã cho thuê";
+            case MAINTENANCE -> "Đang bảo trì";
+        };
+    }
+
+    private String resolveDefaultCoverImage(Room room) {
+        return room.getImages().stream().findFirst().orElse(null);
     }
 
     private String uniqueSlug(String base, UUID excludingPostId) {
@@ -280,24 +306,28 @@ public class PostService {
     }
 
     private BlogPostSummaryResponse toSummary(Post post) {
-        Property property = post.getProperty();
-        long empty = roomRepository.countByPropertyIdAndStatus(property.getId(), RoomStatus.EMPTY);
-        long rented = roomRepository.countByPropertyIdAndStatus(property.getId(), RoomStatus.RENTED);
-        long maintenance = roomRepository.countByPropertyIdAndStatus(property.getId(), RoomStatus.MAINTENANCE);
+        Room room = post.getRoom();
+        Property property = room.getProperty();
         return new BlogPostSummaryResponse(
                 post.getId(), post.getSlug(), post.getTitle(), post.getCoverImageUrl(),
+                room.getId(), room.getRoomNumber(), room.getStatus().name(),
                 property.getId(), property.getName(), property.getAddress(),
-                empty, empty + rented + maintenance, post.getPublishedAt()
+                post.getPublishedAt()
         );
     }
 
     private BlogPostDetailResponse toDetail(Post post, UUID viewerId) {
-        Property property = post.getProperty();
+        Room room = post.getRoom();
+        Property property = room.getProperty();
         long likeCount = postLikeRepository.countByPostId(post.getId());
         boolean liked = viewerId != null && postLikeRepository.existsByPostIdAndUserId(post.getId(), viewerId);
         return new BlogPostDetailResponse(
                 post.getId(), post.getSlug(), post.getTitle(), post.getContent(), post.getCoverImageUrl(),
-                property.getId(), property.getName(), property.getAddress(), post.getPublishedAt(), likeCount, liked
+                room.getId(), room.getRoomNumber(), room.getStatus().name(),
+                room.getDirection() != null ? room.getDirection().name() : null,
+                room.getAreaM2(), room.getMaxPeople(), room.getImages(),
+                property.getId(), property.getName(), property.getAddress(),
+                post.getPublishedAt(), likeCount, liked
         );
     }
 }
