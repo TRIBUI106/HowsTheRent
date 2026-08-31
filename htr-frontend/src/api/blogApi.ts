@@ -6,11 +6,12 @@ export interface BlogPostSummary {
   slug: string
   title: string
   coverImageUrl: string | null
+  roomId: string
+  roomNumber: string
+  roomStatus: 'EMPTY' | 'RENTED' | 'MAINTENANCE'
   propertyId: string
   propertyName: string
   propertyAddress: string
-  emptyRoomCount: number
-  totalRoomCount: number
   publishedAt: string | null
 }
 
@@ -20,6 +21,13 @@ export interface BlogPostDetail {
   title: string
   content: string
   coverImageUrl: string | null
+  roomId: string
+  roomNumber: string
+  roomStatus: 'EMPTY' | 'RENTED' | 'MAINTENANCE'
+  roomDirection: import('@/types').RoomDirection | null
+  roomAreaM2: number | null
+  roomMaxPeople: number | null
+  roomImages: string[]
   propertyId: string
   propertyName: string
   propertyAddress: string
