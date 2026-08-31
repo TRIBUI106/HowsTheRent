@@ -801,8 +801,11 @@ function ModulesStrip() {
  * same surface, rule, and radius language as the modules sheet above.
  * ─────────────────────────────────────────────────────────────────────────── */
 function BlogTeaser() {
+  // Shares the ['blog-posts'] cache key with BlogListPage/BlogPostPage so this
+  // teaser stays in sync with admin publish/unpublish changes instead of
+  // holding its own stale copy, and avoids a duplicate network request.
   const { data: posts } = useQuery({
-    queryKey: ['landing-blog-teaser'],
+    queryKey: ['blog-posts'],
     queryFn: blogApi.list,
   })
   const latestPosts = posts?.slice(0, 3) ?? []
