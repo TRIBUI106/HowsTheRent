@@ -21,32 +21,34 @@ function renderPage() {
 }
 
 describe('BlogListPage', () => {
-  it('renders each published post with its vacancy badge', async () => {
+  it('renders each published post with its room-status badge', async () => {
     vi.mocked(blogApi.list).mockResolvedValue([
       {
         id: '1', slug: 'phong-tro-dep', title: 'Phòng trọ đẹp Quận 1', coverImageUrl: null,
+        roomId: 'r1', roomNumber: 'A101', roomStatus: 'EMPTY',
         propertyId: 'p1', propertyName: 'Nhà trọ Xanh', propertyAddress: '12 Lê Lợi',
-        emptyRoomCount: 2, totalRoomCount: 5, publishedAt: '2026-08-01T00:00:00',
+        publishedAt: '2026-08-01T00:00:00',
       },
     ])
 
     renderPage()
 
     expect(await screen.findByText('Phòng trọ đẹp Quận 1')).toBeInTheDocument()
-    expect(screen.getByText(/2 phòng trống/i)).toBeInTheDocument()
+    expect(screen.getByText('Phòng A101 · Trống')).toBeInTheDocument()
   })
 
-  it('shows "Hết phòng" when there is no vacancy', async () => {
+  it('shows the room status when a room is rented', async () => {
     vi.mocked(blogApi.list).mockResolvedValue([
       {
         id: '1', slug: 'phong-tro-day', title: 'Phòng trọ đầy', coverImageUrl: null,
+        roomId: 'r1', roomNumber: 'B203', roomStatus: 'RENTED',
         propertyId: 'p1', propertyName: 'Nhà trọ Đỏ', propertyAddress: '5 Trần Phú',
-        emptyRoomCount: 0, totalRoomCount: 5, publishedAt: null,
+        publishedAt: null,
       },
     ])
 
     renderPage()
 
-    expect(await screen.findByText(/hết phòng/i)).toBeInTheDocument()
+    expect(await screen.findByText('Phòng B203 · Đã thuê')).toBeInTheDocument()
   })
 })
