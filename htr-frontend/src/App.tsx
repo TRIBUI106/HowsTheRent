@@ -47,7 +47,7 @@ export default function App() {
     <>
       <OfflineBanner />
       <Routes>
-        <Route path="/" element={<Navigate to={homePath} replace />} />
+        <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<Navigate to={homePath} replace />} />
         <Route path="/landing" element={<LandingPage />} />
         <Route path="/change-password" element={<ChangePasswordPage />} />
