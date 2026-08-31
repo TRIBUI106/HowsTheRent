@@ -208,25 +208,84 @@ since it reuses the exact wiring already verified for direction.
 
 ## #5 — Blog feature (one post per rental property)
 
-**Status:** ⬜ Not started — needs brainstorm/interview (architectural —
-will get its own full spec doc under `docs/superpowers/specs/`)
+**Status:** ✅ Done — implemented via a 29-task plan on an isolated
+worktree/branch, executed with subagent-driven development (fresh
+implementer + independent reviewer per task, plus a final whole-branch
+review), merged to `master` (`017f1d9`), verified with the full
+automated suite on `master` post-merge.
 
-**Scope note:** User wants this developed "trên 1 nhánh" (on a separate
-branch) — likely wants git branch isolation (possibly a worktree) given
-it's a new subsystem (public-facing blog/content pages) rather than a
-tweak to existing admin/tenant/technician flows.
+**Spec:** `docs/superpowers/specs/2026-08-30-htr-blog-design.md`
+**Plan:** `docs/superpowers/plans/2026-08-30-htr-blog-implementation.md`
 
-**Open questions for interview:**
-- Is this public-facing (no login, SEO-friendly) or still behind
-  auth/admin like the rest of the app?
-- Who authors posts — Admin only, or per-property owner?
-- Content model: fully custom rich-text/markdown editor, or
-  template-generated from existing property/room data (address, photos
-  from #3, direction notes from #4, etc.) with an editable description?
-- New frontend routes only, or does this need new backend
-  entities/endpoints (Post, slug, published/draft state)?
-- Relationship to existing `Property` entity — one blog post per
-  `Property`, editable 1:1, or can a property have multiple posts?
+**Answers to the interview questions above:** public-facing/no-login for
+reading (SEO-friendly, `permitAll()` GET), Admin/PLATFORM_ADMIN-only
+authoring (no per-property-owner scoping), a "Tạo bản nháp tự động"
+one-shot template generator from property/room data (address, photos,
+direction, vacancy) feeding an editable Tiptap rich-text editor (not
+fully custom-from-scratch, not template-locked), new backend entities
+(`Post`/`PostComment`/`PostLike`, 1:1 `Post`↔`Property`) plus a full new
+endpoint surface, and yes — one post per `Property`, editable in place,
+no multi-post/versioning.
+
+**What was built:**
+- **New role:** self-registerable `GUEST` (`POST /api/auth/register-guest`,
+  reuses the existing `accessToken`/`refreshToken` cookies unchanged — no
+  new/renamed cookie, per this repo's cookie-regression history).
+- **Security hardening (required before `GUEST` could ship):** 14
+  endpoints across 7 controllers that previously relied only on "any
+  authenticated user" now carry explicit `@PreAuthorize` excluding
+  `GUEST` (`PropertyController`, `ContractController`,
+  `InvoiceController`, `MaintenanceController` ×3,
+  `MaintenanceReportController` ×3, `NotificationController` ×4,
+  `UserController`).
+- **Entities:** `Post`, `PostComment`, `PostLike` — additive via
+  `ddl-auto=update`, no Flyway migration, matching this repo's existing
+  `Room.direction`/`Room.description` precedent.
+- **Public endpoints:** list/detail/comments (public GET), authenticated
+  comment + idempotent like/unlike toggle, live per-property vacancy
+  (`GET /api/public/properties/{id}/vacancy`, always computed from
+  `Room.status`, never persisted/cached), `GET /sitemap.xml`.
+- **Admin endpoints:** list all properties with post status, upsert
+  (create-on-first-PUT with Vietnamese-diacritic slugify + collision
+  suffixing), auto-draft generator (read-only, non-persisting template
+  fill with HTML-escaped interpolation), cover-image upload (reuses the
+  existing `StorageService`), publish/unpublish (stamps `publishedAt`
+  once, preserved across unpublish), comment moderation list + delete.
+- **Frontend:** `PublicShell` (nav/footer extracted verbatim from
+  `LandingPage.tsx` for reuse), public `/blog`, `/blog/:slug`,
+  `/blog/register` pages, admin `/admin/blog`, `/admin/blog/:propertyId`
+  (Tiptap WYSIWYG — new dependency, React-19-safe), `/admin/blog/comments`,
+  a unified `homePathForRole()` replacing two independently-drifted
+  role→redirect implementations in `App.tsx`/`LoginPage.tsx` (both
+  previously mishandled roles silently), per-post SEO meta tags
+  (`useDocumentMeta`), `robots.txt`.
+- **Verify:** every one of the 29 tasks had its own fresh-subagent
+  implementation + independent review pass (all approved, one fix round
+  on Task 26 for a controller ruling on Vitest's rejected-query
+  handling); a final whole-branch review covered security/lazy-loading
+  safety/plan-alignment across the whole diff. Post-merge on `master`:
+  backend 189/189 tests, frontend 79/79 tests, production build clean.
+  Full manual browser walkthrough (Task 29 in the plan) was **not**
+  run — the user directed merging to `master` and continuing inline
+  before that step; flagged as an open follow-up below.
+
+**Known gaps / follow-up ideas (not done, listed for the "perfect later"
+pass):**
+- No manual full-stack/browser verification was performed for this
+  feature (unlike #1–#4) — automated coverage only. Worth a real
+  Playwright pass through register → comment → like → admin
+  publish/moderate before calling this fully production-verified.
+- Like button doesn't reflect a logged-in viewer's prior-liked state
+  (backend doesn't return `liked` on `GET .../posts/{slug}` yet) —
+  documented as an acceptable v1 simplification in the plan.
+- No XML-escaping on `sitemap.xml`'s `<loc>` values — harmless with
+  current auto-generated slugs, but a manually-edited slug or unusual
+  `PUBLIC_BASE_URL` containing `&`/`<` could emit malformed XML.
+- Tiptap adds ~1.45 MB (~425 kB gzip) to the production bundle with no
+  code-splitting — a future optimization, not blocking.
+- OTP-based email verification for `GUEST` signup, comment
+  spam/rate-limiting, and SSR/prerendering for SEO were all explicitly
+  deferred in the spec (§7) as out of scope for v1.
 
 ---
 
@@ -257,3 +316,16 @@ tweak to existing admin/tenant/technician flows.
   All 5 original items now have a working first pass except #5 (blog),
   which is next — and per the user, #5 is now scoped as a **full
   standalone blog website**, not a small module inside HTR.
+- 2026-08-31: #5 (blog) design spec + 29-task implementation plan
+  written; executed end-to-end via subagent-driven development in an
+  isolated worktree (fresh implementer + independent reviewer per task,
+  one fix round on Task 26, final whole-branch review dispatched). Per
+  explicit user direction, merged to `master` (`017f1d9`) and continued
+  inline before the plan's Task 29 manual-browser-verification step and
+  before the final whole-branch review's result came back — both are
+  open follow-ups, not blockers, per the ledger ruling recorded in
+  `.superpowers/sdd/2026-08-30-htr-blog-implementation/progress.md`
+  (workspace since cleaned up; the ruling is preserved in this entry and
+  the commit history). Post-merge sanity on `master`: backend 189/189,
+  frontend 79/79, build clean. All 5 original tracker items now have a
+  working, tested implementation.
