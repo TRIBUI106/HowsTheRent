@@ -53,6 +53,7 @@ export function DatePicker({
   id,
 }: DatePickerProps) {
   const [text, setText] = useState(() => isoToDisplay(value))
+  const [prevValue, setPrevValue] = useState(value)
   const [open, setOpen] = useState(false)
   const [popoverStyle, setPopoverStyle] = useState<{ top: number; left: number }>({ top: 0, left: 0 })
   const wrapperRef = useRef<HTMLDivElement>(null)
@@ -60,9 +61,12 @@ export function DatePicker({
   const inputId = id ?? label?.toLowerCase().replace(/\s+/g, '-')
 
   // Keep the typed text in sync when the value changes from outside (e.g. form reset).
-  useEffect(() => {
+  // Adjusted during render (not an effect) so there's no stale-text flash and no
+  // cascading-render lint violation — see https://react.dev/learn/you-might-not-need-an-effect
+  if (value !== prevValue) {
+    setPrevValue(value)
     setText(isoToDisplay(value))
-  }, [value])
+  }
 
   useEffect(() => {
     if (!open) return
