@@ -60,6 +60,14 @@ function NavPill() {
         }}
       />
 
+      <Link
+        to="/blog"
+        className="text-sm font-medium transition-colors hover:text-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-3"
+        style={{ color: 'var(--color-fg)', outlineColor: 'var(--color-accent)', borderRadius: 'var(--radius-xs)' }}
+      >
+        Blog
+      </Link>
+
       {/* CTA */}
       <Link
         to="/login"

@@ -10,6 +10,8 @@
  */
 
 import { Link } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
+import { blogApi } from '@/api'
 import {
   FileText,
   Wrench,
@@ -300,7 +302,7 @@ function SplitPair({ pair }: { pair: typeof splitPairs[number] }) {
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'center',
-        padding: 'var(--space-2xl) var(--space-xl)',
+        padding: 'var(--space-xl) var(--space-xl)',
       }}
     >
       <h2
@@ -353,7 +355,7 @@ function SplitPair({ pair }: { pair: typeof splitPairs[number] }) {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: 'var(--space-2xl) var(--space-xl)',
+        padding: 'var(--space-xl) var(--space-xl)',
         background: 'var(--color-sidebar)',
       }}
     >
@@ -388,7 +390,7 @@ function Hero() {
       style={{
         display: 'grid',
         gridTemplateColumns: 'minmax(0, 1.1fr) minmax(0, 0.9fr)',
-        minHeight: '85vh',
+        minHeight: '72vh',
         paddingTop: 'calc(var(--space-4xl) + var(--space-md))', /* clear fixed pill nav */
         borderBottom: 'var(--rule-hair) solid var(--color-border)',
       }}
@@ -400,7 +402,7 @@ function Hero() {
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'center',
-          padding: 'var(--space-2xl) var(--space-xl) var(--space-3xl)',
+          padding: 'var(--space-xl) var(--space-xl) var(--space-2xl)',
           maxWidth: '680px',
           marginLeft: 'auto',
         }}
@@ -575,7 +577,7 @@ function RolesSection() {
       aria-labelledby="roles-heading"
       style={{
         borderBottom: 'var(--rule-hair) solid var(--color-border)',
-        padding: 'var(--space-3xl) 0',
+        padding: 'var(--space-2xl) 0',
       }}
     >
       <div className="mx-auto max-w-6xl" style={{ padding: '0 var(--space-xl)' }}>
@@ -708,7 +710,7 @@ function ModulesStrip() {
         background: 'var(--color-surface)',
       }}
     >
-      <div className="mx-auto max-w-6xl" style={{ padding: 'var(--space-3xl) var(--space-xl)' }}>
+      <div className="mx-auto max-w-6xl" style={{ padding: 'var(--space-2xl) var(--space-xl)' }}>
         <h2
           id="modules-heading"
           style={{
@@ -794,6 +796,77 @@ function ModulesStrip() {
   )
 }
 
+/* ── Latest posts ────────────────────────────────────────────────────────────
+ * A compact bridge from product explanation to the public blog. It uses the
+ * same surface, rule, and radius language as the modules sheet above.
+ * ─────────────────────────────────────────────────────────────────────────── */
+function BlogTeaser() {
+  const { data: posts } = useQuery({
+    queryKey: ['landing-blog-teaser'],
+    queryFn: blogApi.list,
+  })
+  const latestPosts = posts?.slice(0, 3) ?? []
+
+  if (!latestPosts.length) return null
+
+  return (
+    <section
+      aria-labelledby="latest-posts-heading"
+      style={{
+        borderBottom: 'var(--rule-hair) solid var(--color-border)',
+        background: 'var(--color-surface)',
+      }}
+    >
+      <div className="mx-auto max-w-6xl" style={{ padding: 'var(--space-2xl) var(--space-xl)' }}>
+        <div className="flex flex-wrap items-end justify-between gap-4" style={{ marginBottom: 'var(--space-lg)' }}>
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'var(--color-fg-subtle)' }}>Thông tin thuê trọ</p>
+            <h2
+              id="latest-posts-heading"
+              style={{
+                fontFamily: 'var(--font-display)',
+                fontSize: 'clamp(1.5rem, 2vw + 0.5rem, 2rem)',
+                fontWeight: 400,
+                lineHeight: 1.2,
+                letterSpacing: '-0.02em',
+                color: 'var(--color-fg)',
+                marginTop: 'var(--space-2xs)',
+              }}
+            >
+              Bài viết mới nhất
+            </h2>
+          </div>
+          <Link to="/blog" className="text-sm font-medium hover:text-accent" style={{ color: 'var(--color-fg)' }}>
+            Xem tất cả bài viết →
+          </Link>
+        </div>
+
+        <div className="blog-teaser-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 'var(--space-md)' }}>
+          {latestPosts.map(post => (
+            <Link
+              key={post.id}
+              to={`/blog/${post.slug}`}
+              className="overflow-hidden transition-shadow hover:shadow-md"
+              style={{
+                background: 'var(--color-bg)',
+                border: 'var(--rule-hair) solid var(--color-border)',
+                borderRadius: 'var(--radius-lg)',
+              }}
+            >
+              {post.coverImageUrl && <img src={post.coverImageUrl} alt="" className="h-36 w-full object-cover" />}
+              <div style={{ padding: 'var(--space-md)' }}>
+                <p className="text-xs" style={{ color: 'var(--color-fg-subtle)' }}>Phòng {post.roomNumber} · {post.propertyName}</p>
+                <h3 className="mt-1 text-base font-semibold" style={{ color: 'var(--color-fg)' }}>{post.title}</h3>
+                <p className="mt-2 text-sm" style={{ color: 'var(--color-fg-muted)' }}>{post.propertyAddress}</p>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
 /* ── CTA strip ──────────────────────────────────────────────────────────────
  * One button. Not two. Not a floating card.
  * Full-width dark section anchored to the page bottom rhythm.
@@ -804,7 +877,7 @@ function CtaStrip() {
       aria-labelledby="cta-heading"
       style={{
         background: 'var(--color-fg)',
-        padding: 'var(--space-3xl) var(--space-xl)',
+        padding: 'var(--space-2xl) var(--space-xl)',
         borderBottom: 'var(--rule-hair) solid var(--color-border)',
       }}
     >
@@ -904,6 +977,9 @@ const responsiveCSS = `
       border-right: none !important;
       border-bottom: 1px solid var(--color-border);
     }
+    .blog-teaser-grid {
+      grid-template-columns: minmax(0, 1fr) !important;
+    }
   }
 
   /* Stat strip: stack on mobile */
@@ -941,10 +1017,13 @@ export default function LandingPage() {
         {/* 4. F3 Modules spec sheet */}
         <ModulesStrip />
 
-        {/* 5. Roles — asymmetric 2-up */}
+        {/* 5. Latest posts — bridge to the public blog */}
+        <BlogTeaser />
+
+        {/* 6. Roles — asymmetric 2-up */}
         <RolesSection />
 
-        {/* 6. CTA strip — full-width dark */}
+        {/* 7. CTA strip — full-width dark */}
         <CtaStrip />
       </PublicShell>
     </>
