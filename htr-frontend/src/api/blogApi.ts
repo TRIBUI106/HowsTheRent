@@ -13,6 +13,7 @@ export interface BlogPostSummary {
   propertyName: string
   propertyAddress: string
   publishedAt: string | null
+  tags: string[]
 }
 
 export interface BlogPostDetail {
@@ -34,6 +35,7 @@ export interface BlogPostDetail {
   publishedAt: string | null
   likeCount: number
   liked: boolean
+  tags: string[]
 }
 
 export interface Vacancy {

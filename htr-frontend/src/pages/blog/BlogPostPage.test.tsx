@@ -36,7 +36,7 @@ const post = {
   roomId: 'r1', roomNumber: 'A101', roomStatus: 'EMPTY' as const, roomDirection: 'NORTH' as const,
   roomAreaM2: 24, roomMaxPeople: 2, roomImages: ['https://example.test/room-a101.jpg'],
   propertyId: 'p1', propertyName: 'Nhà trọ Xanh', propertyAddress: '12 Lê Lợi', publishedAt: null,
-  likeCount: 3, liked: false,
+  likeCount: 3, liked: false, tags: [],
 }
 
 describe('BlogPostPage', () => {
@@ -85,9 +85,9 @@ describe('BlogPostPage', () => {
 
   it('lists related posts from the same property, excluding the current post', async () => {
     vi.mocked(blogApi.list).mockResolvedValue([
-      { id: '1', slug: 'phong-tro-dep', title: 'Phòng trọ đẹp', coverImageUrl: null, roomId: 'r1', roomNumber: 'A101', roomStatus: 'EMPTY', propertyId: 'p1', propertyName: 'Nhà trọ Xanh', propertyAddress: '12 Lê Lợi', publishedAt: null },
-      { id: '2', slug: 'phong-khac', title: 'Phòng cùng nhà', coverImageUrl: null, roomId: 'r2', roomNumber: 'A102', roomStatus: 'RENTED', propertyId: 'p1', propertyName: 'Nhà trọ Xanh', propertyAddress: '12 Lê Lợi', publishedAt: null },
-      { id: '3', slug: 'phong-khac-nha', title: 'Phòng nhà khác', coverImageUrl: null, roomId: 'r3', roomNumber: 'B101', roomStatus: 'EMPTY', propertyId: 'p2', propertyName: 'Nhà trọ Đỏ', propertyAddress: '5 Trần Phú', publishedAt: null },
+      { id: '1', slug: 'phong-tro-dep', title: 'Phòng trọ đẹp', coverImageUrl: null, roomId: 'r1', roomNumber: 'A101', roomStatus: 'EMPTY', propertyId: 'p1', propertyName: 'Nhà trọ Xanh', propertyAddress: '12 Lê Lợi', publishedAt: null, tags: [] },
+      { id: '2', slug: 'phong-khac', title: 'Phòng cùng nhà', coverImageUrl: null, roomId: 'r2', roomNumber: 'A102', roomStatus: 'RENTED', propertyId: 'p1', propertyName: 'Nhà trọ Xanh', propertyAddress: '12 Lê Lợi', publishedAt: null, tags: [] },
+      { id: '3', slug: 'phong-khac-nha', title: 'Phòng nhà khác', coverImageUrl: null, roomId: 'r3', roomNumber: 'B101', roomStatus: 'EMPTY', propertyId: 'p2', propertyName: 'Nhà trọ Đỏ', propertyAddress: '5 Trần Phú', publishedAt: null, tags: [] },
     ])
 
     renderAtSlug('phong-tro-dep')
@@ -95,6 +95,14 @@ describe('BlogPostPage', () => {
     expect(await screen.findByText('Các bài khác của tòa nhà này')).toBeInTheDocument()
     expect(screen.getByText('Phòng cùng nhà')).toBeInTheDocument()
     expect(screen.queryByText('Phòng nhà khác')).not.toBeInTheDocument()
+  })
+
+  it('renders the post\'s tags below the title when present', async () => {
+    vi.mocked(blogApi.getBySlug).mockResolvedValue({ ...post, tags: ['gia-re', 'trung-tam'] })
+    renderAtSlug('phong-tro-dep')
+
+    expect(await screen.findByText('gia-re')).toBeInTheDocument()
+    expect(screen.getByText('trung-tam')).toBeInTheDocument()
   })
 
   it('shows a login prompt instead of the comment form when logged out', async () => {

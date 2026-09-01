@@ -50,7 +50,7 @@ vi.mock('@/components/Layout', () => ({
 const editPost = {
   id: 'post-1', roomId: 'room-1', roomNumber: 'A101', propertyId: 'prop-1', propertyName: 'Nhà A',
   title: 'Bài viết cũ', slug: 'bai-viet-cu', content: '<p>Nội dung cũ</p>', coverImageUrl: null,
-  published: false, publishedAt: null, authorId: null, authorName: null, createdAt: '', updatedAt: '',
+  published: false, publishedAt: null, authorId: null, authorName: null, createdAt: '', updatedAt: '', tags: [],
 }
 
 function renderAtPath(path: string) {
@@ -93,7 +93,7 @@ describe('AdminBlogEditorPage', () => {
     fireEvent.click(screen.getByRole('button', { name: /lưu bài viết/i }))
 
     await waitFor(() => expect(adminBlogApi.update).toHaveBeenCalledWith('post-1', {
-      title: 'Bài viết mới', slug: 'bai-viet-cu', content: '<p>Nội dung</p>', coverImageUrl: undefined, publishAt: undefined,
+      title: 'Bài viết mới', slug: 'bai-viet-cu', content: '<p>Nội dung</p>', coverImageUrl: undefined, publishAt: undefined, tags: [],
     }))
   })
 
@@ -111,7 +111,7 @@ describe('AdminBlogEditorPage', () => {
     fireEvent.click(screen.getByRole('button', { name: /lưu bài viết/i }))
 
     await waitFor(() => expect(adminBlogApi.update).toHaveBeenCalledWith('post-1', {
-      title: 'Bài viết cũ', slug: 'bai-viet-cu', content: '<p>Nội dung</p>', coverImageUrl: undefined, publishAt: '2026-12-01T10:00:00',
+      title: 'Bài viết cũ', slug: 'bai-viet-cu', content: '<p>Nội dung</p>', coverImageUrl: undefined, publishAt: '2026-12-01T10:00:00', tags: [],
     }))
   })
 
@@ -150,7 +150,7 @@ describe('AdminBlogEditorPage', () => {
     fireEvent.click(screen.getByRole('button', { name: /tạo bản nháp$/i }))
 
     await waitFor(() => expect(adminBlogApi.create).toHaveBeenCalledWith({
-      roomId: 'room-1', title: 'Bài viết mới', slug: undefined, content: '<p>Nội dung</p>', coverImageUrl: undefined,
+      roomId: 'room-1', title: 'Bài viết mới', slug: undefined, content: '<p>Nội dung</p>', coverImageUrl: undefined, publishAt: undefined, tags: [],
     }))
   })
 
@@ -195,6 +195,33 @@ describe('AdminBlogEditorPage', () => {
     fireEvent.drop(dropzone, { dataTransfer: { files: [file] } })
 
     expect(adminBlogApi.uploadCoverImage).not.toHaveBeenCalled()
+  })
+
+  it('adds tags on Enter, removes them via the chip X button, and includes them in the save payload', async () => {
+    vi.mocked(adminBlogApi.get).mockResolvedValue(editPost)
+    vi.mocked(adminBlogApi.update).mockResolvedValue(editPost)
+
+    renderAtPath('/admin/blog/post-1')
+    await screen.findByDisplayValue('Bài viết cũ')
+
+    const tagInput = screen.getByPlaceholderText('Nhập tag rồi nhấn Enter')
+    fireEvent.change(tagInput, { target: { value: 'gia-re' } })
+    fireEvent.keyDown(tagInput, { key: 'Enter' })
+    fireEvent.change(tagInput, { target: { value: 'trung-tam' } })
+    fireEvent.keyDown(tagInput, { key: 'Enter' })
+
+    expect(screen.getByText('gia-re')).toBeInTheDocument()
+    expect(screen.getByText('trung-tam')).toBeInTheDocument()
+    expect(tagInput).toHaveValue('')
+
+    fireEvent.click(screen.getByRole('button', { name: 'Xóa tag gia-re' }))
+    expect(screen.queryByText('gia-re')).not.toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: /lưu bài viết/i }))
+
+    await waitFor(() => expect(adminBlogApi.update).toHaveBeenCalledWith('post-1', {
+      title: 'Bài viết cũ', slug: 'bai-viet-cu', content: '<p>Nội dung</p>', coverImageUrl: undefined, publishAt: undefined, tags: ['trung-tam'],
+    }))
   })
 
   it('deletes an existing post only after confirmation', async () => {

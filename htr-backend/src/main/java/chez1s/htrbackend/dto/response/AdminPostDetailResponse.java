@@ -5,6 +5,7 @@ import chez1s.htrbackend.domain.entity.Property;
 import chez1s.htrbackend.domain.entity.Room;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 public record AdminPostDetailResponse(
@@ -23,7 +24,8 @@ public record AdminPostDetailResponse(
         UUID authorId,
         String authorName,
         LocalDateTime createdAt,
-        LocalDateTime updatedAt
+        LocalDateTime updatedAt,
+        List<String> tags
 ) {
     public static AdminPostDetailResponse from(Post post) {
         Room room = post.getRoom();
@@ -44,7 +46,8 @@ public record AdminPostDetailResponse(
                 post.getAuthor() != null ? post.getAuthor().getId() : null,
                 post.getAuthor() != null ? post.getAuthor().getFullName() : null,
                 post.getCreatedAt(),
-                post.getUpdatedAt()
+                post.getUpdatedAt(),
+                post.getTags()
         );
     }
 }

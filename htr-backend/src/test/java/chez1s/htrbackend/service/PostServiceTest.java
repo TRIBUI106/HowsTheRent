@@ -137,11 +137,38 @@ class PostServiceTest {
     }
 
     @Test
+    void listPublishedIncludesTags() {
+        Property property = Property.builder().id(UUID.randomUUID()).name("Nhà trọ Xanh").address("12 Lê Lợi").build();
+        Room room = Room.builder().id(UUID.randomUUID()).roomNumber("A1").status(RoomStatus.EMPTY).property(property).build();
+        Post post = Post.builder().id(UUID.randomUUID()).room(room).title("Phòng trọ đẹp")
+                .slug("phong-tro-dep").published(true).tags(new ArrayList<>(List.of("gia-re", "trung-tam"))).build();
+        when(postRepository.findByPublishedTrueOrderByPublishedAtDesc()).thenReturn(List.of(post));
+
+        List<BlogPostSummaryResponse> result = postService.listPublished();
+
+        assertThat(result.get(0).tags()).containsExactly("gia-re", "trung-tam");
+    }
+
+    @Test
     void getPublishedBySlugThrowsWhenMissing() {
         when(postRepository.findBySlugAndPublishedTrue("missing")).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> postService.getPublishedBySlug("missing", null))
                 .isInstanceOf(ResourceNotFoundException.class);
+    }
+
+    @Test
+    void getPublishedBySlugIncludesTags() {
+        Property property = Property.builder().id(UUID.randomUUID()).name("Nhà trọ Xanh").address("12 Lê Lợi").build();
+        Room room = Room.builder().id(UUID.randomUUID()).roomNumber("A1").status(RoomStatus.EMPTY).property(property).build();
+        Post post = Post.builder().id(UUID.randomUUID()).room(room).title("Phòng trọ đẹp")
+                .slug("phong-tro-dep").content("<p>Nội dung</p>").published(true)
+                .tags(new ArrayList<>(List.of("gia-re"))).build();
+        when(postRepository.findBySlugAndPublishedTrue("phong-tro-dep")).thenReturn(Optional.of(post));
+
+        BlogPostDetailResponse result = postService.getPublishedBySlug("phong-tro-dep", null);
+
+        assertThat(result.tags()).containsExactly("gia-re");
     }
 
     @Test
@@ -402,6 +429,93 @@ class PostServiceTest {
         AdminPostDetailResponse result = postService.createPost(roomId, req, authorId);
 
         assertThat(result.publishAt()).isEqualTo(publishAt);
+    }
+
+    @Test
+    void createPostDefaultsTagsToEmptyListWhenNotProvided() {
+        UUID roomId = UUID.randomUUID();
+        UUID authorId = UUID.randomUUID();
+        Property property = Property.builder().id(UUID.randomUUID()).name("Nhà trọ Xanh").build();
+        Room room = Room.builder().id(roomId).roomNumber("A1").property(property).images(new ArrayList<>()).build();
+        User author = User.builder().id(authorId).fullName("Admin A").build();
+        CreatePostRequest req = new CreatePostRequest();
+        req.setRoomId(roomId);
+        req.setTitle("Phòng Đẹp");
+        when(roomRepository.findById(roomId)).thenReturn(Optional.of(room));
+        when(userRepository.findById(authorId)).thenReturn(Optional.of(author));
+        when(postRepository.existsBySlug(anyString())).thenReturn(false);
+        ArgumentCaptor<Post> captor = ArgumentCaptor.forClass(Post.class);
+        when(postRepository.save(captor.capture())).thenAnswer(inv -> inv.getArgument(0));
+
+        AdminPostDetailResponse result = postService.createPost(roomId, req, authorId);
+
+        assertThat(captor.getValue().getTags()).isEmpty();
+        assertThat(result.tags()).isEmpty();
+    }
+
+    @Test
+    void createPostPersistsTagsWhenProvided() {
+        UUID roomId = UUID.randomUUID();
+        UUID authorId = UUID.randomUUID();
+        Property property = Property.builder().id(UUID.randomUUID()).name("Nhà trọ Xanh").build();
+        Room room = Room.builder().id(roomId).roomNumber("A1").property(property).images(new ArrayList<>()).build();
+        User author = User.builder().id(authorId).fullName("Admin A").build();
+        CreatePostRequest req = new CreatePostRequest();
+        req.setRoomId(roomId);
+        req.setTitle("Phòng Đẹp");
+        req.setTags(List.of("gia-re", "trung-tam"));
+        when(roomRepository.findById(roomId)).thenReturn(Optional.of(room));
+        when(userRepository.findById(authorId)).thenReturn(Optional.of(author));
+        when(postRepository.existsBySlug(anyString())).thenReturn(false);
+        when(postRepository.save(any(Post.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        AdminPostDetailResponse result = postService.createPost(roomId, req, authorId);
+
+        assertThat(result.tags()).containsExactly("gia-re", "trung-tam");
+    }
+
+    @Test
+    void updatePostDefaultsTagsToEmptyListWhenNotProvided() {
+        UUID postId = UUID.randomUUID();
+        UUID authorId = UUID.randomUUID();
+        Property property = Property.builder().id(UUID.randomUUID()).name("Nhà A").build();
+        Room room = Room.builder().id(UUID.randomUUID()).roomNumber("A1").property(property).images(new ArrayList<>()).build();
+        Post post = Post.builder().id(postId).room(room).title("Old").slug("old-slug")
+                .tags(new ArrayList<>(List.of("cu"))).build();
+        User author = User.builder().id(authorId).fullName("Admin A").build();
+        UpdatePostRequest req = new UpdatePostRequest();
+        req.setTitle("Phòng Mới");
+        when(postRepository.findById(postId)).thenReturn(Optional.of(post));
+        when(userRepository.findById(authorId)).thenReturn(Optional.of(author));
+        when(postRepository.existsBySlugAndIdNot("phong-moi", postId)).thenReturn(false);
+        ArgumentCaptor<Post> captor = ArgumentCaptor.forClass(Post.class);
+        when(postRepository.save(captor.capture())).thenAnswer(inv -> inv.getArgument(0));
+
+        AdminPostDetailResponse result = postService.updatePost(postId, req, authorId);
+
+        assertThat(captor.getValue().getTags()).isEmpty();
+        assertThat(result.tags()).isEmpty();
+    }
+
+    @Test
+    void updatePostPersistsTagsWhenProvided() {
+        UUID postId = UUID.randomUUID();
+        UUID authorId = UUID.randomUUID();
+        Property property = Property.builder().id(UUID.randomUUID()).name("Nhà A").build();
+        Room room = Room.builder().id(UUID.randomUUID()).roomNumber("A1").property(property).images(new ArrayList<>()).build();
+        Post post = Post.builder().id(postId).room(room).title("Old").slug("old-slug").build();
+        User author = User.builder().id(authorId).fullName("Admin A").build();
+        UpdatePostRequest req = new UpdatePostRequest();
+        req.setTitle("Phòng Mới");
+        req.setTags(List.of("gia-re"));
+        when(postRepository.findById(postId)).thenReturn(Optional.of(post));
+        when(userRepository.findById(authorId)).thenReturn(Optional.of(author));
+        when(postRepository.existsBySlugAndIdNot("phong-moi", postId)).thenReturn(false);
+        when(postRepository.save(any(Post.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        AdminPostDetailResponse result = postService.updatePost(postId, req, authorId);
+
+        assertThat(result.tags()).containsExactly("gia-re");
     }
 
     @Test

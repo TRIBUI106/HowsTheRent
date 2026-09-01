@@ -1,6 +1,7 @@
 package chez1s.htrbackend.dto.response;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 public record BlogPostSummaryResponse(
@@ -14,6 +15,7 @@ public record BlogPostSummaryResponse(
         UUID propertyId,
         String propertyName,
         String propertyAddress,
-        LocalDateTime publishedAt
+        LocalDateTime publishedAt,
+        List<String> tags
 ) {
 }

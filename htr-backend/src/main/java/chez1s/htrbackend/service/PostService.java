@@ -26,6 +26,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.text.Normalizer;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
@@ -136,6 +137,7 @@ public class PostService {
         post.setCoverImageUrl(req.getCoverImageUrl());
         post.setAuthor(author);
         post.setPublishAt(req.getPublishAt());
+        post.setTags(req.getTags() != null ? req.getTags() : new ArrayList<>());
 
         String desiredSlug = req.getSlug() != null && !req.getSlug().isBlank()
                 ? slugify(req.getSlug())
@@ -157,6 +159,7 @@ public class PostService {
         post.setCoverImageUrl(req.getCoverImageUrl());
         post.setAuthor(author);
         post.setPublishAt(req.getPublishAt());
+        post.setTags(req.getTags() != null ? req.getTags() : new ArrayList<>());
 
         String desiredSlug = req.getSlug() != null && !req.getSlug().isBlank()
                 ? slugify(req.getSlug())
@@ -320,7 +323,7 @@ public class PostService {
                 post.getId(), post.getSlug(), post.getTitle(), post.getEffectiveCoverImageUrl(),
                 room.getId(), room.getRoomNumber(), room.getStatus().name(),
                 property.getId(), property.getName(), property.getAddress(),
-                post.getPublishedAt()
+                post.getPublishedAt(), post.getTags()
         );
     }
 
@@ -335,7 +338,7 @@ public class PostService {
                 room.getDirection() != null ? room.getDirection().name() : null,
                 room.getAreaM2(), room.getMaxPeople(), room.getImages(),
                 property.getId(), property.getName(), property.getAddress(),
-                post.getPublishedAt(), likeCount, liked
+                post.getPublishedAt(), likeCount, liked, post.getTags()
         );
     }
 }

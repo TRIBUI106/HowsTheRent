@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, fireEvent } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { blogApi } from '@/api'
@@ -27,7 +27,7 @@ describe('BlogListPage', () => {
         id: '1', slug: 'phong-tro-dep', title: 'Phòng trọ đẹp Quận 1', coverImageUrl: null,
         roomId: 'r1', roomNumber: 'A101', roomStatus: 'EMPTY',
         propertyId: 'p1', propertyName: 'Nhà trọ Xanh', propertyAddress: '12 Lê Lợi',
-        publishedAt: '2026-08-01T00:00:00',
+        publishedAt: '2026-08-01T00:00:00', tags: [],
       },
     ])
 
@@ -43,12 +43,44 @@ describe('BlogListPage', () => {
         id: '1', slug: 'phong-tro-day', title: 'Phòng trọ đầy', coverImageUrl: null,
         roomId: 'r1', roomNumber: 'B203', roomStatus: 'RENTED',
         propertyId: 'p1', propertyName: 'Nhà trọ Đỏ', propertyAddress: '5 Trần Phú',
-        publishedAt: null,
+        publishedAt: null, tags: [],
       },
     ])
 
     renderPage()
 
     expect(await screen.findByText('Phòng B203 · Đã thuê')).toBeInTheDocument()
+  })
+
+  it('shows each post\'s tags and filters the grid when a tag chip is clicked', async () => {
+    vi.mocked(blogApi.list).mockResolvedValue([
+      {
+        id: '1', slug: 'phong-tro-dep', title: 'Phòng trọ đẹp Quận 1', coverImageUrl: null,
+        roomId: 'r1', roomNumber: 'A101', roomStatus: 'EMPTY',
+        propertyId: 'p1', propertyName: 'Nhà trọ Xanh', propertyAddress: '12 Lê Lợi',
+        publishedAt: '2026-08-01T00:00:00', tags: ['gia-re'],
+      },
+      {
+        id: '2', slug: 'phong-tro-day', title: 'Phòng trọ đầy', coverImageUrl: null,
+        roomId: 'r2', roomNumber: 'B203', roomStatus: 'RENTED',
+        propertyId: 'p1', propertyName: 'Nhà trọ Đỏ', propertyAddress: '5 Trần Phú',
+        publishedAt: null, tags: ['trung-tam'],
+      },
+    ])
+
+    renderPage()
+
+    expect(await screen.findByText('Phòng trọ đẹp Quận 1')).toBeInTheDocument()
+    expect(screen.getByText('Phòng trọ đầy')).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'gia-re' }))
+
+    expect(screen.getByText('Phòng trọ đẹp Quận 1')).toBeInTheDocument()
+    expect(screen.queryByText('Phòng trọ đầy')).not.toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Tất cả' }))
+
+    expect(screen.getByText('Phòng trọ đẹp Quận 1')).toBeInTheDocument()
+    expect(screen.getByText('Phòng trọ đầy')).toBeInTheDocument()
   })
 })

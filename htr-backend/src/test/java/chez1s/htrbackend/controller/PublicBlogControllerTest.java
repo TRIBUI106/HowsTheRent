@@ -39,7 +39,7 @@ class PublicBlogControllerTest {
         BlogPostSummaryResponse summary = new BlogPostSummaryResponse(
                 UUID.randomUUID(), "phong-tro-dep", "Phòng trọ đẹp", null,
                 UUID.randomUUID(), "A1", "EMPTY",
-                UUID.randomUUID(), "Nhà trọ Xanh", "12 Lê Lợi", null);
+                UUID.randomUUID(), "Nhà trọ Xanh", "12 Lê Lợi", null, List.of());
         when(postService.listPublished()).thenReturn(List.of(summary));
 
         ResponseEntity<List<BlogPostSummaryResponse>> result = controller.list();
@@ -52,7 +52,7 @@ class PublicBlogControllerTest {
         BlogPostDetailResponse detail = new BlogPostDetailResponse(
                 UUID.randomUUID(), "phong-tro-dep", "Phòng trọ đẹp", "<p>Nội dung</p>", null,
                 UUID.randomUUID(), "A1", "EMPTY", null, null, null, List.of(),
-                UUID.randomUUID(), "Nhà trọ Xanh", "12 Lê Lợi", null, 0L, false);
+                UUID.randomUUID(), "Nhà trọ Xanh", "12 Lê Lợi", null, 0L, false, List.of());
         when(postService.getPublishedBySlug("phong-tro-dep", null)).thenReturn(detail);
 
         ResponseEntity<BlogPostDetailResponse> result = controller.getBySlug(null, "phong-tro-dep");
@@ -67,7 +67,7 @@ class PublicBlogControllerTest {
         BlogPostDetailResponse detail = new BlogPostDetailResponse(
                 UUID.randomUUID(), "phong-tro-dep", "Phòng trọ đẹp", "<p>Nội dung</p>", null,
                 UUID.randomUUID(), "A1", "EMPTY", null, null, null, List.of(),
-                UUID.randomUUID(), "Nhà trọ Xanh", "12 Lê Lợi", null, 1L, true);
+                UUID.randomUUID(), "Nhà trọ Xanh", "12 Lê Lợi", null, 1L, true, List.of());
         when(postService.getPublishedBySlug("phong-tro-dep", userId)).thenReturn(detail);
 
         ResponseEntity<BlogPostDetailResponse> result = controller.getBySlug(auth, "phong-tro-dep");

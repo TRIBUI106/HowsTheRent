@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -25,4 +26,6 @@ public class CreatePostRequest {
 
     /** Nullable — when set, the post auto-publishes at this time instead of staying a draft. */
     private LocalDateTime publishAt;
+
+    private List<String> tags;
 }

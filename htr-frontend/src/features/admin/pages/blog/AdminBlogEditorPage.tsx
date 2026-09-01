@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
-import { ImagePlus } from 'lucide-react'
+import { ImagePlus, X } from 'lucide-react'
 import { adminBlogApi, roomApi } from '@/api'
 import { useGuardedMutation } from '@/hooks/useGuardedMutation'
 import { showToast } from '@/lib/toast'
@@ -30,6 +30,8 @@ export default function AdminBlogEditorPage() {
   const [slug, setSlug] = useState('')
   const [coverImageUrl, setCoverImageUrl] = useState<string | null>(null)
   const [publishAt, setPublishAt] = useState('')
+  const [tags, setTags] = useState<string[]>([])
+  const [tagInput, setTagInput] = useState('')
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [isDragging, setIsDragging] = useState(false)
   const coverImageInputRef = useRef<HTMLInputElement>(null)
@@ -57,6 +59,7 @@ export default function AdminBlogEditorPage() {
       setCoverImageUrl(post.coverImageUrl)
       // datetime-local inputs take "YYYY-MM-DDTHH:mm" — strip seconds from the server's LocalDateTime string.
       setPublishAt(post.publishAt ? post.publishAt.slice(0, 16) : '')
+      setTags(post.tags ?? [])
       editor?.commands.setContent(post.content ?? '')
     }
   }, [post, editor])
@@ -76,6 +79,7 @@ export default function AdminBlogEditorPage() {
         // datetime-local gives "YYYY-MM-DDTHH:mm" with no seconds; the backend's
         // LocalDateTime deserializer expects "YYYY-MM-DDTHH:mm:ss".
         publishAt: publishAt ? `${publishAt}:00` : undefined,
+        tags,
       }
       return isCreating
         ? adminBlogApi.create({ roomId, ...payload })
@@ -113,6 +117,20 @@ export default function AdminBlogEditorPage() {
     },
     onError: (err: unknown) => showToast({ message: getErrorMessage(err, 'Tải ảnh bìa thất bại'), type: 'error' }),
   })
+
+  function addTag() {
+    const value = tagInput.trim()
+    if (!value || tags.includes(value)) {
+      setTagInput('')
+      return
+    }
+    setTags([...tags, value])
+    setTagInput('')
+  }
+
+  function removeTag(tag: string) {
+    setTags(tags.filter(t => t !== tag))
+  }
 
   function handleCoverImageFile(file: File) {
     if (!file.type.startsWith('image/') || file.size > MAX_COVER_IMAGE_BYTES) {
@@ -251,6 +269,41 @@ export default function AdminBlogEditorPage() {
           ) : (
             <p className="text-xs text-fg-muted">Lưu bản nháp trước để tải ảnh bìa riêng, hoặc dùng ảnh mặc định của phòng.</p>
           )}
+        </div>
+
+        <div>
+          <p className="mb-2 text-sm font-medium text-fg">Tags</p>
+          {tags.length > 0 && (
+            <div className="mb-2 flex flex-wrap gap-2">
+              {tags.map(tag => (
+                <span
+                  key={tag}
+                  className="inline-flex items-center gap-1 rounded-full bg-surface border border-border px-2.5 py-1 text-xs font-medium text-fg-muted"
+                >
+                  {tag}
+                  <button
+                    type="button"
+                    onClick={() => removeTag(tag)}
+                    aria-label={`Xóa tag ${tag}`}
+                    className="text-fg-subtle hover:text-fg transition-colors"
+                  >
+                    <X size={12} />
+                  </button>
+                </span>
+              ))}
+            </div>
+          )}
+          <Input
+            value={tagInput}
+            onChange={e => setTagInput(e.target.value)}
+            onKeyDown={e => {
+              if (e.key === 'Enter') {
+                e.preventDefault()
+                addTag()
+              }
+            }}
+            placeholder="Nhập tag rồi nhấn Enter"
+          />
         </div>
 
         <div>

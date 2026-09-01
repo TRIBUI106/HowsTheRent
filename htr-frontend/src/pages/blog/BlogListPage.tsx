@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { blogApi } from '@/api'
@@ -5,10 +6,14 @@ import PublicShell from '@/components/PublicShell'
 import { cn, statusColor, statusLabel } from '@/lib/utils'
 
 export default function BlogListPage() {
+  const [selectedTag, setSelectedTag] = useState<string | null>(null)
   const { data: posts, isLoading } = useQuery({
     queryKey: ['blog-posts'],
     queryFn: blogApi.list,
   })
+
+  const allTags = [...new Set(posts?.flatMap(p => p.tags) ?? [])]
+  const visiblePosts = selectedTag ? posts?.filter(p => p.tags.includes(selectedTag)) : posts
 
   return (
     <PublicShell>
@@ -18,8 +23,36 @@ export default function BlogListPage() {
 
         {isLoading && <p className="mt-10 text-sm text-fg-muted">Đang tải…</p>}
 
+        {allTags.length > 0 && (
+          <div className="mt-8 flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => setSelectedTag(null)}
+              className={cn(
+                'inline-flex items-center rounded-full px-3 py-1.5 text-xs font-medium transition-colors',
+                selectedTag === null ? 'bg-accent text-white' : 'bg-surface border border-border text-fg-muted'
+              )}
+            >
+              Tất cả
+            </button>
+            {allTags.map(tag => (
+              <button
+                key={tag}
+                type="button"
+                onClick={() => setSelectedTag(current => (current === tag ? null : tag))}
+                className={cn(
+                  'inline-flex items-center rounded-full px-3 py-1.5 text-xs font-medium transition-colors',
+                  selectedTag === tag ? 'bg-accent text-white' : 'bg-surface border border-border text-fg-muted'
+                )}
+              >
+                {tag}
+              </button>
+            ))}
+          </div>
+        )}
+
         <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {posts?.map(post => (
+          {visiblePosts?.map(post => (
             <Link
               key={post.id}
               to={`/blog/${post.slug}`}
@@ -39,6 +72,15 @@ export default function BlogListPage() {
                 >
                   Phòng {post.roomNumber} · {statusLabel(post.roomStatus)}
                 </span>
+                {post.tags.length > 0 && (
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    {post.tags.map(tag => (
+                      <span key={tag} className="inline-flex items-center rounded-full bg-sidebar px-2 py-0.5 text-[11px] font-medium text-fg-subtle">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
             </Link>
           ))}

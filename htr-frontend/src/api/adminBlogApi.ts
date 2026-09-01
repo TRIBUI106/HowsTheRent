@@ -31,6 +31,7 @@ export interface AdminPostDetail {
   authorName: string | null
   createdAt: string
   updatedAt: string
+  tags: string[]
 }
 
 export interface GeneratedDraft {
@@ -57,6 +58,7 @@ export interface CreatePostPayload {
   content?: string
   coverImageUrl?: string
   publishAt?: string | null
+  tags?: string[]
 }
 
 export interface UpdatePostPayload {
@@ -65,6 +67,7 @@ export interface UpdatePostPayload {
   content?: string
   coverImageUrl?: string
   publishAt?: string | null
+  tags?: string[]
 }
 
 export const adminBlogApi = {

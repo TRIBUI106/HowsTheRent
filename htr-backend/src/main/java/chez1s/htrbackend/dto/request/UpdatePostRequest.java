@@ -4,6 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 public class UpdatePostRequest {
@@ -20,4 +21,6 @@ public class UpdatePostRequest {
 
     /** Nullable — when set, the post auto-publishes at this time instead of staying a draft. */
     private LocalDateTime publishAt;
+
+    private List<String> tags;
 }
