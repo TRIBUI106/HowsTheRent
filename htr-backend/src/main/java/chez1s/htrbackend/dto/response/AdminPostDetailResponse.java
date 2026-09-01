@@ -36,7 +36,7 @@ public record AdminPostDetailResponse(
                 post.getTitle(),
                 post.getSlug(),
                 post.getContent(),
-                post.getCoverImageUrl(),
+                post.getEffectiveCoverImageUrl(),
                 post.isPublished(),
                 post.getPublishedAt(),
                 post.getAuthor() != null ? post.getAuthor().getId() : null,

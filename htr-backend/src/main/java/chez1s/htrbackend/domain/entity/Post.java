@@ -45,4 +45,15 @@ public class Post extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "author_id")
     private User author;
+
+    /**
+     * The cover image actually shown for this post: an explicitly-set
+     * {@link #coverImageUrl} wins, otherwise it falls back to the room's
+     * current first image. Unlike {@link #coverImageUrl}, this is never
+     * persisted, so it stays in sync when the room's photos change after
+     * the post was created — the stale-snapshot bug this replaces.
+     */
+    public String getEffectiveCoverImageUrl() {
+        return coverImageUrl != null ? coverImageUrl : room.getImages().stream().findFirst().orElse(null);
+    }
 }

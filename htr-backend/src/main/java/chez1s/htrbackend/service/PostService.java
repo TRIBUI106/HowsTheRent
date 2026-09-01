@@ -131,7 +131,7 @@ public class PostService {
         post.setRoom(room);
         post.setTitle(req.getTitle());
         post.setContent(req.getContent());
-        post.setCoverImageUrl(req.getCoverImageUrl() != null ? req.getCoverImageUrl() : resolveDefaultCoverImage(room));
+        post.setCoverImageUrl(req.getCoverImageUrl());
         post.setAuthor(author);
 
         String desiredSlug = req.getSlug() != null && !req.getSlug().isBlank()
@@ -151,7 +151,7 @@ public class PostService {
 
         post.setTitle(req.getTitle());
         post.setContent(req.getContent());
-        post.setCoverImageUrl(req.getCoverImageUrl() != null ? req.getCoverImageUrl() : resolveDefaultCoverImage(post.getRoom()));
+        post.setCoverImageUrl(req.getCoverImageUrl());
         post.setAuthor(author);
 
         String desiredSlug = req.getSlug() != null && !req.getSlug().isBlank()
@@ -195,7 +195,11 @@ public class PostService {
     public AdminPostDetailResponse uploadCoverImage(UUID postId, MultipartFile file) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new ResourceNotFoundException("Post", postId));
+        String previousCoverImageUrl = post.getCoverImageUrl();
         post.setCoverImageUrl(storageService.upload("blog/" + postId, file));
+        if (previousCoverImageUrl != null) {
+            storageService.delete(previousCoverImageUrl);
+        }
         return AdminPostDetailResponse.from(postRepository.save(post));
     }
 
@@ -309,7 +313,7 @@ public class PostService {
         Room room = post.getRoom();
         Property property = room.getProperty();
         return new BlogPostSummaryResponse(
-                post.getId(), post.getSlug(), post.getTitle(), post.getCoverImageUrl(),
+                post.getId(), post.getSlug(), post.getTitle(), post.getEffectiveCoverImageUrl(),
                 room.getId(), room.getRoomNumber(), room.getStatus().name(),
                 property.getId(), property.getName(), property.getAddress(),
                 post.getPublishedAt()
@@ -322,7 +326,7 @@ public class PostService {
         long likeCount = postLikeRepository.countByPostId(post.getId());
         boolean liked = viewerId != null && postLikeRepository.existsByPostIdAndUserId(post.getId(), viewerId);
         return new BlogPostDetailResponse(
-                post.getId(), post.getSlug(), post.getTitle(), post.getContent(), post.getCoverImageUrl(),
+                post.getId(), post.getSlug(), post.getTitle(), post.getContent(), post.getEffectiveCoverImageUrl(),
                 room.getId(), room.getRoomNumber(), room.getStatus().name(),
                 room.getDirection() != null ? room.getDirection().name() : null,
                 room.getAreaM2(), room.getMaxPeople(), room.getImages(),

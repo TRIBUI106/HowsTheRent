@@ -22,6 +22,7 @@ import chez1s.htrbackend.dto.response.PostCommentResponse;
 import chez1s.htrbackend.exception.ResourceNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -75,6 +76,21 @@ class PostServiceTest {
     }
 
     @Test
+    void listPublishedResolvesMissingCoverImageLiveFromRoomsCurrentImages() {
+        Property property = Property.builder().id(UUID.randomUUID()).name("Nhà trọ Xanh").address("12 Lê Lợi").build();
+        Room room = Room.builder().id(UUID.randomUUID()).roomNumber("A1").status(RoomStatus.EMPTY).property(property)
+                .images(new ArrayList<>(List.of("http://img/room-current.jpg"))).build();
+        // coverImageUrl deliberately left unset -- must resolve live, not from a stale snapshot
+        Post post = Post.builder().id(UUID.randomUUID()).room(room).title("Phòng trọ đẹp")
+                .slug("phong-tro-dep").published(true).build();
+        when(postRepository.findByPublishedTrueOrderByPublishedAtDesc()).thenReturn(List.of(post));
+
+        List<BlogPostSummaryResponse> result = postService.listPublished();
+
+        assertThat(result.get(0).coverImageUrl()).isEqualTo("http://img/room-current.jpg");
+    }
+
+    @Test
     void getPublishedBySlugReturnsDetailWithLikedFalseForAnonymousViewer() {
         Property property = Property.builder().id(UUID.randomUUID()).name("Nhà trọ Xanh").address("12 Lê Lợi").build();
         Room room = Room.builder().id(UUID.randomUUID()).roomNumber("A1").status(RoomStatus.EMPTY).property(property).build();
@@ -104,6 +120,20 @@ class PostServiceTest {
         BlogPostDetailResponse result = postService.getPublishedBySlug("phong-tro-dep", viewerId);
 
         assertThat(result.liked()).isTrue();
+    }
+
+    @Test
+    void getPublishedBySlugResolvesMissingCoverImageLiveFromRoomsCurrentImages() {
+        Property property = Property.builder().id(UUID.randomUUID()).name("Nhà trọ Xanh").address("12 Lê Lợi").build();
+        Room room = Room.builder().id(UUID.randomUUID()).roomNumber("A1").status(RoomStatus.EMPTY).property(property)
+                .images(new ArrayList<>(List.of("http://img/room-current.jpg"))).build();
+        Post post = Post.builder().id(UUID.randomUUID()).room(room).title("Phòng trọ đẹp")
+                .slug("phong-tro-dep").content("<p>Nội dung</p>").published(true).build();
+        when(postRepository.findBySlugAndPublishedTrue("phong-tro-dep")).thenReturn(Optional.of(post));
+
+        BlogPostDetailResponse result = postService.getPublishedBySlug("phong-tro-dep", null);
+
+        assertThat(result.coverImageUrl()).isEqualTo("http://img/room-current.jpg");
     }
 
     @Test
@@ -275,6 +305,53 @@ class PostServiceTest {
     }
 
     @Test
+    void createPostLeavesCoverImageUrlNullWhenNotExplicitlyProvidedSoItResolvesLiveFromRoom() {
+        UUID roomId = UUID.randomUUID();
+        UUID authorId = UUID.randomUUID();
+        Property property = Property.builder().id(UUID.randomUUID()).name("Nhà trọ Xanh").build();
+        Room room = Room.builder().id(roomId).roomNumber("A1").property(property)
+                .images(new ArrayList<>(List.of("http://img/room-current.jpg"))).build();
+        User author = User.builder().id(authorId).fullName("Admin A").build();
+        CreatePostRequest req = new CreatePostRequest();
+        req.setRoomId(roomId);
+        req.setTitle("Phòng Đẹp");
+        when(roomRepository.findById(roomId)).thenReturn(Optional.of(room));
+        when(userRepository.findById(authorId)).thenReturn(Optional.of(author));
+        when(postRepository.existsBySlug(anyString())).thenReturn(false);
+        ArgumentCaptor<Post> captor = ArgumentCaptor.forClass(Post.class);
+        when(postRepository.save(captor.capture())).thenAnswer(inv -> inv.getArgument(0));
+
+        AdminPostDetailResponse result = postService.createPost(roomId, req, authorId);
+
+        // the persisted field must stay null -- no snapshot taken at create time
+        assertThat(captor.getValue().getCoverImageUrl()).isNull();
+        // but the response still resolves it live from the room's current images
+        assertThat(result.coverImageUrl()).isEqualTo("http://img/room-current.jpg");
+    }
+
+    @Test
+    void createPostPersistsExplicitCoverImageUrlWhenProvided() {
+        UUID roomId = UUID.randomUUID();
+        UUID authorId = UUID.randomUUID();
+        Property property = Property.builder().id(UUID.randomUUID()).name("Nhà trọ Xanh").build();
+        Room room = Room.builder().id(roomId).roomNumber("A1").property(property)
+                .images(new ArrayList<>(List.of("http://img/room.jpg"))).build();
+        User author = User.builder().id(authorId).fullName("Admin A").build();
+        CreatePostRequest req = new CreatePostRequest();
+        req.setRoomId(roomId);
+        req.setTitle("Phòng Đẹp");
+        req.setCoverImageUrl("http://img/explicit.jpg");
+        when(roomRepository.findById(roomId)).thenReturn(Optional.of(room));
+        when(userRepository.findById(authorId)).thenReturn(Optional.of(author));
+        when(postRepository.existsBySlug(anyString())).thenReturn(false);
+        when(postRepository.save(any(Post.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        AdminPostDetailResponse result = postService.createPost(roomId, req, authorId);
+
+        assertThat(result.coverImageUrl()).isEqualTo("http://img/explicit.jpg");
+    }
+
+    @Test
     void createPostAllowsMultiplePostsOnSameRoom() {
         UUID roomId = UUID.randomUUID();
         UUID authorId = UUID.randomUUID();
@@ -321,6 +398,52 @@ class PostServiceTest {
         assertThat(result.slug()).isEqualTo("phong-moi");
         Mockito.verify(postRepository).existsBySlugAndIdNot("phong-moi", postId);
         Mockito.verify(postRepository, Mockito.never()).existsBySlug(anyString());
+    }
+
+    @Test
+    void updatePostLeavesCoverImageUrlNullWhenNotExplicitlyProvidedSoItResolvesLiveFromRoom() {
+        UUID postId = UUID.randomUUID();
+        UUID authorId = UUID.randomUUID();
+        Property property = Property.builder().id(UUID.randomUUID()).name("Nhà A").build();
+        Room room = Room.builder().id(UUID.randomUUID()).roomNumber("A1").property(property)
+                .images(new ArrayList<>(List.of("http://img/room-current.jpg"))).build();
+        // simulates a post whose cover was previously auto-derived and snapshotted by the old code
+        Post post = Post.builder().id(postId).room(room).title("Old").slug("old-slug")
+                .coverImageUrl("http://img/stale-snapshot.jpg").build();
+        User author = User.builder().id(authorId).fullName("Admin A").build();
+        UpdatePostRequest req = new UpdatePostRequest();
+        req.setTitle("Phòng Mới");
+        when(postRepository.findById(postId)).thenReturn(Optional.of(post));
+        when(userRepository.findById(authorId)).thenReturn(Optional.of(author));
+        when(postRepository.existsBySlugAndIdNot("phong-moi", postId)).thenReturn(false);
+        ArgumentCaptor<Post> captor = ArgumentCaptor.forClass(Post.class);
+        when(postRepository.save(captor.capture())).thenAnswer(inv -> inv.getArgument(0));
+
+        AdminPostDetailResponse result = postService.updatePost(postId, req, authorId);
+
+        assertThat(captor.getValue().getCoverImageUrl()).isNull();
+        assertThat(result.coverImageUrl()).isEqualTo("http://img/room-current.jpg");
+    }
+
+    @Test
+    void updatePostPersistsExplicitCoverImageUrlWhenProvided() {
+        UUID postId = UUID.randomUUID();
+        UUID authorId = UUID.randomUUID();
+        Property property = Property.builder().id(UUID.randomUUID()).name("Nhà A").build();
+        Room room = Room.builder().id(UUID.randomUUID()).roomNumber("A1").property(property).images(new ArrayList<>()).build();
+        Post post = Post.builder().id(postId).room(room).title("Old").slug("old-slug").build();
+        User author = User.builder().id(authorId).fullName("Admin A").build();
+        UpdatePostRequest req = new UpdatePostRequest();
+        req.setTitle("Phòng Mới");
+        req.setCoverImageUrl("http://img/explicit.jpg");
+        when(postRepository.findById(postId)).thenReturn(Optional.of(post));
+        when(userRepository.findById(authorId)).thenReturn(Optional.of(author));
+        when(postRepository.existsBySlugAndIdNot("phong-moi", postId)).thenReturn(false);
+        when(postRepository.save(any(Post.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        AdminPostDetailResponse result = postService.updatePost(postId, req, authorId);
+
+        assertThat(result.coverImageUrl()).isEqualTo("http://img/explicit.jpg");
     }
 
     @Test
@@ -406,6 +529,24 @@ class PostServiceTest {
         AdminPostDetailResponse result = postService.uploadCoverImage(postId, file);
 
         assertThat(result.coverImageUrl()).isEqualTo("http://storage/blog/cover.jpg");
+        Mockito.verify(storageService, Mockito.never()).delete(anyString());
+    }
+
+    @Test
+    void uploadCoverImageDeletesPreviousObjectWhenReplacingAnExistingCoverImage() {
+        UUID postId = UUID.randomUUID();
+        Property property = Property.builder().id(UUID.randomUUID()).name("Nhà A").build();
+        Room room = Room.builder().id(UUID.randomUUID()).roomNumber("A1").property(property).build();
+        Post post = Post.builder().id(postId).room(room).coverImageUrl("http://storage/blog/old.jpg").build();
+        MultipartFile file = new MockMultipartFile("file", "cover.jpg", "image/jpeg", new byte[]{1, 2, 3});
+        when(postRepository.findById(postId)).thenReturn(Optional.of(post));
+        when(storageService.upload("blog/" + postId, file)).thenReturn("http://storage/blog/new.jpg");
+        when(postRepository.save(post)).thenReturn(post);
+
+        AdminPostDetailResponse result = postService.uploadCoverImage(postId, file);
+
+        assertThat(result.coverImageUrl()).isEqualTo("http://storage/blog/new.jpg");
+        Mockito.verify(storageService).delete("http://storage/blog/old.jpg");
     }
 
     @Test
