@@ -17,9 +17,7 @@ import SlaConfigPage from '@/features/admin/pages/SlaConfigPage'
 import AdminBlogListPage from '@/features/admin/pages/blog/AdminBlogListPage'
 import AdminBlogEditorPage from '@/features/admin/pages/blog/AdminBlogEditorPage'
 import AdminBlogCommentsPage from '@/features/admin/pages/blog/AdminBlogCommentsPage'
-
-const ADMIN = ['ADMIN', 'PLATFORM_ADMIN', 'LANDLORD_ADMIN']
-const PLATFORM_ADMIN = ['ADMIN', 'PLATFORM_ADMIN']
+import { ADMIN_ROLES as ADMIN, PLATFORM_ADMIN_ROLES as PLATFORM_ADMIN } from './roles'
 
 const adminRoutes = [
   <Route key="/admin" path="/admin" element={<RequireRole roles={ADMIN}><AdminDashboard /></RequireRole>} />,
