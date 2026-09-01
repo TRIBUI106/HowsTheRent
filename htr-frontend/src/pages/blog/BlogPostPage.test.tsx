@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, waitFor, fireEvent } from '@testing-library/react'
+import { render, screen, waitFor, fireEvent, within } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { blogApi } from '@/api'
@@ -134,6 +134,84 @@ describe('BlogPostPage', () => {
 
     await waitFor(() => expect(blogApi.unlike).toHaveBeenCalledWith('phong-tro-dep'))
     expect(blogApi.like).not.toHaveBeenCalled()
+  })
+
+  it('flips the like button and count immediately, before the API call resolves', async () => {
+    let resolveLike!: (value: { liked: boolean; likeCount: number }) => void
+    vi.mocked(blogApi.like).mockReturnValue(new Promise(resolve => { resolveLike = resolve }))
+    renderAtSlug('phong-tro-dep')
+
+    fireEvent.click(await screen.findByRole('button', { name: /^♡ Thích · 3$/ }))
+
+    // Optimistic update lands synchronously via onMutate, ahead of the pending mock promise.
+    expect(await screen.findByRole('button', { name: /^♥ Đã thích · 4$/ })).toBeInTheDocument()
+
+    resolveLike({ liked: true, likeCount: 4 })
+    await waitFor(() => expect(blogApi.like).toHaveBeenCalledWith('phong-tro-dep'))
+  })
+
+  it('rolls back the like button and count if the API call fails', async () => {
+    let rejectLike!: (err: unknown) => void
+    vi.mocked(blogApi.like).mockReturnValue(new Promise((_resolve, reject) => { rejectLike = reject }))
+    renderAtSlug('phong-tro-dep')
+
+    fireEvent.click(await screen.findByRole('button', { name: /^♡ Thích · 3$/ }))
+    expect(await screen.findByRole('button', { name: /^♥ Đã thích · 4$/ })).toBeInTheDocument()
+
+    rejectLike(new Error('boom'))
+    expect(await screen.findByRole('button', { name: /^♡ Thích · 3$/ })).toBeInTheDocument()
+  })
+
+  it('shows a new comment immediately, dimmed, before the API call resolves, then undims it', async () => {
+    useAuthStore.setState({
+      user: { id: 'u1', fullName: 'Khách A', email: 'a@example.com', role: 'GUEST', active: true },
+    })
+    let resolveAddComment!: (value: { id: string; content: string; userId: string; userName: string; createdAt: string }) => void
+    vi.mocked(blogApi.addComment).mockReturnValue(new Promise(resolve => { resolveAddComment = resolve }))
+    renderAtSlug('phong-tro-dep')
+
+    const textarea = await screen.findByPlaceholderText('Viết bình luận…')
+    fireEvent.change(textarea, { target: { value: 'Rất đẹp' } })
+    fireEvent.click(screen.getByRole('button', { name: /gửi bình luận/i }))
+
+    // Optimistic entry appears immediately, dimmed, and the textarea clears right away.
+    // Query within the comment list (not the whole document) — a <textarea>'s live
+    // value is itself text-matchable in jsdom, so an unscoped query can spuriously
+    // match the textarea instead of/alongside the rendered comment.
+    const list = screen.getByRole('list')
+    const optimisticComment = await within(list).findByText('Rất đẹp')
+    expect(optimisticComment.closest('li')).toHaveClass('opacity-50')
+    expect(textarea).toHaveValue('')
+
+    const saved = { id: 'c1', content: 'Rất đẹp', userId: 'u1', userName: 'Khách A', createdAt: '2026-09-01T00:00:00Z' }
+    vi.mocked(blogApi.listComments).mockResolvedValue([saved])
+    resolveAddComment(saved)
+
+    // The invalidate-driven refetch replaces the temp entry with the confirmed (undimmed) one.
+    await waitFor(() => expect(within(list).getByText('Rất đẹp').closest('li')).not.toHaveClass('opacity-50'))
+  })
+
+  it('removes the optimistic comment and restores the typed text if the API call fails', async () => {
+    useAuthStore.setState({
+      user: { id: 'u1', fullName: 'Khách A', email: 'a@example.com', role: 'GUEST', active: true },
+    })
+    let rejectAddComment!: (err: unknown) => void
+    vi.mocked(blogApi.addComment).mockReturnValue(new Promise((_resolve, reject) => { rejectAddComment = reject }))
+    renderAtSlug('phong-tro-dep')
+
+    const textarea = await screen.findByPlaceholderText('Viết bình luận…')
+    fireEvent.change(textarea, { target: { value: 'Rất đẹp' } })
+    fireEvent.click(screen.getByRole('button', { name: /gửi bình luận/i }))
+
+    // Scoped to the list, as above — after rollback the textarea's own restored value
+    // would otherwise be a false-positive match for an unscoped text query.
+    const list = screen.getByRole('list')
+    await within(list).findByText('Rất đẹp')
+
+    rejectAddComment(new Error('boom'))
+
+    await waitFor(() => expect(within(list).queryByText('Rất đẹp')).not.toBeInTheDocument())
+    expect(textarea).toHaveValue('Rất đẹp')
   })
 
   function countImagesWithSrc(src: string) {

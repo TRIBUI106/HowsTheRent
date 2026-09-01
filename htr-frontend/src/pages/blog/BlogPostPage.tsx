@@ -1,17 +1,19 @@
 import { useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { blogApi } from '@/api'
+import { blogApi, type BlogPostDetail, type PostComment } from '@/api'
 import { useAuthStore } from '@/stores/authStore'
 import { useGuardedMutation } from '@/hooks/useGuardedMutation'
 import { useDocumentMeta } from '@/hooks/useDocumentMeta'
 import { showToast } from '@/lib/toast'
 import { getErrorMessage } from '@/lib/apiError'
-import { directionLabel, statusColor, statusLabel } from '@/lib/utils'
+import { cn, directionLabel, statusColor, statusLabel } from '@/lib/utils'
 import PublicShell from '@/components/PublicShell'
 import { Button } from '@/components/ui/button'
 import { Dialog } from '@/components/ui/dialog'
 import { ImageWithSkeleton } from '@/components/ui/image-with-skeleton'
+
+type OptimisticComment = PostComment & { pending?: boolean }
 
 export default function BlogPostPage() {
   const { slug = '' } = useParams<{ slug: string }>()
@@ -38,7 +40,7 @@ export default function BlogPostPage() {
     enabled: !!post,
   })
 
-  const { data: comments } = useQuery({
+  const { data: comments } = useQuery<OptimisticComment[]>({
     queryKey: ['blog-post-comments', slug],
     queryFn: () => blogApi.listComments(slug),
     enabled: !!slug,
@@ -51,17 +53,51 @@ export default function BlogPostPage() {
 
   const addComment = useGuardedMutation({
     mutationFn: (content: string) => blogApi.addComment(slug, content),
-    onSuccess: () => {
+    onMutate: async (content: string) => {
+      await qc.cancelQueries({ queryKey: ['blog-post-comments', slug] })
+      const previous = qc.getQueryData<OptimisticComment[]>(['blog-post-comments', slug])
+      const tempId = `temp-${Date.now()}`
+      const optimisticComment: OptimisticComment = {
+        id: tempId,
+        content,
+        userId: user?.id ?? '',
+        userName: user?.fullName ?? '',
+        createdAt: new Date().toISOString(),
+        pending: true,
+      }
+      qc.setQueryData<OptimisticComment[]>(['blog-post-comments', slug], old => [...(old ?? []), optimisticComment])
       setCommentText('')
+      return { previous, tempId }
+    },
+    onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['blog-post-comments', slug] })
     },
-    onError: (err: unknown) => showToast({ message: getErrorMessage(err, 'Gửi bình luận thất bại'), type: 'error' }),
+    onError: (err: unknown, content, context) => {
+      qc.setQueryData(['blog-post-comments', slug], context?.previous)
+      setCommentText(content)
+      showToast({ message: getErrorMessage(err, 'Gửi bình luận thất bại'), type: 'error' })
+    },
   })
 
   const toggleLike = useGuardedMutation({
     mutationFn: () => (post?.liked ? blogApi.unlike(slug) : blogApi.like(slug)),
+    onMutate: async () => {
+      await qc.cancelQueries({ queryKey: ['blog-post', slug] })
+      const previous = qc.getQueryData<BlogPostDetail>(['blog-post', slug])
+      if (previous) {
+        qc.setQueryData<BlogPostDetail>(['blog-post', slug], {
+          ...previous,
+          liked: !previous.liked,
+          likeCount: previous.likeCount + (previous.liked ? -1 : 1),
+        })
+      }
+      return { previous }
+    },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['blog-post', slug] }),
-    onError: (err: unknown) => showToast({ message: getErrorMessage(err, 'Không thể cập nhật lượt thích'), type: 'error' }),
+    onError: (err: unknown, _vars, context) => {
+      qc.setQueryData(['blog-post', slug], context?.previous)
+      showToast({ message: getErrorMessage(err, 'Không thể cập nhật lượt thích'), type: 'error' })
+    },
   })
 
   if (!post) {
@@ -92,9 +128,9 @@ export default function BlogPostPage() {
               <ul className="mt-3 divide-y divide-border">
                 {relatedPosts.map(related => (
                   <li key={related.id} className="py-3 first:pt-0 last:pb-0">
-                    <Link to={`/blog/${related.slug}`} className="block hover:text-accent">
+                    <Link to={`/blog/${related.slug}`} className="group block hover:text-accent">
                       <p className="text-sm font-medium text-fg">{related.title}</p>
-                      <p className="mt-1 text-xs text-fg-muted">Phòng {related.roomNumber} · {statusLabel(related.roomStatus)}</p>
+                      <p className="mt-1 text-xs text-fg-muted transition-colors group-hover:text-accent">Phòng {related.roomNumber} · {statusLabel(related.roomStatus)}</p>
                     </Link>
                   </li>
                 ))}
@@ -126,7 +162,7 @@ export default function BlogPostPage() {
               type="button"
               variant={post.liked ? 'primary' : 'secondary'}
               onClick={() => toggleLike.mutate(undefined)}
-              loading={toggleLike.isPending}
+              className={toggleLike.isPending ? 'opacity-70' : undefined}
             >
               {post.liked ? '♥ Đã thích' : '♡ Thích'} · {post.likeCount}
             </Button>
@@ -137,7 +173,10 @@ export default function BlogPostPage() {
 
             <ul className="mt-4 space-y-4">
               {comments?.map(comment => (
-                <li key={comment.id} className="rounded-xl border border-border bg-surface p-4">
+                <li
+                  key={comment.id}
+                  className={cn('rounded-xl border border-border bg-surface p-4', comment.pending && 'opacity-50')}
+                >
                   <p className="text-sm font-medium text-fg">{comment.userName}</p>
                   <p className="mt-1 text-sm text-fg-muted">{comment.content}</p>
                 </li>
