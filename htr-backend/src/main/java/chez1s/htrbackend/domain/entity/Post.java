@@ -42,6 +42,9 @@ public class Post extends BaseEntity {
     @Column(name = "published_at")
     private LocalDateTime publishedAt;
 
+    @Column(name = "publish_at")
+    private LocalDateTime publishAt;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "author_id")
     private User author;

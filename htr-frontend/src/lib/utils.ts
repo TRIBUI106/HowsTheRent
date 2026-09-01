@@ -65,6 +65,19 @@ export function formatDate(dateStr?: string | null): string {
   }).format(date)
 }
 
+export function formatDateTime(dateStr?: string | null): string {
+  if (!dateStr) return '-'
+  const date = new Date(dateStr)
+  if (Number.isNaN(date.getTime())) return '-'
+  return new Intl.DateTimeFormat('vi-VN', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(date)
+}
+
 export function formatMonth(dateStr?: string | null): string {
   if (!dateStr) return '-'
   const datePart = dateStr.slice(0, 10)
@@ -171,11 +184,12 @@ export function directionLabel(direction?: string | null): string {
   return direction ? (map[direction] ?? direction) : '—'
 }
 
-export function postStatusLabel(status: 'PUBLISHED' | 'DRAFT' | 'NONE'): string {
+export function postStatusLabel(status: 'PUBLISHED' | 'DRAFT' | 'NONE' | 'SCHEDULED'): string {
   const map: Record<string, string> = {
     PUBLISHED: 'Đã xuất bản',
     DRAFT: 'Bản nháp',
     NONE: 'Chưa có bài viết',
+    SCHEDULED: 'Đã lên lịch',
   }
   return map[status] ?? status
 }

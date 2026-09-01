@@ -73,7 +73,8 @@ public class PostService {
                             post.getId(), room.getId(), room.getRoomNumber(),
                             property.getId(), property.getName(),
                             post.getTitle(), post.getSlug(), post.isPublished(),
-                            postLikeRepository.countByPostId(post.getId()), post.getUpdatedAt()
+                            postLikeRepository.countByPostId(post.getId()), post.getUpdatedAt(),
+                            post.getPublishAt()
                     );
                 })
                 .toList();
@@ -134,6 +135,7 @@ public class PostService {
         post.setContent(req.getContent());
         post.setCoverImageUrl(req.getCoverImageUrl());
         post.setAuthor(author);
+        post.setPublishAt(req.getPublishAt());
 
         String desiredSlug = req.getSlug() != null && !req.getSlug().isBlank()
                 ? slugify(req.getSlug())
@@ -154,6 +156,7 @@ public class PostService {
         post.setContent(req.getContent());
         post.setCoverImageUrl(req.getCoverImageUrl());
         post.setAuthor(author);
+        post.setPublishAt(req.getPublishAt());
 
         String desiredSlug = req.getSlug() != null && !req.getSlug().isBlank()
                 ? slugify(req.getSlug())

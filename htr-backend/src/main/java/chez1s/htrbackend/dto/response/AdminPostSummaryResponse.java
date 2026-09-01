@@ -13,6 +13,7 @@ public record AdminPostSummaryResponse(
         String slug,
         boolean published,
         long likeCount,
-        LocalDateTime updatedAt
+        LocalDateTime updatedAt,
+        LocalDateTime publishAt
 ) {
 }

@@ -93,8 +93,35 @@ describe('AdminBlogEditorPage', () => {
     fireEvent.click(screen.getByRole('button', { name: /lưu bài viết/i }))
 
     await waitFor(() => expect(adminBlogApi.update).toHaveBeenCalledWith('post-1', {
-      title: 'Bài viết mới', slug: 'bai-viet-cu', content: '<p>Nội dung</p>', coverImageUrl: undefined,
+      title: 'Bài viết mới', slug: 'bai-viet-cu', content: '<p>Nội dung</p>', coverImageUrl: undefined, publishAt: undefined,
     }))
+  })
+
+  it('shows the schedule input for an unpublished post and sends the scheduled time on save', async () => {
+    vi.mocked(adminBlogApi.get).mockResolvedValue(editPost)
+    vi.mocked(adminBlogApi.update).mockResolvedValue(editPost)
+
+    renderAtPath('/admin/blog/post-1')
+    await screen.findByDisplayValue('Bài viết cũ')
+
+    const scheduleInput = screen.getByLabelText(/lên lịch xuất bản/i)
+    fireEvent.change(scheduleInput, { target: { value: '2026-12-01T10:00' } })
+    expect(screen.getByText(/sẽ tự động xuất bản lúc/i)).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: /lưu bài viết/i }))
+
+    await waitFor(() => expect(adminBlogApi.update).toHaveBeenCalledWith('post-1', {
+      title: 'Bài viết cũ', slug: 'bai-viet-cu', content: '<p>Nội dung</p>', coverImageUrl: undefined, publishAt: '2026-12-01T10:00:00',
+    }))
+  })
+
+  it('hides the schedule input once a post is published', async () => {
+    vi.mocked(adminBlogApi.get).mockResolvedValue({ ...editPost, published: true })
+
+    renderAtPath('/admin/blog/post-1')
+    await screen.findByDisplayValue('Bài viết cũ')
+
+    expect(screen.queryByLabelText(/lên lịch xuất bản/i)).not.toBeInTheDocument()
   })
 
   it('labels a vacant room with a Trống suffix, leaving other statuses unchanged', async () => {

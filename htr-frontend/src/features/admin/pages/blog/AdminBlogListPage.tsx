@@ -84,7 +84,9 @@ export default function AdminBlogListPage() {
                       {post.title}
                     </Link>
                   </td>
-                  <td className="px-4 py-3 text-fg-muted">{postStatusLabel(post.published ? 'PUBLISHED' : 'DRAFT')}</td>
+                  <td className="px-4 py-3 text-fg-muted">
+                    {postStatusLabel(post.published ? 'PUBLISHED' : post.publishAt ? 'SCHEDULED' : 'DRAFT')}
+                  </td>
                   <td className="px-4 py-3 text-fg-muted">
                     <span className="inline-flex items-center gap-1">
                       <Heart size={14} />

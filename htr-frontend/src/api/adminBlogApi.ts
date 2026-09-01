@@ -11,6 +11,7 @@ export interface AdminPostSummary {
   published: boolean
   likeCount: number
   updatedAt: string | null
+  publishAt?: string | null
 }
 
 export interface AdminPostDetail {
@@ -25,6 +26,7 @@ export interface AdminPostDetail {
   coverImageUrl: string | null
   published: boolean
   publishedAt: string | null
+  publishAt?: string | null
   authorId: string | null
   authorName: string | null
   createdAt: string
@@ -54,6 +56,7 @@ export interface CreatePostPayload {
   slug?: string
   content?: string
   coverImageUrl?: string
+  publishAt?: string | null
 }
 
 export interface UpdatePostPayload {
@@ -61,6 +64,7 @@ export interface UpdatePostPayload {
   slug?: string
   content?: string
   coverImageUrl?: string
+  publishAt?: string | null
 }
 
 export const adminBlogApi = {

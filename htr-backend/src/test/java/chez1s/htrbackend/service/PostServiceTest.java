@@ -383,6 +383,28 @@ class PostServiceTest {
     }
 
     @Test
+    void createPostPersistsPublishAtWhenProvided() {
+        UUID roomId = UUID.randomUUID();
+        UUID authorId = UUID.randomUUID();
+        Property property = Property.builder().id(UUID.randomUUID()).name("Nhà trọ Xanh").build();
+        Room room = Room.builder().id(roomId).roomNumber("A1").property(property).images(new ArrayList<>()).build();
+        User author = User.builder().id(authorId).fullName("Admin A").build();
+        LocalDateTime publishAt = LocalDateTime.now().plusDays(1);
+        CreatePostRequest req = new CreatePostRequest();
+        req.setRoomId(roomId);
+        req.setTitle("Phòng Đẹp");
+        req.setPublishAt(publishAt);
+        when(roomRepository.findById(roomId)).thenReturn(Optional.of(room));
+        when(userRepository.findById(authorId)).thenReturn(Optional.of(author));
+        when(postRepository.existsBySlug(anyString())).thenReturn(false);
+        when(postRepository.save(any(Post.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        AdminPostDetailResponse result = postService.createPost(roomId, req, authorId);
+
+        assertThat(result.publishAt()).isEqualTo(publishAt);
+    }
+
+    @Test
     void updatePostRegeneratesSlugExcludingSelf() {
         UUID postId = UUID.randomUUID();
         UUID authorId = UUID.randomUUID();
@@ -448,6 +470,28 @@ class PostServiceTest {
         AdminPostDetailResponse result = postService.updatePost(postId, req, authorId);
 
         assertThat(result.coverImageUrl()).isEqualTo("http://img/explicit.jpg");
+    }
+
+    @Test
+    void updatePostPersistsPublishAtWhenProvided() {
+        UUID postId = UUID.randomUUID();
+        UUID authorId = UUID.randomUUID();
+        Property property = Property.builder().id(UUID.randomUUID()).name("Nhà A").build();
+        Room room = Room.builder().id(UUID.randomUUID()).roomNumber("A1").property(property).images(new ArrayList<>()).build();
+        Post post = Post.builder().id(postId).room(room).title("Old").slug("old-slug").build();
+        User author = User.builder().id(authorId).fullName("Admin A").build();
+        LocalDateTime publishAt = LocalDateTime.now().plusDays(2);
+        UpdatePostRequest req = new UpdatePostRequest();
+        req.setTitle("Phòng Mới");
+        req.setPublishAt(publishAt);
+        when(postRepository.findById(postId)).thenReturn(Optional.of(post));
+        when(userRepository.findById(authorId)).thenReturn(Optional.of(author));
+        when(postRepository.existsBySlugAndIdNot("phong-moi", postId)).thenReturn(false);
+        when(postRepository.save(any(Post.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        AdminPostDetailResponse result = postService.updatePost(postId, req, authorId);
+
+        assertThat(result.publishAt()).isEqualTo(publishAt);
     }
 
     @Test

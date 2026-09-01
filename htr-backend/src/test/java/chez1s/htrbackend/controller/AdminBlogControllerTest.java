@@ -62,7 +62,7 @@ class AdminBlogControllerTest {
     void listAllDelegatesToService() {
         AdminPostSummaryResponse row = new AdminPostSummaryResponse(
                 UUID.randomUUID(), UUID.randomUUID(), "A1", UUID.randomUUID(), "Nhà A",
-                "Bài viết A", "bai-viet-a", false, 0L, null);
+                "Bài viết A", "bai-viet-a", false, 0L, null, null);
         when(postService.listAllForAdmin()).thenReturn(List.of(row));
 
         ResponseEntity<List<AdminPostSummaryResponse>> result = controller.listAll();
@@ -79,7 +79,7 @@ class AdminBlogControllerTest {
         req.setRoomId(roomId);
         req.setTitle("Bài viết A");
         AdminPostDetailResponse detail = new AdminPostDetailResponse(UUID.randomUUID(), roomId, "A1", UUID.randomUUID(), "Nhà A",
-                "Bài viết A", "bai-viet-a", null, null, false, null, authorId, "Admin A", null, null);
+                "Bài viết A", "bai-viet-a", null, null, false, null, null, authorId, "Admin A", null, null);
         when(postService.createPost(roomId, req, authorId)).thenReturn(detail);
 
         ResponseEntity<AdminPostDetailResponse> result = controller.create(auth, req);
@@ -92,7 +92,7 @@ class AdminBlogControllerTest {
     void getDelegatesToService() {
         UUID postId = UUID.randomUUID();
         AdminPostDetailResponse detail = new AdminPostDetailResponse(postId, UUID.randomUUID(), "A1", UUID.randomUUID(), "Nhà A",
-                "Bài viết A", "bai-viet-a", "<p>...</p>", null, false, null, null, null, null, null);
+                "Bài viết A", "bai-viet-a", "<p>...</p>", null, false, null, null, null, null, null, null);
         when(postService.getForAdmin(postId)).thenReturn(detail);
 
         ResponseEntity<AdminPostDetailResponse> result = controller.get(postId);
@@ -108,7 +108,7 @@ class AdminBlogControllerTest {
         UpdatePostRequest req = new UpdatePostRequest();
         req.setTitle("Bài viết A");
         AdminPostDetailResponse detail = new AdminPostDetailResponse(postId, UUID.randomUUID(), "A1", UUID.randomUUID(), "Nhà A",
-                "Bài viết A", "bai-viet-a", null, null, false, null, authorId, "Admin A", null, null);
+                "Bài viết A", "bai-viet-a", null, null, false, null, null, authorId, "Admin A", null, null);
         when(postService.updatePost(postId, req, authorId)).thenReturn(detail);
 
         ResponseEntity<AdminPostDetailResponse> result = controller.update(auth, postId, req);
@@ -131,7 +131,7 @@ class AdminBlogControllerTest {
         UUID postId = UUID.randomUUID();
         MultipartFile file = new MockMultipartFile("file", "cover.jpg", "image/jpeg", new byte[]{1, 2, 3});
         AdminPostDetailResponse detail = new AdminPostDetailResponse(postId, UUID.randomUUID(), "A1", UUID.randomUUID(), "Nhà A",
-                "Bài viết A", "bai-viet-a", null, "http://storage/blog/cover.jpg", false, null, null, null, null, null);
+                "Bài viết A", "bai-viet-a", null, "http://storage/blog/cover.jpg", false, null, null, null, null, null, null);
         when(postService.uploadCoverImage(postId, file)).thenReturn(detail);
 
         ResponseEntity<AdminPostDetailResponse> result = controller.uploadCoverImage(postId, file);
@@ -143,7 +143,7 @@ class AdminBlogControllerTest {
     void publishDelegatesToService() {
         UUID postId = UUID.randomUUID();
         AdminPostDetailResponse detail = new AdminPostDetailResponse(postId, UUID.randomUUID(), "A1", UUID.randomUUID(), "Nhà A",
-                "Bài viết A", "bai-viet-a", null, null, true, null, null, null, null, null);
+                "Bài viết A", "bai-viet-a", null, null, true, null, null, null, null, null, null);
         when(postService.publish(postId)).thenReturn(detail);
 
         ResponseEntity<AdminPostDetailResponse> result = controller.publish(postId);
@@ -155,7 +155,7 @@ class AdminBlogControllerTest {
     void unpublishDelegatesToService() {
         UUID postId = UUID.randomUUID();
         AdminPostDetailResponse detail = new AdminPostDetailResponse(postId, UUID.randomUUID(), "A1", UUID.randomUUID(), "Nhà A",
-                "Bài viết A", "bai-viet-a", null, null, false, null, null, null, null, null);
+                "Bài viết A", "bai-viet-a", null, null, false, null, null, null, null, null, null);
         when(postService.unpublish(postId)).thenReturn(detail);
 
         ResponseEntity<AdminPostDetailResponse> result = controller.unpublish(postId);

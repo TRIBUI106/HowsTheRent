@@ -8,7 +8,7 @@ import { adminBlogApi, roomApi } from '@/api'
 import { useGuardedMutation } from '@/hooks/useGuardedMutation'
 import { showToast } from '@/lib/toast'
 import { getErrorMessage } from '@/lib/apiError'
-import { cn, statusLabel } from '@/lib/utils'
+import { cn, formatDateTime, statusLabel } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Dialog } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
@@ -29,6 +29,7 @@ export default function AdminBlogEditorPage() {
   const [title, setTitle] = useState('')
   const [slug, setSlug] = useState('')
   const [coverImageUrl, setCoverImageUrl] = useState<string | null>(null)
+  const [publishAt, setPublishAt] = useState('')
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [isDragging, setIsDragging] = useState(false)
   const coverImageInputRef = useRef<HTMLInputElement>(null)
@@ -54,6 +55,8 @@ export default function AdminBlogEditorPage() {
       setTitle(post.title)
       setSlug(post.slug)
       setCoverImageUrl(post.coverImageUrl)
+      // datetime-local inputs take "YYYY-MM-DDTHH:mm" — strip seconds from the server's LocalDateTime string.
+      setPublishAt(post.publishAt ? post.publishAt.slice(0, 16) : '')
       editor?.commands.setContent(post.content ?? '')
     }
   }, [post, editor])
@@ -70,6 +73,9 @@ export default function AdminBlogEditorPage() {
         slug: slug || undefined,
         content: editor?.getHTML() ?? '',
         coverImageUrl: coverImageUrl ?? undefined,
+        // datetime-local gives "YYYY-MM-DDTHH:mm" with no seconds; the backend's
+        // LocalDateTime deserializer expects "YYYY-MM-DDTHH:mm:ss".
+        publishAt: publishAt ? `${publishAt}:00` : undefined,
       }
       return isCreating
         ? adminBlogApi.create({ roomId, ...payload })
@@ -176,6 +182,21 @@ export default function AdminBlogEditorPage() {
       <div className="mt-6 space-y-5">
         <Input label="Tiêu đề" value={title} onChange={e => setTitle(e.target.value)} required />
         <Input label="Đường dẫn (slug)" value={slug} onChange={e => setSlug(e.target.value)} hint="Để trống để tự tạo từ tiêu đề" />
+
+        {!post?.published && (
+          <div>
+            <Input
+              type="datetime-local"
+              label="Lên lịch xuất bản"
+              value={publishAt}
+              onChange={e => setPublishAt(e.target.value)}
+              hint="Để trống nếu xuất bản ngay"
+            />
+            {publishAt && (
+              <p className="mt-1 text-xs text-fg-subtle">Sẽ tự động xuất bản lúc {formatDateTime(`${publishAt}:00`)}</p>
+            )}
+          </div>
+        )}
 
         <div>
           <p className="mb-2 text-sm font-medium text-fg">Ảnh bìa</p>

@@ -34,6 +34,7 @@ describe('AdminBlogListPage', () => {
     vi.mocked(adminBlogApi.listAll).mockResolvedValue([
       { postId: '1', roomId: 'r1', roomNumber: 'A101', propertyId: 'p1', propertyName: 'Nhà A', title: 'Bài A', slug: 'bai-a', published: true, likeCount: 5, updatedAt: null },
       { postId: '2', roomId: 'r1', roomNumber: 'A101', propertyId: 'p1', propertyName: 'Nhà A', title: 'Bài B', slug: 'bai-b', published: false, likeCount: 0, updatedAt: null },
+      { postId: '3', roomId: 'r1', roomNumber: 'A101', propertyId: 'p1', propertyName: 'Nhà A', title: 'Bài C', slug: 'bai-c', published: false, likeCount: 0, updatedAt: null, publishAt: '2026-12-01T10:00:00' },
     ])
   })
 
@@ -42,10 +43,17 @@ describe('AdminBlogListPage', () => {
 
     expect(await screen.findByText('Bài A')).toBeInTheDocument()
     expect(screen.getByText('Bài B')).toBeInTheDocument()
-    expect(screen.getAllByText('A101')).toHaveLength(2)
+    expect(screen.getAllByText('A101')).toHaveLength(3)
     expect(screen.getByText('Đã xuất bản')).toBeInTheDocument()
     expect(screen.getByText('Bản nháp')).toBeInTheDocument()
     expect(screen.getByText('5')).toBeInTheDocument()
+  })
+
+  it('shows a scheduled post as "Đã lên lịch" rather than a plain draft', async () => {
+    renderPage()
+
+    expect(await screen.findByText('Bài C')).toBeInTheDocument()
+    expect(screen.getByText('Đã lên lịch')).toBeInTheDocument()
   })
 
   it('deletes a post only after confirmation', async () => {
