@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
+import { Eye, EyeOff, Pencil, Trash2 } from 'lucide-react'
 import { adminBlogApi } from '@/api'
 import { formatDate, postStatusLabel } from '@/lib/utils'
 import { useGuardedMutation } from '@/hooks/useGuardedMutation'
@@ -90,17 +91,28 @@ export default function AdminBlogListPage() {
                         type="button"
                         onClick={() => togglePublish.mutate(post)}
                         disabled={togglePublish.isPending}
-                        className="font-medium text-accent hover:text-accent-hover disabled:opacity-50"
+                        aria-label={post.published ? 'Gỡ xuất bản' : 'Xuất bản'}
+                        title={post.published ? 'Gỡ xuất bản' : 'Xuất bản'}
+                        className="text-accent hover:text-accent-hover disabled:opacity-50"
                       >
-                        {post.published ? 'Gỡ xuất bản' : 'Xuất bản'}
+                        {post.published ? <EyeOff size={16} /> : <Eye size={16} />}
                       </button>
-                      <Link to={`/admin/blog/${post.postId}`} className="font-medium text-accent hover:text-accent-hover">Sửa</Link>
+                      <Link
+                        to={`/admin/blog/${post.postId}`}
+                        aria-label="Sửa"
+                        title="Sửa"
+                        className="text-accent hover:text-accent-hover"
+                      >
+                        <Pencil size={16} />
+                      </Link>
                       <button
                         type="button"
                         onClick={() => setDeletingPostId(post.postId)}
-                        className="font-medium text-error hover:text-error-hover"
+                        aria-label="Xóa"
+                        title="Xóa"
+                        className="text-error hover:text-error-hover"
                       >
-                        Xóa
+                        <Trash2 size={16} />
                       </button>
                     </div>
                   </td>
