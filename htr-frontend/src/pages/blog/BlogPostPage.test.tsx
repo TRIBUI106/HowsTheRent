@@ -135,4 +135,30 @@ describe('BlogPostPage', () => {
     await waitFor(() => expect(blogApi.unlike).toHaveBeenCalledWith('phong-tro-dep'))
     expect(blogApi.like).not.toHaveBeenCalled()
   })
+
+  function countImagesWithSrc(src: string) {
+    return screen.queryAllByAltText('').filter(img => (img as HTMLImageElement).src === src).length
+  }
+
+  it('opens a lightbox with the full-size image when a room thumbnail is clicked', async () => {
+    renderAtSlug('phong-tro-dep')
+
+    await screen.findByRole('button', { name: /xem ảnh phòng lớn hơn/i })
+    expect(countImagesWithSrc(post.roomImages[0])).toBe(1) // just the thumbnail
+
+    fireEvent.click(screen.getByRole('button', { name: /xem ảnh phòng lớn hơn/i }))
+
+    await waitFor(() => expect(countImagesWithSrc(post.roomImages[0])).toBe(2)) // thumbnail + lightbox
+  })
+
+  it('closes the lightbox when the close button is clicked', async () => {
+    renderAtSlug('phong-tro-dep')
+
+    fireEvent.click(await screen.findByRole('button', { name: /xem ảnh phòng lớn hơn/i }))
+    expect(await screen.findByRole('button', { name: 'Đóng' })).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Đóng' }))
+
+    expect(countImagesWithSrc(post.roomImages[0])).toBe(1) // back to just the thumbnail
+  })
 })

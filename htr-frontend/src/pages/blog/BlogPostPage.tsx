@@ -10,6 +10,7 @@ import { getErrorMessage } from '@/lib/apiError'
 import { directionLabel, statusColor, statusLabel } from '@/lib/utils'
 import PublicShell from '@/components/PublicShell'
 import { Button } from '@/components/ui/button'
+import { Dialog } from '@/components/ui/dialog'
 import { ImageWithSkeleton } from '@/components/ui/image-with-skeleton'
 
 export default function BlogPostPage() {
@@ -17,6 +18,7 @@ export default function BlogPostPage() {
   const { user } = useAuthStore()
   const qc = useQueryClient()
   const [commentText, setCommentText] = useState('')
+  const [lightboxImage, setLightboxImage] = useState<string | null>(null)
 
   const { data: post } = useQuery({
     queryKey: ['blog-post', slug],
@@ -184,7 +186,16 @@ export default function BlogPostPage() {
                 <p className="text-sm font-medium text-fg">Ảnh phòng</p>
                 <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
                   {post.roomImages.map(imageUrl => (
-                    <ImageWithSkeleton key={imageUrl} src={imageUrl} alt="" className="h-16 w-16 shrink-0 rounded-lg" />
+                    <button
+                      key={imageUrl}
+                      type="button"
+                      onClick={() => setLightboxImage(imageUrl)}
+                      aria-label="Xem ảnh phòng lớn hơn"
+                      className="group relative h-16 w-16 shrink-0 cursor-pointer"
+                    >
+                      <ImageWithSkeleton src={imageUrl} alt="" className="h-16 w-16 rounded-lg" />
+                      <div className="absolute inset-0 rounded-lg bg-black/0 transition-colors group-hover:bg-black/30" />
+                    </button>
                   ))}
                 </div>
               </div>
@@ -200,6 +211,10 @@ export default function BlogPostPage() {
           </section>
         </aside>
       </div>
+
+      <Dialog open={!!lightboxImage} onClose={() => setLightboxImage(null)} className="max-w-2xl p-3">
+        {lightboxImage && <img src={lightboxImage} alt="" className="w-full h-auto rounded-xl" />}
+      </Dialog>
     </PublicShell>
   )
 }

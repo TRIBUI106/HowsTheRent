@@ -21,6 +21,7 @@ export function Dialog({ open, onClose, title, children, className }: DialogProp
           {title && <h2 className="text-base font-semibold text-fg">{title}</h2>}
           <button
             onClick={onClose}
+            aria-label="Đóng"
             className="ml-auto text-fg-subtle hover:text-fg transition-colors rounded-md p-0.5"
           >
             <X size={17} />
