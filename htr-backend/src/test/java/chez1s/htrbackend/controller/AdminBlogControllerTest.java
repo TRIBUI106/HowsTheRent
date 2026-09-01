@@ -62,7 +62,7 @@ class AdminBlogControllerTest {
     void listAllDelegatesToService() {
         AdminPostSummaryResponse row = new AdminPostSummaryResponse(
                 UUID.randomUUID(), UUID.randomUUID(), "A1", UUID.randomUUID(), "Nhà A",
-                "Bài viết A", "bai-viet-a", false, null);
+                "Bài viết A", "bai-viet-a", false, 0L, null);
         when(postService.listAllForAdmin()).thenReturn(List.of(row));
 
         ResponseEntity<List<AdminPostSummaryResponse>> result = controller.listAll();

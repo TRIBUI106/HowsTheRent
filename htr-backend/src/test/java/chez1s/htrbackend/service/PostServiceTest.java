@@ -223,6 +223,8 @@ class PostServiceTest {
         Post post2 = Post.builder().id(UUID.randomUUID()).room(room).title("Bài viết B")
                 .slug("bai-viet-b").published(false).build();
         when(postRepository.findAllByOrderByUpdatedAtDesc()).thenReturn(List.of(post1, post2));
+        when(postLikeRepository.countByPostId(post1.getId())).thenReturn(5L);
+        when(postLikeRepository.countByPostId(post2.getId())).thenReturn(0L);
 
         List<AdminPostSummaryResponse> result = postService.listAllForAdmin();
 
@@ -230,8 +232,10 @@ class PostServiceTest {
         assertThat(result).extracting(AdminPostSummaryResponse::roomId).containsOnly(roomId);
         AdminPostSummaryResponse rowA = result.stream().filter(r -> r.slug().equals("bai-viet-a")).findFirst().orElseThrow();
         assertThat(rowA.published()).isTrue();
+        assertThat(rowA.likeCount()).isEqualTo(5L);
         AdminPostSummaryResponse rowB = result.stream().filter(r -> r.slug().equals("bai-viet-b")).findFirst().orElseThrow();
         assertThat(rowB.published()).isFalse();
+        assertThat(rowB.likeCount()).isEqualTo(0L);
     }
 
     @Test

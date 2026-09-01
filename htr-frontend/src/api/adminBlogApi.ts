@@ -9,6 +9,7 @@ export interface AdminPostSummary {
   title: string
   slug: string
   published: boolean
+  likeCount: number
   updatedAt: string | null
 }
 

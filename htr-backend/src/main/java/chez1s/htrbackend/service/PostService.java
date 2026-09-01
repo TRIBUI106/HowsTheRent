@@ -72,7 +72,8 @@ public class PostService {
                     return new AdminPostSummaryResponse(
                             post.getId(), room.getId(), room.getRoomNumber(),
                             property.getId(), property.getName(),
-                            post.getTitle(), post.getSlug(), post.isPublished(), post.getUpdatedAt()
+                            post.getTitle(), post.getSlug(), post.isPublished(),
+                            postLikeRepository.countByPostId(post.getId()), post.getUpdatedAt()
                     );
                 })
                 .toList();

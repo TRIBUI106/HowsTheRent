@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
-import { Eye, EyeOff, Pencil, Trash2 } from 'lucide-react'
+import { Eye, EyeOff, Heart, Pencil, Trash2 } from 'lucide-react'
 import { adminBlogApi } from '@/api'
 import { formatDate, postStatusLabel } from '@/lib/utils'
 import { useGuardedMutation } from '@/hooks/useGuardedMutation'
@@ -69,6 +69,7 @@ export default function AdminBlogListPage() {
                 <th className="px-4 py-3">Nhà trọ</th>
                 <th className="px-4 py-3">Tiêu đề</th>
                 <th className="px-4 py-3">Trạng thái</th>
+                <th className="px-4 py-3">Lượt thích</th>
                 <th className="px-4 py-3">Cập nhật</th>
                 <th className="px-4 py-3" />
               </tr>
@@ -84,6 +85,12 @@ export default function AdminBlogListPage() {
                     </Link>
                   </td>
                   <td className="px-4 py-3 text-fg-muted">{postStatusLabel(post.published ? 'PUBLISHED' : 'DRAFT')}</td>
+                  <td className="px-4 py-3 text-fg-muted">
+                    <span className="inline-flex items-center gap-1">
+                      <Heart size={14} />
+                      {post.likeCount}
+                    </span>
+                  </td>
                   <td className="px-4 py-3 text-fg-muted">{formatDate(post.updatedAt)}</td>
                   <td className="px-4 py-3">
                     <div className="flex justify-end gap-3 whitespace-nowrap">

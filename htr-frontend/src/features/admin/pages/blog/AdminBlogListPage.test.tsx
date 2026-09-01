@@ -32,8 +32,8 @@ describe('AdminBlogListPage', () => {
   beforeEach(() => {
     vi.mocked(adminBlogApi.delete).mockReset()
     vi.mocked(adminBlogApi.listAll).mockResolvedValue([
-      { postId: '1', roomId: 'r1', roomNumber: 'A101', propertyId: 'p1', propertyName: 'Nhà A', title: 'Bài A', slug: 'bai-a', published: true, updatedAt: null },
-      { postId: '2', roomId: 'r1', roomNumber: 'A101', propertyId: 'p1', propertyName: 'Nhà A', title: 'Bài B', slug: 'bai-b', published: false, updatedAt: null },
+      { postId: '1', roomId: 'r1', roomNumber: 'A101', propertyId: 'p1', propertyName: 'Nhà A', title: 'Bài A', slug: 'bai-a', published: true, likeCount: 5, updatedAt: null },
+      { postId: '2', roomId: 'r1', roomNumber: 'A101', propertyId: 'p1', propertyName: 'Nhà A', title: 'Bài B', slug: 'bai-b', published: false, likeCount: 0, updatedAt: null },
     ])
   })
 
@@ -45,6 +45,7 @@ describe('AdminBlogListPage', () => {
     expect(screen.getAllByText('A101')).toHaveLength(2)
     expect(screen.getByText('Đã xuất bản')).toBeInTheDocument()
     expect(screen.getByText('Bản nháp')).toBeInTheDocument()
+    expect(screen.getByText('5')).toBeInTheDocument()
   })
 
   it('deletes a post only after confirmation', async () => {
