@@ -72,11 +72,23 @@ describe('AdminBlogEditorPage', () => {
     }))
   })
 
+  it('labels a vacant room with a Trống suffix, leaving other statuses unchanged', async () => {
+    vi.mocked(roomApi.listAll).mockResolvedValue([
+      { id: 'room-1', propertyId: 'prop-1', propertyName: 'Nhà A', roomNumber: 'A101', maxPeople: 2, status: 'EMPTY', images: [], createdAt: '', updatedAt: '' },
+      { id: 'room-2', propertyId: 'prop-1', propertyName: 'Nhà A', roomNumber: 'A102', maxPeople: 2, status: 'RENTED', images: [], createdAt: '', updatedAt: '' },
+    ])
+
+    renderAtPath('/admin/blog/new')
+
+    expect(await screen.findByRole('option', { name: 'Phòng A101.Trống' })).toBeInTheDocument()
+    expect(screen.getByRole('option', { name: 'Phòng A102' })).toBeInTheDocument()
+  })
+
   it('creates a post for the selected room', async () => {
     vi.mocked(adminBlogApi.create).mockResolvedValue(editPost)
 
     renderAtPath('/admin/blog/new')
-    await screen.findByRole('option', { name: 'Phòng A101' })
+    await screen.findByRole('option', { name: 'Phòng A101.Trống' })
     const roomSelect = screen.getByRole('combobox') as HTMLSelectElement
     const valueSetter = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value')?.set
     valueSetter?.call(roomSelect, 'room-1')
@@ -96,7 +108,7 @@ describe('AdminBlogEditorPage', () => {
     })
 
     renderAtPath('/admin/blog/new')
-    await screen.findByRole('option', { name: 'Phòng A101' })
+    await screen.findByRole('option', { name: 'Phòng A101.Trống' })
     const roomSelect = screen.getByRole('combobox') as HTMLSelectElement
     const valueSetter = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value')?.set
     valueSetter?.call(roomSelect, 'room-1')

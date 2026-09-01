@@ -55,6 +55,7 @@ describe('BlogPostPage', () => {
 
     expect(await screen.findByText('Phòng trọ đẹp')).toBeInTheDocument()
     await waitFor(() => expect(screen.getByText(/2\/5 phòng còn trống/i)).toBeInTheDocument())
+    expect(screen.getByText(/toàn bộ nhà trọ/i)).toBeInTheDocument()
   })
 
   it('shows a skeleton over the cover image until it loads', async () => {

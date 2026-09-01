@@ -8,7 +8,7 @@ import { adminBlogApi, roomApi } from '@/api'
 import { useGuardedMutation } from '@/hooks/useGuardedMutation'
 import { showToast } from '@/lib/toast'
 import { getErrorMessage } from '@/lib/apiError'
-import { cn } from '@/lib/utils'
+import { cn, statusLabel } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Dialog } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
@@ -158,7 +158,11 @@ export default function AdminBlogEditorPage() {
             <option value="">Chọn phòng</option>
             {Object.entries(roomsByProperty ?? {}).map(([propertyName, propertyRooms]) => (
               <optgroup key={propertyName} label={propertyName}>
-                {propertyRooms.map(room => <option key={room.id} value={room.id}>Phòng {room.roomNumber}</option>)}
+                {propertyRooms.map(room => (
+                  <option key={room.id} value={room.id}>
+                    Phòng {room.roomNumber}{room.status === 'EMPTY' ? `.${statusLabel(room.status)}` : ''}
+                  </option>
+                ))}
               </optgroup>
             ))}
           </Select>

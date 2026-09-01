@@ -110,8 +110,9 @@ export default function BlogPostPage() {
           <p className="mt-2 text-sm text-fg-muted">{post.propertyAddress}</p>
 
           {vacancy && (
-            <div className="mt-6 inline-flex items-center rounded-full bg-accent-surface px-3 py-1.5 text-sm font-medium text-accent">
-              {vacancy.emptyCount}/{vacancy.totalCount} phòng còn trống
+            <div className="mt-6 inline-flex items-center gap-2 rounded-full bg-accent-surface px-3 py-1.5 text-sm font-medium text-accent">
+              <span>{vacancy.emptyCount}/{vacancy.totalCount} phòng còn trống</span>
+              <span className="text-xs font-normal text-fg-muted">(toàn bộ nhà trọ)</span>
             </div>
           )}
 
