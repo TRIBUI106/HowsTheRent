@@ -160,7 +160,7 @@ export default function AdminBlogEditorPage() {
               <optgroup key={propertyName} label={propertyName}>
                 {propertyRooms.map(room => (
                   <option key={room.id} value={room.id}>
-                    Phòng {room.roomNumber}{room.status === 'EMPTY' ? `.${statusLabel(room.status)}` : ''}
+                    Phòng {room.roomNumber}{room.status === 'EMPTY' ? ` · ${statusLabel(room.status)}` : ''}
                   </option>
                 ))}
               </optgroup>

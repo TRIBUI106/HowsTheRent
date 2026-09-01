@@ -80,7 +80,7 @@ describe('AdminBlogEditorPage', () => {
 
     renderAtPath('/admin/blog/new')
 
-    expect(await screen.findByRole('option', { name: 'Phòng A101.Trống' })).toBeInTheDocument()
+    expect(await screen.findByRole('option', { name: 'Phòng A101 · Trống' })).toBeInTheDocument()
     expect(screen.getByRole('option', { name: 'Phòng A102' })).toBeInTheDocument()
   })
 
@@ -88,7 +88,7 @@ describe('AdminBlogEditorPage', () => {
     vi.mocked(adminBlogApi.create).mockResolvedValue(editPost)
 
     renderAtPath('/admin/blog/new')
-    await screen.findByRole('option', { name: 'Phòng A101.Trống' })
+    await screen.findByRole('option', { name: 'Phòng A101 · Trống' })
     const roomSelect = screen.getByRole('combobox') as HTMLSelectElement
     const valueSetter = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value')?.set
     valueSetter?.call(roomSelect, 'room-1')
@@ -108,7 +108,7 @@ describe('AdminBlogEditorPage', () => {
     })
 
     renderAtPath('/admin/blog/new')
-    await screen.findByRole('option', { name: 'Phòng A101.Trống' })
+    await screen.findByRole('option', { name: 'Phòng A101 · Trống' })
     const roomSelect = screen.getByRole('combobox') as HTMLSelectElement
     const valueSetter = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value')?.set
     valueSetter?.call(roomSelect, 'room-1')
