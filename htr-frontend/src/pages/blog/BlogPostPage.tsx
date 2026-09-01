@@ -103,7 +103,7 @@ export default function BlogPostPage() {
 
         <article className="min-w-0">
           {post.coverImageUrl && (
-            <ImageWithSkeleton src={post.coverImageUrl} alt="" className="mb-8 h-64 w-full rounded-2xl" objectFit="contain" />
+            <ImageWithSkeleton src={post.coverImageUrl} alt="" className="mb-8 h-64 w-full rounded-2xl" />
           )}
           <p className="text-sm font-medium text-accent">Phòng {post.roomNumber} · {post.propertyName}</p>
           <h1 className="mt-2 text-3xl font-semibold tracking-[-0.03em] text-fg">{post.title}</h1>
