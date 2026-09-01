@@ -147,7 +147,7 @@ export default function BlogPostPage() {
           <h1 className="mt-2 text-3xl font-semibold tracking-[-0.03em] text-fg">{post.title}</h1>
           <p className="mt-2 text-sm text-fg-muted">{post.propertyAddress}</p>
 
-          {post.tags.length > 0 && (
+          {!!post.tags?.length && (
             <div className="mt-3 flex flex-wrap gap-1.5">
               {post.tags.map(tag => (
                 <span key={tag} className="inline-flex items-center rounded-full bg-sidebar px-2.5 py-1 text-xs font-medium text-fg-subtle">

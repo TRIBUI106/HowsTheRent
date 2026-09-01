@@ -12,8 +12,8 @@ export default function BlogListPage() {
     queryFn: blogApi.list,
   })
 
-  const allTags = [...new Set(posts?.flatMap(p => p.tags) ?? [])]
-  const visiblePosts = selectedTag ? posts?.filter(p => p.tags.includes(selectedTag)) : posts
+  const allTags = [...new Set(posts?.flatMap(p => p.tags ?? []) ?? [])]
+  const visiblePosts = selectedTag ? posts?.filter(p => (p.tags ?? []).includes(selectedTag)) : posts
 
   return (
     <PublicShell>
@@ -72,7 +72,7 @@ export default function BlogListPage() {
                 >
                   Phòng {post.roomNumber} · {statusLabel(post.roomStatus)}
                 </span>
-                {post.tags.length > 0 && (
+                {!!post.tags?.length && (
                   <div className="mt-2 flex flex-wrap gap-1.5">
                     {post.tags.map(tag => (
                       <span key={tag} className="inline-flex items-center rounded-full bg-sidebar px-2 py-0.5 text-[11px] font-medium text-fg-subtle">
