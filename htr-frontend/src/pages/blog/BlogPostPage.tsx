@@ -10,6 +10,7 @@ import { getErrorMessage } from '@/lib/apiError'
 import { directionLabel, statusColor, statusLabel } from '@/lib/utils'
 import PublicShell from '@/components/PublicShell'
 import { Button } from '@/components/ui/button'
+import { ImageWithSkeleton } from '@/components/ui/image-with-skeleton'
 
 export default function BlogPostPage() {
   const { slug = '' } = useParams<{ slug: string }>()
@@ -102,7 +103,7 @@ export default function BlogPostPage() {
 
         <article className="min-w-0">
           {post.coverImageUrl && (
-            <img src={post.coverImageUrl} alt="" className="mb-8 h-64 w-full rounded-2xl object-cover" />
+            <ImageWithSkeleton src={post.coverImageUrl} alt="" className="mb-8 h-64 w-full rounded-2xl" objectFit="contain" />
           )}
           <p className="text-sm font-medium text-accent">Phòng {post.roomNumber} · {post.propertyName}</p>
           <h1 className="mt-2 text-3xl font-semibold tracking-[-0.03em] text-fg">{post.title}</h1>
@@ -182,7 +183,7 @@ export default function BlogPostPage() {
                 <p className="text-sm font-medium text-fg">Ảnh phòng</p>
                 <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
                   {post.roomImages.map(imageUrl => (
-                    <img key={imageUrl} src={imageUrl} alt="" className="h-16 w-16 shrink-0 rounded-lg object-cover" />
+                    <ImageWithSkeleton key={imageUrl} src={imageUrl} alt="" className="h-16 w-16 shrink-0 rounded-lg" />
                   ))}
                 </div>
               </div>

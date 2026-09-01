@@ -1,17 +1,23 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
+import { ImagePlus } from 'lucide-react'
 import { adminBlogApi, roomApi } from '@/api'
 import { useGuardedMutation } from '@/hooks/useGuardedMutation'
 import { showToast } from '@/lib/toast'
 import { getErrorMessage } from '@/lib/apiError'
+import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Dialog } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
+import { Spinner } from '@/components/ui/feedback'
+import { ImageWithSkeleton } from '@/components/ui/image-with-skeleton'
 import Layout from '@/components/Layout'
+
+const MAX_COVER_IMAGE_BYTES = 25 * 1024 * 1024
 
 export default function AdminBlogEditorPage() {
   const { postId } = useParams<{ postId: string }>()
@@ -23,6 +29,8 @@ export default function AdminBlogEditorPage() {
   const [slug, setSlug] = useState('')
   const [coverImageUrl, setCoverImageUrl] = useState<string | null>(null)
   const [deleteOpen, setDeleteOpen] = useState(false)
+  const [isDragging, setIsDragging] = useState(false)
+  const coverImageInputRef = useRef<HTMLInputElement>(null)
 
   const { data: post, isLoading } = useQuery({
     queryKey: ['admin-blog-post', postId],
@@ -99,6 +107,14 @@ export default function AdminBlogEditorPage() {
     onError: (err: unknown) => showToast({ message: getErrorMessage(err, 'Tải ảnh bìa thất bại'), type: 'error' }),
   })
 
+  function handleCoverImageFile(file: File) {
+    if (!file.type.startsWith('image/') || file.size > MAX_COVER_IMAGE_BYTES) {
+      showToast({ message: 'Chỉ chấp nhận file ảnh dưới 25MB', type: 'error' })
+      return
+    }
+    uploadCoverImage.mutate(file)
+  }
+
   const deletePost = useGuardedMutation({
     mutationFn: () => adminBlogApi.delete(postId!),
     onSuccess: () => {
@@ -158,12 +174,54 @@ export default function AdminBlogEditorPage() {
 
         <div>
           <p className="mb-2 text-sm font-medium text-fg">Ảnh bìa</p>
-          {coverImageUrl && <img src={coverImageUrl} alt="" className="mb-2 h-40 w-full rounded-xl object-cover" />}
           {post ? (
-            <input type="file" accept="image/*" onChange={e => {
-              const file = e.target.files?.[0]
-              if (file) uploadCoverImage.mutate(file)
-            }} />
+            <div
+              data-testid="cover-image-dropzone"
+              onClick={() => coverImageInputRef.current?.click()}
+              onDragOver={e => { e.preventDefault(); setIsDragging(true) }}
+              onDragEnter={e => { e.preventDefault(); setIsDragging(true) }}
+              onDragLeave={() => setIsDragging(false)}
+              onDrop={e => {
+                e.preventDefault()
+                setIsDragging(false)
+                const file = e.dataTransfer.files?.[0]
+                if (file) handleCoverImageFile(file)
+              }}
+              className={cn(
+                'relative flex h-48 w-full cursor-pointer items-center justify-center overflow-hidden rounded-xl transition-colors',
+                coverImageUrl ? 'border border-border' : 'border-2 border-dashed border-border',
+                isDragging && 'border-accent bg-accent/5'
+              )}
+            >
+              <input
+                ref={coverImageInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={e => {
+                  const file = e.target.files?.[0]
+                  if (file) handleCoverImageFile(file)
+                  e.target.value = ''
+                }}
+              />
+
+              {coverImageUrl ? (
+                <div className={cn('h-full w-full', uploadCoverImage.isPending && 'opacity-50')}>
+                  <ImageWithSkeleton src={coverImageUrl} alt="" className="h-full w-full rounded-xl" objectFit="contain" />
+                </div>
+              ) : (
+                <div className="flex flex-col items-center gap-2 px-4 text-center text-sm text-fg-muted">
+                  <ImagePlus size={22} />
+                  <span>Kéo thả ảnh vào đây hoặc bấm để chọn</span>
+                </div>
+              )}
+
+              {uploadCoverImage.isPending && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <Spinner />
+                </div>
+              )}
+            </div>
           ) : (
             <p className="text-xs text-fg-muted">Lưu bản nháp trước để tải ảnh bìa riêng, hoặc dùng ảnh mặc định của phòng.</p>
           )}

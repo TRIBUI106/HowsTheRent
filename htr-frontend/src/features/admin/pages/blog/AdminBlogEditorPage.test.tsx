@@ -51,6 +51,7 @@ describe('AdminBlogEditorPage', () => {
     vi.mocked(adminBlogApi.create).mockReset()
     vi.mocked(adminBlogApi.update).mockReset()
     vi.mocked(adminBlogApi.delete).mockReset()
+    vi.mocked(adminBlogApi.uploadCoverImage).mockReset()
     vi.mocked(roomApi.listAll).mockResolvedValue([
       { id: 'room-1', propertyId: 'prop-1', propertyName: 'Nhà A', roomNumber: 'A101', maxPeople: 2, status: 'EMPTY', images: [], createdAt: '', updatedAt: '' },
     ])
@@ -105,6 +106,31 @@ describe('AdminBlogEditorPage', () => {
 
     await waitFor(() => expect(adminBlogApi.generateDraft).toHaveBeenCalledWith('room-1'))
     await waitFor(() => expect(screen.getByLabelText(/tiêu đề/i)).toHaveValue('Nhà A - Phòng A101'))
+  })
+
+  it('uploads a dropped file as the cover image', async () => {
+    vi.mocked(adminBlogApi.get).mockResolvedValue(editPost)
+    vi.mocked(adminBlogApi.uploadCoverImage).mockResolvedValue({ ...editPost, coverImageUrl: 'https://cdn.example.com/cover.jpg' })
+
+    renderAtPath('/admin/blog/post-1')
+    const dropzone = await screen.findByTestId('cover-image-dropzone')
+
+    const file = new File(['data'], 'cover.jpg', { type: 'image/jpeg' })
+    fireEvent.drop(dropzone, { dataTransfer: { files: [file] } })
+
+    await waitFor(() => expect(adminBlogApi.uploadCoverImage).toHaveBeenCalledWith('post-1', file))
+  })
+
+  it('rejects a dropped non-image file without calling the upload API', async () => {
+    vi.mocked(adminBlogApi.get).mockResolvedValue(editPost)
+
+    renderAtPath('/admin/blog/post-1')
+    const dropzone = await screen.findByTestId('cover-image-dropzone')
+
+    const file = new File(['data'], 'notes.txt', { type: 'text/plain' })
+    fireEvent.drop(dropzone, { dataTransfer: { files: [file] } })
+
+    expect(adminBlogApi.uploadCoverImage).not.toHaveBeenCalled()
   })
 
   it('deletes an existing post only after confirmation', async () => {

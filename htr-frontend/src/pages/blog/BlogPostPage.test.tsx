@@ -57,6 +57,21 @@ describe('BlogPostPage', () => {
     await waitFor(() => expect(screen.getByText(/2\/5 phòng còn trống/i)).toBeInTheDocument())
   })
 
+  it('shows a skeleton over the cover image until it loads', async () => {
+    vi.mocked(blogApi.getBySlug).mockResolvedValue({ ...post, coverImageUrl: 'https://example.test/cover.jpg' })
+    renderAtSlug('phong-tro-dep')
+
+    await screen.findByText('Phòng trọ đẹp')
+    expect(screen.getAllByTestId('image-skeleton').length).toBeGreaterThan(0)
+
+    const coverImg = screen.getAllByAltText('').find(
+      img => (img as HTMLImageElement).src === 'https://example.test/cover.jpg'
+    ) as HTMLImageElement
+    fireEvent.load(coverImg)
+
+    expect(coverImg).toHaveClass('opacity-100')
+  })
+
   it('renders room facts and the property sidebar', async () => {
     renderAtSlug('phong-tro-dep')
 
