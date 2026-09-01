@@ -16,6 +16,7 @@ import { Select } from '@/components/ui/select'
 import { Spinner } from '@/components/ui/feedback'
 import { ImageWithSkeleton } from '@/components/ui/image-with-skeleton'
 import Layout from '@/components/Layout'
+import RichTextToolbar from './RichTextToolbar'
 
 const MAX_COVER_IMAGE_BYTES = 25 * 1024 * 1024
 
@@ -233,7 +234,10 @@ export default function AdminBlogEditorPage() {
 
         <div>
           <p className="mb-2 text-sm font-medium text-fg">Nội dung</p>
-          <div className="min-h-40 rounded-xl border border-border bg-bg p-3"><EditorContent editor={editor} /></div>
+          <div className="rounded-xl border border-border bg-bg">
+            <RichTextToolbar editor={editor} />
+            <div className="min-h-40 p-3"><EditorContent editor={editor} /></div>
+          </div>
         </div>
 
         <Button type="button" onClick={() => save.mutate(undefined)} disabled={!canSave} loading={save.isPending}>

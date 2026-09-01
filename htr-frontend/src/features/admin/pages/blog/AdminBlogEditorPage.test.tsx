@@ -6,9 +6,31 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { adminBlogApi, roomApi } from '@/api'
 import AdminBlogEditorPage from './AdminBlogEditorPage'
 
-const tiptap = vi.hoisted(() => ({
-  editor: { getHTML: () => '<p>Nội dung</p>', commands: { setContent: vi.fn() } },
-}))
+const tiptap = vi.hoisted(() => {
+  const chain = {
+    focus: vi.fn(() => chain),
+    toggleBold: vi.fn(() => chain),
+    toggleItalic: vi.fn(() => chain),
+    toggleStrike: vi.fn(() => chain),
+    toggleHeading: vi.fn(() => chain),
+    toggleBulletList: vi.fn(() => chain),
+    toggleOrderedList: vi.fn(() => chain),
+    toggleBlockquote: vi.fn(() => chain),
+    undo: vi.fn(() => chain),
+    redo: vi.fn(() => chain),
+    run: vi.fn(),
+  }
+  return {
+    chain,
+    editor: {
+      getHTML: () => '<p>Nội dung</p>',
+      commands: { setContent: vi.fn() },
+      chain: vi.fn(() => chain),
+      isActive: vi.fn((..._args: unknown[]) => false),
+      can: vi.fn(() => ({ undo: () => true, redo: () => true })),
+    },
+  }
+})
 
 vi.mock('@tiptap/react', () => ({
   useEditor: () => tiptap.editor,
@@ -52,6 +74,9 @@ describe('AdminBlogEditorPage', () => {
     vi.mocked(adminBlogApi.update).mockReset()
     vi.mocked(adminBlogApi.delete).mockReset()
     vi.mocked(adminBlogApi.uploadCoverImage).mockReset()
+    tiptap.chain.run.mockClear()
+    tiptap.editor.chain.mockClear()
+    tiptap.editor.isActive.mockReset().mockReturnValue(false)
     vi.mocked(roomApi.listAll).mockResolvedValue([
       { id: 'room-1', propertyId: 'prop-1', propertyName: 'Nhà A', roomNumber: 'A101', maxPeople: 2, status: 'EMPTY', images: [], createdAt: '', updatedAt: '' },
     ])
@@ -155,5 +180,27 @@ describe('AdminBlogEditorPage', () => {
     expect(adminBlogApi.delete).not.toHaveBeenCalled()
     fireEvent.click(screen.getByRole('button', { name: 'Xóa bài viết' }))
     await waitFor(() => expect(adminBlogApi.delete).toHaveBeenCalledWith('post-1'))
+  })
+
+  it('applies bold formatting via the toolbar', async () => {
+    vi.mocked(adminBlogApi.get).mockResolvedValue(editPost)
+
+    renderAtPath('/admin/blog/post-1')
+    fireEvent.click(await screen.findByRole('button', { name: 'Đậm' }))
+
+    expect(tiptap.chain.toggleBold).toHaveBeenCalled()
+    expect(tiptap.chain.run).toHaveBeenCalled()
+  })
+
+  it('highlights the toolbar button matching the current selection', async () => {
+    vi.mocked(adminBlogApi.get).mockResolvedValue(editPost)
+    tiptap.editor.isActive.mockImplementation((...args: unknown[]) => args[0] === 'bold')
+
+    renderAtPath('/admin/blog/post-1')
+    const boldButton = await screen.findByRole('button', { name: 'Đậm' })
+    const italicButton = screen.getByRole('button', { name: 'Nghiêng' })
+
+    expect(boldButton.className).toContain('text-accent')
+    expect(italicButton.className).not.toContain('text-accent')
   })
 })
