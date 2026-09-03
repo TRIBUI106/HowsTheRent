@@ -96,6 +96,27 @@ public class InvoiceController {
         return ResponseEntity.ok(Map.of("checkoutUrl", checkoutUrl));
     }
 
+    // PayOS confirms payment to us only via its async webhook (PayOSService.handleWebhook) — the
+    // browser redirect back from checkout (returnUrl) is purely a UI navigation and carries no
+    // guarantee the webhook has already landed and been processed. A tenant who lands back on the
+    // invoices list within that race window sees stale PENDING/OVERDUE and gets prompted to pay
+    // again; clicking pay again reuses the existing PaymentIntent's checkoutUrl (see
+    // PayOSService.createPaymentLink), so PayOS itself then correctly reports the order as already
+    // paid. This endpoint actively closes that window by querying PayOS's own status API
+    // (PayOSService.reconcile, previously wired up but never called from anywhere) instead of
+    // passively waiting on the webhook — called from the tenant success page right after PayOS
+    // redirects back, before the invoices list is shown.
+    @PostMapping("/{id}/reconcile-payment")
+    @PreAuthorize("hasAnyRole('ADMIN','PLATFORM_ADMIN','LANDLORD_ADMIN','TENANT')")
+    public ResponseEntity<InvoiceResponse> reconcilePayment(Authentication authentication, @PathVariable UUID id) {
+        Invoice invoice = requireInvoiceAccess(ActorContext.require(authentication), id);
+        if (invoice.getStatus() != InvoiceStatus.PAID && invoice.getPaymentLinkId() != null) {
+            payOSService.reconcile(invoice.getPaymentLinkId());
+            invoice = requireInvoiceAccess(ActorContext.require(authentication), id);
+        }
+        return ResponseEntity.ok(InvoiceResponse.from(invoice));
+    }
+
     // Available for any invoice status, not just PAID — a tenant can also download it as a plain
     // bill before paying; once PAID, the same layout doubles as the receipt (see
     // InvoicePdfService). @Transactional here (not just on the service) because

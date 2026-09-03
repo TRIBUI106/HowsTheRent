@@ -20,6 +20,11 @@ export const invoiceApi = {
     api
       .post<{ checkoutUrl: string }>(`/invoices/${id}/pay-online`)
       .then((r) => r.data),
+  // Actively checks PayOS's own status API and updates our invoice if it's actually paid —
+  // closes the race window where the browser is redirected back from checkout before PayOS's
+  // async webhook has landed, which otherwise leaves the invoice looking PENDING/OVERDUE.
+  reconcilePayment: (id: string) =>
+    api.post<Invoice>(`/invoices/${id}/reconcile-payment`).then((r) => r.data),
   // Available for any invoice status, not just PAID — a plain bill before paying, a receipt after.
   downloadReceiptPdf: (id: string) =>
     api

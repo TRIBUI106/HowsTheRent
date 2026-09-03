@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useQueryClient } from '@tanstack/react-query'
 import { useAuthStore } from '@/stores/authStore'
 import { invoiceApi } from '@/api/invoiceApi'
 import { Button } from '@/components/ui/button'
@@ -10,6 +11,7 @@ export default function PaymentSuccessPage() {
   const [params] = useSearchParams()
   const navigate = useNavigate()
   const { user } = useAuthStore()
+  const qc = useQueryClient()
 
   const orderCode = params.get('orderCode')
   const amount = params.get('amount')
@@ -38,6 +40,27 @@ export default function PaymentSuccessPage() {
       // interrupt the success flow with an error toast.
       .catch(() => {})
   }, [invoiceId])
+
+  // PayOS confirms payment to our backend only via its async webhook — the redirect back to this
+  // page carries no guarantee that webhook has already landed. Without this, a tenant redirected
+  // here quickly enough would land back on the invoices list still showing PENDING/OVERDUE and get
+  // prompted to pay again. Actively reconcile against PayOS's own status API before that happens,
+  // then invalidate so the invoices list refetches instead of serving a cached PENDING/OVERDUE read.
+  const hasReconciled = useRef(false)
+
+  useEffect(() => {
+    if (!invoiceId || hasReconciled.current) return
+    hasReconciled.current = true
+    invoiceApi.reconcilePayment(invoiceId)
+      .then(() => {
+        qc.invalidateQueries({ queryKey: ['tenant-invoices'] })
+        qc.invalidateQueries({ queryKey: ['invoices'] })
+        qc.invalidateQueries({ queryKey: ['dashboard'] })
+      })
+      // Silent: the webhook will still land and update the invoice on its own shortly either
+      // way — this is a best-effort head start, not the only path to a correct final state.
+      .catch(() => {})
+  }, [invoiceId, qc])
 
   useEffect(() => {
     const timer = setTimeout(() => {
