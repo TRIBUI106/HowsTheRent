@@ -1,6 +1,7 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuthStore } from '@/stores/authStore'
+import { invoiceApi } from '@/api/invoiceApi'
 import { Button } from '@/components/ui/button'
 import { CheckCircle2 } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils'
@@ -12,6 +13,31 @@ export default function PaymentSuccessPage() {
 
   const orderCode = params.get('orderCode')
   const amount = params.get('amount')
+  // Carried through by PayOSService.createPaymentLink specifically so this page can offer the
+  // receipt without a separate orderCode → invoice lookup.
+  const invoiceId = params.get('invoiceId')
+
+  // Guards against React re-running the effect (StrictMode double-invoke in dev, or a param
+  // change) and silently firing a second download for the same visit.
+  const hasDownloaded = useRef(false)
+
+  useEffect(() => {
+    if (!invoiceId || hasDownloaded.current) return
+    hasDownloaded.current = true
+    invoiceApi.downloadReceiptPdf(invoiceId)
+      .then((blob) => {
+        const url = URL.createObjectURL(blob)
+        const anchor = document.createElement('a')
+        anchor.href = url
+        anchor.download = 'bien-lai-thanh-toan.pdf'
+        anchor.click()
+        URL.revokeObjectURL(url)
+      })
+      // Silent: the receipt is also always downloadable later from the invoices list, so a
+      // failure here (e.g. session not yet rehydrated right after the PayOS redirect) shouldn't
+      // interrupt the success flow with an error toast.
+      .catch(() => {})
+  }, [invoiceId])
 
   useEffect(() => {
     const timer = setTimeout(() => {

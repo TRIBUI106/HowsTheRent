@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useGuardedMutation } from '@/hooks/useGuardedMutation'
 import { Download, ReceiptText } from 'lucide-react'
 import api from '@/lib/api'
+import { invoiceApi } from '@/api/invoiceApi'
 import { extractPageContent, normalizeInvoice } from '@/lib/apiMappers'
 import Layout from '@/components/Layout'
 import { Card } from '@/components/ui/card'
@@ -144,6 +145,22 @@ export default function AdminInvoicesPage() {
     setShowGenerateDialog(true)
   }
 
+  // Available for any invoice status — a plain bill before paying, a receipt afterward (same
+  // PDF layout on the backend either way).
+  async function handleDownloadPdf(invoice: Invoice) {
+    try {
+      const blob = await invoiceApi.downloadReceiptPdf(invoice.id)
+      const url = URL.createObjectURL(blob)
+      const anchor = document.createElement('a')
+      anchor.href = url
+      anchor.download = `hoa-don-${invoice.invoiceMonth.slice(0, 7)}.pdf`
+      anchor.click()
+      URL.revokeObjectURL(url)
+    } catch (error: unknown) {
+      showToast({ message: getErrorMessage(error, 'Không thể tải hóa đơn PDF'), type: 'error' })
+    }
+  }
+
   function exportExcel() {
     api.get('/export/invoices', { responseType: 'blob' })
       .then((r) => r.data)
@@ -204,7 +221,7 @@ export default function AdminInvoicesPage() {
           <TableSkeleton rows={6} columns={6} />
         ) : (
           <Card>
-            <Table headers={['Tháng', 'Phòng', 'Tổng tiền', 'Trạng thái', 'Hạn', 'Thanh toán']}>
+            <Table headers={['Tháng', 'Phòng', 'Tổng tiền', 'Trạng thái', 'Hạn', 'Thanh toán', '']}>
               {invoices.map((invoice) => (
                 <TableRow key={invoice.id}>
                   <TableCell>{formatMonth(invoice.invoiceMonth)}</TableCell>
@@ -225,6 +242,17 @@ export default function AdminInvoicesPage() {
                     ) : (
                       invoice.paymentMethod || '-'
                     )}
+                  </TableCell>
+                  <TableCell>
+                    <button
+                      type="button"
+                      onClick={() => handleDownloadPdf(invoice)}
+                      aria-label="Tải hóa đơn PDF"
+                      title="Tải hóa đơn PDF"
+                      className="text-fg-subtle transition-colors hover:text-fg"
+                    >
+                      <Download size={16} />
+                    </button>
                   </TableCell>
                 </TableRow>
               ))}

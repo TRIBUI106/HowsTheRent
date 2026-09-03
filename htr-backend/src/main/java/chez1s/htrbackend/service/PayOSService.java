@@ -88,13 +88,17 @@ public class PayOSService {
                             .invoice(invoice).orderCode(orderCodeText).status("CREATED").build()));
         if (intent.getCheckoutUrl() != null && !intent.getCheckoutUrl().isBlank()) return intent.getCheckoutUrl();
 
+        // Carries invoiceId back through PayOS's redirect so the success page can offer the
+        // receipt PDF for exactly this invoice without a separate orderCode→invoice lookup.
+        String invoiceReturnUrl = returnUrl + (returnUrl.contains("?") ? "&" : "?") + "invoiceId=" + invoice.getId();
+
         Map<String, Object> body = new HashMap<>();
         body.put("orderCode", orderCode);
         body.put("amount", amount);
         body.put("description", "Hoa don " + invoice.getInvoiceMonth().toString().substring(0, 7));
         body.put("buyerName", invoice.getContract().getTenant().getFullName());
         body.put("buyerEmail", invoice.getContract().getTenant().getEmail());
-        body.put("returnUrl", returnUrl);
+        body.put("returnUrl", invoiceReturnUrl);
         body.put("cancelUrl", cancelUrl);
         body.put("signature", computePaymentRequestSignature(body));
 

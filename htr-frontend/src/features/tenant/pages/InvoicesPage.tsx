@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button'
 import { Table, TableRow, TableCell } from '@/components/ui/table'
 import { TableSkeleton } from '@/components/ui/feedback'
 import { Dialog } from '@/components/ui/dialog'
-import { Banknote, QrCode } from 'lucide-react'
+import { Banknote, Download, QrCode } from 'lucide-react'
 import { showToast } from '@/lib/toast'
 import { formatCurrency, formatDate, formatMonth } from '@/lib/utils'
 import type { Invoice } from '@/types'
@@ -28,6 +28,22 @@ export default function TenantInvoicesPage() {
   })
 
   const invoices: Invoice[] = extractPageContent<FlatInvoiceLike>(data).map(normalizeInvoice)
+
+  // Available for any invoice status — a plain bill before paying, a receipt afterward (same
+  // PDF layout on the backend either way).
+  async function handleDownloadPdf(invoice: Invoice) {
+    try {
+      const blob = await invoiceApi.downloadReceiptPdf(invoice.id)
+      const url = URL.createObjectURL(blob)
+      const anchor = document.createElement('a')
+      anchor.href = url
+      anchor.download = `hoa-don-${invoice.invoiceMonth.slice(0, 7)}.pdf`
+      anchor.click()
+      URL.revokeObjectURL(url)
+    } catch (error: unknown) {
+      showToast({ message: getErrorMessage(error, 'Không thể tải hóa đơn PDF'), type: 'error' })
+    }
+  }
 
   async function handleOnlinePay(invoice: Invoice) {
     setIsOpeningQr(true)
@@ -69,16 +85,27 @@ export default function TenantInvoicesPage() {
                 <TableCell><Badge status={inv.status} /></TableCell>
                 <TableCell>{formatDate(inv.dueDate)}</TableCell>
                 <TableCell>
-                  {(inv.status === 'PENDING' || inv.status === 'OVERDUE') && (
-                    <Button
-                      size="sm"
-                      variant={inv.status === 'OVERDUE' ? 'danger' : 'primary'}
-                      onClick={() => setPaymentInvoice(inv)}
+                  <div className="flex items-center gap-2">
+                    {(inv.status === 'PENDING' || inv.status === 'OVERDUE') && (
+                      <Button
+                        size="sm"
+                        variant={inv.status === 'OVERDUE' ? 'danger' : 'primary'}
+                        onClick={() => setPaymentInvoice(inv)}
+                      >
+                        {inv.status === 'OVERDUE' ? 'Thanh toán ngay' : 'Thanh toán'}
+                      </Button>
+                    )}
+                    {inv.status === 'PAID' && <span className="text-sm text-success">Đã thanh toán</span>}
+                    <button
+                      type="button"
+                      onClick={() => handleDownloadPdf(inv)}
+                      aria-label="Tải hóa đơn PDF"
+                      title="Tải hóa đơn PDF"
+                      className="text-fg-subtle transition-colors hover:text-fg"
                     >
-                      {inv.status === 'OVERDUE' ? 'Thanh toán ngay' : 'Thanh toán'}
-                    </Button>
-                  )}
-                  {inv.status === 'PAID' && <span className="text-sm text-success">Đã thanh toán</span>}
+                      <Download size={16} />
+                    </button>
+                  </div>
                 </TableCell>
               </TableRow>
             ))}

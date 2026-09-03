@@ -20,4 +20,9 @@ export const invoiceApi = {
     api
       .post<{ checkoutUrl: string }>(`/invoices/${id}/pay-online`)
       .then((r) => r.data),
+  // Available for any invoice status, not just PAID — a plain bill before paying, a receipt after.
+  downloadReceiptPdf: (id: string) =>
+    api
+      .get(`/invoices/${id}/pdf`, { responseType: "blob" })
+      .then((r) => r.data as Blob),
 };

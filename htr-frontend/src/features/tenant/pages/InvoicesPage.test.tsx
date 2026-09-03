@@ -1,9 +1,10 @@
 import type { ReactNode } from 'react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import api from '@/lib/api'
+import { invoiceApi } from '@/api/invoiceApi'
 import TenantInvoicesPage from './InvoicesPage'
 
 vi.mock('@/lib/api', () => ({
@@ -11,7 +12,7 @@ vi.mock('@/lib/api', () => ({
 }))
 
 vi.mock('@/api/invoiceApi', () => ({
-  invoiceApi: { createPaymentLink: vi.fn(), requestCashPayment: vi.fn() },
+  invoiceApi: { createPaymentLink: vi.fn(), requestCashPayment: vi.fn(), downloadReceiptPdf: vi.fn() },
 }))
 
 vi.mock('@/components/Layout', () => ({
@@ -65,5 +66,24 @@ describe('TenantInvoicesPage', () => {
     // Matches twice: the status Badge and the action-column indicator both read "Đã thanh toán".
     expect(await screen.findAllByText('Đã thanh toán')).toHaveLength(2)
     expect(screen.queryByRole('button', { name: /thanh toán/i })).not.toBeInTheDocument()
+  })
+
+  it('downloads the receipt PDF for a PAID invoice (available for any status, not just PENDING)', async () => {
+    vi.mocked(api.get).mockResolvedValue({ data: { content: [{ ...baseInvoice, status: 'PAID' }] } })
+    const pdfBlob = new Blob(['%PDF-fake'], { type: 'application/pdf' })
+    vi.mocked(invoiceApi.downloadReceiptPdf).mockResolvedValue(pdfBlob)
+    const createObjectURL = vi.fn(() => 'blob:fake-url')
+    const revokeObjectURL = vi.fn()
+    vi.stubGlobal('URL', { ...URL, createObjectURL, revokeObjectURL })
+
+    renderPage()
+
+    const downloadButton = await screen.findByRole('button', { name: 'Tải hóa đơn PDF' })
+    fireEvent.click(downloadButton)
+
+    await waitFor(() => expect(invoiceApi.downloadReceiptPdf).toHaveBeenCalledWith('inv-1'))
+    expect(createObjectURL).toHaveBeenCalledWith(pdfBlob)
+
+    vi.unstubAllGlobals()
   })
 })
