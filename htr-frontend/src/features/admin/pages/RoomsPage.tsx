@@ -14,7 +14,7 @@ import { directionLabel, formatCurrency, formatCurrencyInput, parseCurrencyInput
 import { Table, TableCell, TableRow } from '@/components/ui/table'
 import { getErrorMessage } from '@/lib/apiError'
 import { showToast } from '@/lib/toast'
-import { ImageOff } from 'lucide-react'
+import { ImageOff, Search } from 'lucide-react'
 import type { Property, Room, RoomDirection } from '@/types'
 
 const directionOptions: { value: RoomDirection; label: string }[] = [
@@ -32,6 +32,7 @@ export default function RoomsPage() {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [deletingRoom, setDeletingRoom] = useState<Room | null>(null)
   const [form, setForm] = useState(emptyForm)
+  const [search, setSearch] = useState('')
 
   const { data: sessionUser } = useQuery({
     queryKey: ['auth-session'],
@@ -134,18 +135,41 @@ export default function RoomsPage() {
     setShowForm(true)
   }
 
+  const filteredRooms = rooms?.filter((room) => {
+    if (!search.trim()) return true
+    const s = search.trim().toLowerCase()
+    return (
+      room.roomNumber.toLowerCase().includes(s) ||
+      (room.description ?? '').toLowerCase().includes(s) ||
+      String(room.floor ?? '').includes(s)
+    )
+  })
+
   return (
     <Layout title="Phòng">
-      <div className="mb-6 flex items-center justify-between">
-        <select
-          className="rounded-lg border border-border bg-surface px-3 py-2 text-sm text-fg"
-          value={effectiveSelectedProperty}
-          onChange={(event) => selectProperty(event.target.value)}
-        >
-          {properties?.map((property) => (
-            <option key={property.id} value={property.id}>{property.name}</option>
-          ))}
-        </select>
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center gap-2">
+          <select
+            className="rounded-lg border border-border bg-surface px-3 py-2 text-sm text-fg"
+            value={effectiveSelectedProperty}
+            onChange={(event) => selectProperty(event.target.value)}
+          >
+            {properties?.map((property) => (
+              <option key={property.id} value={property.id}>{property.name}</option>
+            ))}
+          </select>
+
+          <div className="relative">
+            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-fg-subtle" />
+            <input
+              type="text"
+              placeholder="Tìm số phòng, mô tả..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-56 rounded-xl border border-border bg-surface pl-9 pr-3 py-1.5 text-xs text-fg focus:outline-none focus:ring-2 focus:ring-accent"
+            />
+          </div>
+        </div>
         <Button onClick={startCreate} disabled={!effectiveSelectedProperty}>
           {showForm && !editingId ? 'Đóng' : '+ Thêm phòng'}
         </Button>
@@ -225,7 +249,7 @@ export default function RoomsPage() {
       ) : (
         <Card>
           <Table headers={['Ảnh', 'Số phòng', 'Tầng', 'Diện tích', 'Tối đa', 'Giá', 'Hướng', 'Mô tả', 'Trạng thái', 'Thao tác']}>
-            {rooms?.map((room) => (
+            {filteredRooms?.map((room) => (
               <TableRow key={room.id}>
                 <TableCell>
                   {room.images?.[0] ? (
@@ -261,6 +285,13 @@ export default function RoomsPage() {
                 </TableCell>
               </TableRow>
             ))}
+            {filteredRooms?.length === 0 && (
+              <TableRow>
+                <TableCell className="text-center text-fg-subtle py-8 col-span-10">
+                  Không tìm thấy phòng phù hợp
+                </TableCell>
+              </TableRow>
+            )}
           </Table>
         </Card>
       )}

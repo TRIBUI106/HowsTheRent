@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input'
 import { TableSkeleton } from '@/components/ui/feedback'
 import { Table, TableRow, TableCell } from '@/components/ui/table'
 import { userApi } from '@/api'
+import { Search } from 'lucide-react'
 import type { User } from '@/types'
 
 const FILTER_ROLES = ['ALL', 'ADMIN', 'PLATFORM_ADMIN', 'LANDLORD_ADMIN', 'TENANT', 'TECHNICIAN'] as const
@@ -47,6 +48,7 @@ const emptyEditForm = {
 export default function UsersPage() {
   const qc = useQueryClient()
   const [roleFilter, setRoleFilter] = useState<(typeof FILTER_ROLES)[number]>('ALL')
+  const [search, setSearch] = useState('')
   const [showCreate, setShowCreate] = useState(false)
   const [editingUser, setEditingUser] = useState<User | null>(null)
   const [createForm, setCreateForm] = useState(emptyCreateForm)
@@ -87,10 +89,16 @@ export default function UsersPage() {
     onSuccess: () => refreshUsers(),
   })
 
-  const filtered = useMemo(
-    () => (roleFilter === 'ALL' ? users : users.filter(u => u.role === roleFilter)),
-    [users, roleFilter],
-  )
+  const filtered = useMemo(() => {
+    const byRole = roleFilter === 'ALL' ? users : users.filter(u => u.role === roleFilter)
+    if (!search.trim()) return byRole
+    const s = search.trim().toLowerCase()
+    return byRole.filter(u =>
+      u.fullName.toLowerCase().includes(s) ||
+      u.email.toLowerCase().includes(s) ||
+      (u.phone ?? '').toLowerCase().includes(s)
+    )
+  }, [users, roleFilter, search])
 
   function openCreateModal() {
     setCreateForm(emptyCreateForm)
@@ -111,7 +119,17 @@ export default function UsersPage() {
       <div className="space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <p className="text-sm text-fg-muted">{filtered.length} người dùng</p>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="relative">
+              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-fg-subtle" />
+              <input
+                type="text"
+                placeholder="Tìm tên, email, SĐT..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-56 rounded-xl border border-border bg-surface pl-9 pr-3 py-1.5 text-xs text-fg focus:outline-none focus:ring-2 focus:ring-accent"
+              />
+            </div>
             <div className="flex gap-1.5">
               {FILTER_ROLES.map(r => (
                 <button
@@ -165,7 +183,7 @@ export default function UsersPage() {
               {filtered.length === 0 && (
                 <TableRow>
                   <TableCell className="text-center text-fg-subtle py-8 col-span-7">
-                    Không có người dùng
+                    {users.length === 0 ? 'Không có người dùng' : 'Không tìm thấy người dùng phù hợp'}
                   </TableCell>
                 </TableRow>
               )}

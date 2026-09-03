@@ -538,13 +538,13 @@ export default function AdminMaintenancePage() {
                 <TableRow key={request.id}>
                   <TableCell className="font-medium max-w-[220px]">
                     <div>
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex flex-col items-start gap-0.5">
                         {request.ticketCode && (
                           <span className="rounded bg-sidebar px-1.5 py-0.5 font-mono text-[11px] font-bold text-accent">
                             #{request.ticketCode}
                           </span>
                         )}
-                        <span className="text-fg font-semibold truncate">{request.title}</span>
+                        <span className="text-fg font-semibold break-words">{request.title}</span>
                       </div>
                       {request.description && (
                         <p className="text-xs text-fg-muted mt-0.5 line-clamp-1">{request.description}</p>

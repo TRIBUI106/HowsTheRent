@@ -10,6 +10,7 @@ import { getRoomPropertyName } from '@/lib/apiMappers'
 import { formatMonth, formatCurrencyInput, parseCurrencyInput } from '@/lib/utils'
 import { showToast } from '@/lib/toast'
 import api from '@/lib/api'
+import { Search } from 'lucide-react'
 import type { Room, Property } from '@/types'
 
 type ReadingMode = 'MANUAL' | 'HUNONIC'
@@ -111,6 +112,7 @@ export default function MeterReadingsPage() {
   const qc = useQueryClient()
   const [selectedMonth, setSelectedMonth] = useState(currentYearMonth())
   const [mode, setMode] = useState<ReadingMode>('MANUAL')
+  const [search, setSearch] = useState('')
   const [forms, setForms] = useState<Record<string, Record<string, ReadingForm>>>({})
   const [successRooms, setSuccessRooms] = useState<Record<string, Set<string>>>({})
   const [editingRooms, setEditingRooms] = useState<Record<string, Set<string>>>({})
@@ -179,6 +181,18 @@ export default function MeterReadingsPage() {
         params: { readingMonth: getMonthDate(selectedMonth) },
       }).then((r) => r.data),
   })
+
+  const filteredRooms = useMemo(() => {
+    if (!search.trim()) return rooms
+    const s = search.trim().toLowerCase()
+    return rooms.filter((room) => room.roomNumber.toLowerCase().includes(s) || getRoomPropertyName(room).toLowerCase().includes(s))
+  }, [rooms, search])
+
+  const filteredHunonicPreview = useMemo(() => {
+    if (!search.trim()) return hunonicPreview
+    const s = search.trim().toLowerCase()
+    return hunonicPreview.filter((item) => item.roomNumber.toLowerCase().includes(s) || item.propertyName.toLowerCase().includes(s))
+  }, [hunonicPreview, search])
 
   const seededForms = useMemo(() => {
     const nextForms: Record<string, ReadingForm> = {}
@@ -427,7 +441,21 @@ export default function MeterReadingsPage() {
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <div>
+              <label className="mb-1 block text-xs text-fg-muted">Tìm phòng</label>
+              <div className="relative">
+                <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-fg-subtle" />
+                <input
+                  type="text"
+                  placeholder="Số phòng, toà nhà..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="w-52 rounded-xl border border-border bg-surface pl-9 pr-3 py-2 text-sm text-fg focus:outline-none focus:ring-2 focus:ring-accent"
+                />
+              </div>
+            </div>
+
             <div>
               <label className="mb-1 block text-xs text-fg-muted">Tháng</label>
               <input
@@ -490,10 +518,12 @@ export default function MeterReadingsPage() {
               <CardsSkeleton count={6} />
             ) : (
               <>
-                <p className="text-sm text-fg-muted">{rooms.length} phòng đang thuê</p>
+                <p className="text-sm text-fg-muted">
+                  {search.trim() ? `${filteredRooms.length}/${rooms.length}` : rooms.length} phòng đang thuê
+                </p>
 
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-                  {rooms.map((room) => {
+                  {filteredRooms.map((room) => {
                     const form = getForm(room.id)
                     const seed = readingSeeds[room.id]
                     const previous = seed?.previous
@@ -690,8 +720,10 @@ export default function MeterReadingsPage() {
                     )
                   })}
 
-                  {rooms.length === 0 && (
-                    <div className="col-span-3 py-16 text-center text-fg-subtle">Không có phòng đang thuê</div>
+                  {filteredRooms.length === 0 && (
+                    <div className="col-span-3 py-16 text-center text-fg-subtle">
+                      {rooms.length === 0 ? 'Không có phòng đang thuê' : 'Không tìm thấy phòng phù hợp'}
+                    </div>
                   )}
                 </div>
               </>
@@ -710,7 +742,7 @@ export default function MeterReadingsPage() {
               <CardsSkeleton count={6} />
             ) : (
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-                {hunonicPreview.map((item) => (
+                {filteredHunonicPreview.map((item) => (
                   <Card key={item.roomId} className="p-4">
                     <div className="mb-3">
                       <p className="font-semibold text-fg">{item.roomNumber}</p>
@@ -754,8 +786,10 @@ export default function MeterReadingsPage() {
                   </Card>
                 ))}
 
-                {hunonicPreview.length === 0 && (
-                  <div className="col-span-3 py-16 text-center text-fg-subtle">Không có phòng đang thuê để kiểm tra Hunonic</div>
+                {filteredHunonicPreview.length === 0 && (
+                  <div className="col-span-3 py-16 text-center text-fg-subtle">
+                    {hunonicPreview.length === 0 ? 'Không có phòng đang thuê để kiểm tra Hunonic' : 'Không tìm thấy phòng phù hợp'}
+                  </div>
                 )}
               </div>
             )}

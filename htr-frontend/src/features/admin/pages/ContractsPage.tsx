@@ -14,7 +14,7 @@ import { getRoomPropertyName, normalizeContract } from '@/lib/apiMappers'
 import { formatCurrency, formatCurrencyInput, formatDate, parseCurrencyInput } from '@/lib/utils'
 import { userApi } from '@/api'
 import type { Contract, Room, User } from '@/types'
-import { Download } from 'lucide-react'
+import { Download, Search } from 'lucide-react'
 
 interface ContractApiRow {
   id: string
@@ -57,6 +57,7 @@ export default function ContractsPage() {
   const [renewing, setRenewing] = useState<string | null>(null)
   const [renewForm, setRenewForm] = useState({ newEndDate: '', newDepositAmount: '' })
   const [renewError, setRenewError] = useState('')
+  const [search, setSearch] = useState('')
 
   const { data: contractsData, isLoading, error } = useQuery<ContractApiRow[]>({
     queryKey: ['admin-contracts'],
@@ -76,6 +77,17 @@ export default function ContractsPage() {
   })
 
   const contracts: Contract[] = (contractsData ?? []).map(normalizeContract)
+
+  const filteredContracts = contracts.filter((contract) => {
+    if (!search.trim()) return true
+    const s = search.trim().toLowerCase()
+    return (
+      contract.room.roomNumber.toLowerCase().includes(s) ||
+      contract.room.propertyName.toLowerCase().includes(s) ||
+      contract.tenant.fullName.toLowerCase().includes(s) ||
+      contract.tenant.email.toLowerCase().includes(s)
+    )
+  })
 
   const terminateMutation = useGuardedMutation({
     mutationFn: (id: string) => api.post(`/contracts/${id}/terminate`),
@@ -133,9 +145,19 @@ export default function ContractsPage() {
   return (
     <Layout>
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <h1 className="text-2xl font-bold text-fg">Hợp đồng</h1>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="relative">
+              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-fg-subtle" />
+              <input
+                type="text"
+                placeholder="Tìm phòng, khách thuê, email..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-56 rounded-xl border border-border bg-surface pl-9 pr-3 py-1.5 text-xs text-fg focus:outline-none focus:ring-2 focus:ring-accent"
+              />
+            </div>
             <Button
               variant="outline"
               size="sm"
@@ -270,7 +292,7 @@ export default function ContractsPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/60 bg-surface">
-                {contracts.map(contract => (
+                {filteredContracts.map(contract => (
                   <tr key={contract.id} className="transition-colors hover:bg-sidebar/30">
                     <td className="px-4 py-3 text-sm font-medium text-fg">{contract.room.roomNumber}</td>
                     <td className="px-4 py-3 text-sm text-fg-muted">{contract.room.propertyName}</td>
@@ -356,9 +378,11 @@ export default function ContractsPage() {
                     </td>
                   </tr>
                 ))}
-                {contracts.length === 0 && (
+                {filteredContracts.length === 0 && (
                   <tr>
-                    <td colSpan={8} className="px-4 py-8 text-center text-fg-subtle">Chưa có hợp đồng</td>
+                    <td colSpan={8} className="px-4 py-8 text-center text-fg-subtle">
+                      {contracts.length === 0 ? 'Chưa có hợp đồng' : 'Không tìm thấy hợp đồng phù hợp'}
+                    </td>
                   </tr>
                 )}
               </tbody>
