@@ -18,6 +18,11 @@ import type { User } from '@/types'
 
 const FILTER_ROLES = ['ALL', 'ADMIN', 'PLATFORM_ADMIN', 'LANDLORD_ADMIN', 'TENANT', 'TECHNICIAN'] as const
 const USER_ROLES = ['ADMIN', 'PLATFORM_ADMIN', 'LANDLORD_ADMIN', 'TENANT', 'TECHNICIAN'] as const
+// PLATFORM_ADMIN/LANDLORD_ADMIN dropped from the CREATE form only, per explicit request — creating
+// a brand new user with either role keeps 409ing in production ("Không thể thực hiện vì dữ liệu
+// đang được sử dụng ở nơi khác"), still unresolved. USER_ROLES (both roles included) stays as-is
+// for the edit form, which wasn't reported as failing.
+const CREATABLE_USER_ROLES = USER_ROLES.filter(role => role !== 'PLATFORM_ADMIN' && role !== 'LANDLORD_ADMIN')
 
 // Keyed by (typeof FILTER_ROLES)[number] | 'GUEST' rather than FILTER_ROLES
 // alone: GUEST accounts are self-registered via the public blog (Task 6),
@@ -220,7 +225,7 @@ export default function UsersPage() {
             value={createForm.role}
             onChange={(e) => setCreateForm((p) => ({ ...p, role: e.target.value as User['role'] }))}
           >
-            {USER_ROLES.map(role => <option key={role} value={role}>{ROLE_LABELS[role]}</option>)}
+            {CREATABLE_USER_ROLES.map(role => <option key={role} value={role}>{ROLE_LABELS[role]}</option>)}
           </Select>
           <div className="flex justify-end gap-2">
             <Button type="button" variant="secondary" onClick={() => setShowCreate(false)}>Huỷ</Button>
