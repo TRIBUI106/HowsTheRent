@@ -7,7 +7,7 @@ import { adminBlogApi } from '@/api'
 import AdminBlogCommentsPage from './AdminBlogCommentsPage'
 
 vi.mock('@/api', () => ({
-  adminBlogApi: { listComments: vi.fn(), deleteComment: vi.fn() },
+  adminBlogApi: { listComments: vi.fn(), deleteComment: vi.fn(), listAll: vi.fn() },
 }))
 
 // See AdminBlogListPage.test.tsx for why Layout is shallow-mocked here.
@@ -30,6 +30,7 @@ describe('AdminBlogCommentsPage', () => {
       { id: 'c1', content: 'Spam link…', userId: 'u1', userName: 'Khách X', postId: 'p1', postTitle: 'Bài A', postSlug: 'bai-a', createdAt: '2026-08-01T00:00:00' },
     ])
     vi.mocked(adminBlogApi.deleteComment).mockResolvedValue(undefined)
+    vi.mocked(adminBlogApi.listAll).mockResolvedValue([])
   })
 
   it('lists comments with post context and deletes after confirmation', async () => {
