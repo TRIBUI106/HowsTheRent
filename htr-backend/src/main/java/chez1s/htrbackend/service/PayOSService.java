@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
@@ -216,7 +217,8 @@ public class PayOSService {
         return orderCode == 0 ? 1 : orderCode;
     }
 
-    private int validateAmount(Invoice invoice) {
+    // Package-private (not private) so PayOSServiceTest can exercise it directly.
+    int validateAmount(Invoice invoice) {
         BigDecimal totalAmount = invoice.getTotalAmount();
         if (totalAmount == null || totalAmount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new BusinessException("Số tiền hóa đơn phải lớn hơn 0");
@@ -224,10 +226,14 @@ public class PayOSService {
         if (totalAmount.compareTo(BigDecimal.valueOf(Integer.MAX_VALUE)) > 0) {
             throw new BusinessException("Số tiền hóa đơn vượt quá giới hạn PayOS");
         }
+        // VND has no subdivision — round to the nearest whole đồng rather than rejecting the
+        // payment outright. BillingService now generates whole-VND amounts for new invoices, but
+        // this also keeps invoices created before that fix (or via any other path) payable instead
+        // of surfacing a confusing "Số tiền hóa đơn phải là số nguyên hợp lệ" 400 to the tenant.
         try {
-            return totalAmount.intValueExact();
+            return totalAmount.setScale(0, RoundingMode.HALF_UP).intValueExact();
         } catch (ArithmeticException e) {
-            throw new BusinessException("Số tiền hóa đơn phải là số nguyên hợp lệ");
+            throw new BusinessException("Số tiền hóa đơn vượt quá giới hạn PayOS");
         }
     }
 

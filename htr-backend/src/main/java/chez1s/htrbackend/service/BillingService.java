@@ -20,7 +20,7 @@ public class BillingService {
         if (moveInMonth.equals(targetMonth)) {
             return calcProRata(fullRent, contract.getMoveInDate());
         }
-        return fullRent;
+        return fullRent.setScale(0, RoundingMode.HALF_UP);
     }
 
     public BigDecimal calcElec(MeterReading reading, FeeConfig config) {
@@ -28,13 +28,13 @@ public class BillingService {
                 ? (reading.getElecOldMeterFinal() - reading.getElecOld()) + (reading.getElecNew() - reading.getElecNewMeterStart())
                 : reading.getElecNew() - reading.getElecOld();
         return BigDecimal.valueOf(usage).multiply(config.getElecPrice())
-                .setScale(2, RoundingMode.HALF_UP);
+                .setScale(0, RoundingMode.HALF_UP);
     }
 
     public BigDecimal calcWater(MeterReading reading, FeeConfig config, int tenantCount) {
         if (config.getWaterMode() == WaterMode.PERSON) {
             return BigDecimal.valueOf(tenantCount).multiply(config.getWaterPrice())
-                    .setScale(2, RoundingMode.HALF_UP);
+                    .setScale(0, RoundingMode.HALF_UP);
         }
         if (reading.getWaterOld() == null || reading.getWaterNew() == null) {
             return BigDecimal.ZERO;
@@ -43,7 +43,7 @@ public class BillingService {
                 ? (reading.getWaterOldMeterFinal() - reading.getWaterOld()) + (reading.getWaterNew() - reading.getWaterNewMeterStart())
                 : reading.getWaterNew() - reading.getWaterOld();
         return BigDecimal.valueOf(usage).multiply(config.getWaterPrice())
-                .setScale(2, RoundingMode.HALF_UP);
+                .setScale(0, RoundingMode.HALF_UP);
     }
 
     public BigDecimal calcVehicle(VehicleRecord record, FeeConfig feeConfig) {
@@ -53,13 +53,13 @@ public class BillingService {
         BigDecimal moto = BigDecimal.valueOf(record.getMotorbikeCount()).multiply(feeConfig.getMotorbikePrice());
         BigDecimal car = BigDecimal.valueOf(record.getCarCount()).multiply(feeConfig.getCarPrice());
         BigDecimal bicycle = BigDecimal.valueOf(record.getBicycleCount()).multiply(feeConfig.getBicyclePrice());
-        return moto.add(car).add(bicycle).setScale(2, RoundingMode.HALF_UP);
+        return moto.add(car).add(bicycle).setScale(0, RoundingMode.HALF_UP);
     }
 
     public BigDecimal calcService(MeterReading reading, FeeConfig config) {
         return reading.getServiceFeeOverride() != null
-                ? reading.getServiceFeeOverride().setScale(2, RoundingMode.HALF_UP)
-                : config.getServiceFee();
+                ? reading.getServiceFeeOverride().setScale(0, RoundingMode.HALF_UP)
+                : config.getServiceFee().setScale(0, RoundingMode.HALF_UP);
     }
 
     public BigDecimal calcProRata(BigDecimal fullRent, LocalDate moveInDate) {
@@ -67,7 +67,7 @@ public class BillingService {
         int daysInMonth = ym.lengthOfMonth();
         int daysUsed = daysInMonth - moveInDate.getDayOfMonth() + 1;
         return fullRent.multiply(BigDecimal.valueOf(daysUsed))
-                .divide(BigDecimal.valueOf(daysInMonth), 2, RoundingMode.HALF_UP);
+                .divide(BigDecimal.valueOf(daysInMonth), 0, RoundingMode.HALF_UP);
     }
 
     public boolean isProRataMonth(Contract contract, YearMonth targetMonth) {

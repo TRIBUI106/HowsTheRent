@@ -1,5 +1,7 @@
 package chez1s.htrbackend.service;
 
+import chez1s.htrbackend.domain.entity.Invoice;
+import chez1s.htrbackend.exception.BusinessException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -8,7 +10,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
-import java.lang.reflect.Method;
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
@@ -119,5 +121,53 @@ class PayOSServiceTest {
 
         assertThatThrownBy(() -> payOSService.handleWebhook(payload))
                 .hasMessageContaining("Invalid webhook payload");
+    }
+
+    // ---- validateAmount ----
+
+    private Invoice invoiceWithAmount(BigDecimal amount) {
+        return Invoice.builder().totalAmount(amount).build();
+    }
+
+    @Test
+    void validateAmount_wholeAmount_returnsItUnchanged() {
+        assertThat(payOSService.validateAmount(invoiceWithAmount(new BigDecimal("223667"))))
+                .isEqualTo(223667);
+    }
+
+    // Regression test: VND has no subdivision, so an invoice carrying residual sub-đồng
+    // fractions (e.g. from an uneven pro-rata division, or one generated before that rounding
+    // fix) must still be payable — round to the nearest whole đồng instead of rejecting it.
+    @Test
+    void validateAmount_residualFraction_roundsToNearestDong() {
+        assertThat(payOSService.validateAmount(invoiceWithAmount(new BigDecimal("1258064.52"))))
+                .isEqualTo(1258065);
+        assertThat(payOSService.validateAmount(invoiceWithAmount(new BigDecimal("1258064.49"))))
+                .isEqualTo(1258064);
+    }
+
+    @Test
+    void validateAmount_zeroOrNegative_throwsBusinessException() {
+        assertThatThrownBy(() -> payOSService.validateAmount(invoiceWithAmount(BigDecimal.ZERO)))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("lớn hơn 0");
+        assertThatThrownBy(() -> payOSService.validateAmount(invoiceWithAmount(new BigDecimal("-100"))))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("lớn hơn 0");
+    }
+
+    @Test
+    void validateAmount_nullAmount_throwsBusinessException() {
+        assertThatThrownBy(() -> payOSService.validateAmount(invoiceWithAmount(null)))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("lớn hơn 0");
+    }
+
+    @Test
+    void validateAmount_exceedsIntRange_throwsBusinessException() {
+        BigDecimal tooLarge = BigDecimal.valueOf(Integer.MAX_VALUE).add(BigDecimal.ONE);
+        assertThatThrownBy(() -> payOSService.validateAmount(invoiceWithAmount(tooLarge)))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("vượt quá giới hạn");
     }
 }

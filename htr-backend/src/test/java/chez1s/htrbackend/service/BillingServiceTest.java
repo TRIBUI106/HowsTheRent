@@ -10,6 +10,7 @@ import java.time.LocalDate;
 import java.time.YearMonth;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 
 class BillingServiceTest {
 
@@ -226,8 +227,21 @@ class BillingServiceTest {
         // 30-day month: days used = 30-16+1 = 15
         BigDecimal result = billingService.calcProRata(new BigDecimal("3000000"), LocalDate.of(2025, 4, 16));
         BigDecimal expected = new BigDecimal("3000000").multiply(BigDecimal.valueOf(15))
-                .divide(BigDecimal.valueOf(30), 2, java.math.RoundingMode.HALF_UP);
+                .divide(BigDecimal.valueOf(30), 0, java.math.RoundingMode.HALF_UP);
         assertThat(result).isEqualByComparingTo(expected);
+    }
+
+    // Regression test: VND has no subdivision, so a division that doesn't come out even (here,
+    // 13/31) must round to a whole đồng, not carry residual fractional cents — that residue is
+    // exactly what made PayOS reject the payment with "Số tiền hóa đơn phải là số nguyên hợp lệ".
+    @Test
+    void calcProRata_unevenDivision_roundsToWholeDong_noResidualFraction() {
+        // 31-day month, move in on the 19th → days used = 31-19+1 = 13
+        BigDecimal result = billingService.calcProRata(new BigDecimal("3000000"), LocalDate.of(2025, 1, 19));
+        // 3000000 * 13 / 31 = 1258064.5161... which HALF_UP-rounds to 1258065 at scale 0
+        assertThat(result).isEqualByComparingTo(new BigDecimal("1258065"));
+        assertThat(result.scale()).isEqualTo(0);
+        assertThatCode(() -> result.intValueExact()).doesNotThrowAnyException();
     }
 
     // ---- isProRataMonth ----
