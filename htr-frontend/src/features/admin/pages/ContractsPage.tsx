@@ -60,6 +60,7 @@ export default function ContractsPage() {
   const [renewForm, setRenewForm] = useState({ newEndDate: '', newDepositAmount: '' })
   const [renewError, setRenewError] = useState('')
   const [search, setSearch] = useState('')
+  const [isExportingExcel, setIsExportingExcel] = useState(false)
 
   const { data: contractsData, isLoading, error } = useQuery<ContractApiRow[]>({
     queryKey: ['admin-contracts'],
@@ -127,6 +128,27 @@ export default function ContractsPage() {
     },
   })
 
+  async function exportExcel() {
+    setIsExportingExcel(true)
+    try {
+      const response = await api.get('/export/contracts', { responseType: 'blob', validateStatus: status => status === 200 || status === 204 })
+      if (response.status === 204 || response.headers['x-export-result'] === 'NO_DATA') {
+        window.alert('Không có dữ liệu hợp đồng để xuất')
+        return
+      }
+      const url = URL.createObjectURL(response.data)
+      const anchor = document.createElement('a')
+      anchor.href = url
+      anchor.download = 'hopdong.xlsx'
+      anchor.click()
+      URL.revokeObjectURL(url)
+    } catch {
+      window.alert('Không thể xuất danh sách hợp đồng')
+    } finally {
+      setIsExportingExcel(false)
+    }
+  }
+
   function handleCreate(e: React.FormEvent) {
     e.preventDefault()
     const moveInDate = form.moveInDate
@@ -166,25 +188,11 @@ export default function ContractsPage() {
             <Button
               variant="outline"
               size="sm"
-              onClick={async () => {
-                try {
-                  const response = await api.get('/export/contracts', { responseType: 'blob', validateStatus: status => status === 200 || status === 204 })
-                  if (response.status === 204 || response.headers['x-export-result'] === 'NO_DATA') {
-                    window.alert('Không có dữ liệu hợp đồng để xuất')
-                    return
-                  }
-                  const url = URL.createObjectURL(response.data)
-                  const anchor = document.createElement('a')
-                  anchor.href = url
-                  anchor.download = 'hopdong.xlsx'
-                  anchor.click()
-                  URL.revokeObjectURL(url)
-                } catch {
-                  window.alert('Không thể xuất danh sách hợp đồng')
-                }
-              }}
+              onClick={exportExcel}
+              loading={isExportingExcel}
             >
-              <Download size={14} className="mr-1" /> Excel
+              {!isExportingExcel && <Download size={14} className="mr-1" />}
+              {isExportingExcel ? 'Đang xuất...' : 'Excel'}
             </Button>
             <Button variant="primary" onClick={() => { setShowCreate(true); setForm(emptyForm()); setFormError(null) }}>
               + Tạo hợp đồng

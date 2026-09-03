@@ -56,6 +56,7 @@ export default function AdminInvoicesPage() {
   const [generateConfirmed, setGenerateConfirmed] = useState(false)
   const [generationResult, setGenerationResult] = useState<InvoiceGenerationResult | null>(null)
   const [pendingCashInvoiceIds, setPendingCashInvoiceIds] = useState<Set<string>>(new Set())
+  const [isExportingExcel, setIsExportingExcel] = useState(false)
 
   const markPaidCashMutation = useGuardedMutation({
     mutationFn: async (id: string) => {
@@ -161,23 +162,24 @@ export default function AdminInvoicesPage() {
     }
   }
 
-  function exportExcel() {
-    api.get('/export/invoices', { responseType: 'blob' })
-      .then((r) => r.data)
-      .then((blob) => {
-        const url = URL.createObjectURL(blob)
-        const anchor = document.createElement('a')
-        anchor.href = url
-        anchor.download = 'hoadon.xlsx'
-        anchor.click()
-        URL.revokeObjectURL(url)
+  async function exportExcel() {
+    setIsExportingExcel(true)
+    try {
+      const { data: blob } = await api.get('/export/invoices', { responseType: 'blob' })
+      const url = URL.createObjectURL(blob)
+      const anchor = document.createElement('a')
+      anchor.href = url
+      anchor.download = 'hoadon.xlsx'
+      anchor.click()
+      URL.revokeObjectURL(url)
+    } catch (error: unknown) {
+      showToast({
+        message: getErrorMessage(error, 'Không thể xuất Excel hóa đơn'),
+        type: 'error',
       })
-      .catch((error: unknown) => {
-        showToast({
-          message: getErrorMessage(error, 'Không thể xuất Excel hóa đơn'),
-          type: 'error',
-        })
-      })
+    } finally {
+      setIsExportingExcel(false)
+    }
   }
 
   return (
@@ -192,9 +194,9 @@ export default function AdminInvoicesPage() {
               Tạo hóa đơn
             </Button>
 
-            <Button variant="outline" size="sm" onClick={exportExcel}>
-              <Download size={14} className="mr-1" />
-              Excel
+            <Button variant="outline" size="sm" onClick={exportExcel} loading={isExportingExcel}>
+              {!isExportingExcel && <Download size={14} className="mr-1" />}
+              {isExportingExcel ? 'Đang xuất...' : 'Excel'}
             </Button>
 
             <div className="flex gap-2">
