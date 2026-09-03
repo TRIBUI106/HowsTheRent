@@ -9,6 +9,7 @@ import Layout from '@/components/Layout'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Select } from '@/components/ui/select'
 import { ListSkeleton } from '@/components/ui/feedback'
 import { formatDate, formatCurrency, priorityColor, priorityLabel, categoryLabel } from '@/lib/utils'
 import { showToast } from '@/lib/toast'
@@ -257,33 +258,27 @@ export default function TenantMaintenancePage() {
                 )}
 
                 <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="mb-1 block text-xs font-medium text-fg">Mức độ ưu tiên</label>
-                    <select
-                      value={priority}
-                      onChange={(e) => setPriority(e.target.value as MaintenancePriority)}
-                      className="w-full rounded-xl border border-border/80 bg-surface px-3 py-2 text-sm text-fg focus:outline-none focus:ring-2 focus:ring-accent"
-                    >
-                      <option value="NORMAL">Bình thường</option>
-                      <option value="HIGH">Ưu tiên cao</option>
-                      <option value="URGENT">Khẩn cấp (!)</option>
-                    </select>
-                  </div>
+                  <Select
+                    label="Mức độ ưu tiên"
+                    value={priority}
+                    onChange={(e) => setPriority(e.target.value as MaintenancePriority)}
+                  >
+                    <option value="NORMAL">Bình thường</option>
+                    <option value="HIGH">Ưu tiên cao</option>
+                    <option value="URGENT">Khẩn cấp (!)</option>
+                  </Select>
 
-                  <div>
-                    <label className="mb-1 block text-xs font-medium text-fg">Danh mục sự cố</label>
-                    <select
-                      value={category}
-                      onChange={(e) => setCategory(e.target.value as MaintenanceCategory)}
-                      className="w-full rounded-xl border border-border/80 bg-surface px-3 py-2 text-sm text-fg focus:outline-none focus:ring-2 focus:ring-accent"
-                    >
-                      <option value="ELECTRIC">Điện</option>
-                      <option value="PLUMBING">Nước / Đường ống</option>
-                      <option value="AIR_CONDITIONER">Điều hòa</option>
-                      <option value="FURNITURE">Nội thất / Cửa</option>
-                      <option value="OTHER">Khác</option>
-                    </select>
-                  </div>
+                  <Select
+                    label="Danh mục sự cố"
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value as MaintenanceCategory)}
+                  >
+                    <option value="ELECTRIC">Điện</option>
+                    <option value="PLUMBING">Nước / Đường ống</option>
+                    <option value="AIR_CONDITIONER">Điều hòa</option>
+                    <option value="FURNITURE">Nội thất / Cửa</option>
+                    <option value="OTHER">Khác</option>
+                  </Select>
                 </div>
 
                 <div>
@@ -340,14 +335,10 @@ export default function TenantMaintenancePage() {
                 <div>
                   <label className="mb-1 block text-sm font-medium text-fg">Hình ảnh hiện trường</label>
                   <input ref={fileRef} type="file" accept="image/*" multiple onChange={handleFileChange} className="hidden" />
-                  <button
-                    type="button"
-                    onClick={() => fileRef.current?.click()}
-                    className="flex items-center gap-2 rounded-xl border border-border/80 px-4 py-2 text-sm text-fg-muted transition-colors hover:bg-sidebar"
-                  >
+                  <Button type="button" variant="outline" onClick={() => fileRef.current?.click()}>
                     <Camera size={16} />
                     Chọn hình ảnh đính kèm
-                  </button>
+                  </Button>
 
                   {previewUrls.length > 0 && (
                     <div className="mt-2 flex flex-wrap gap-2">
@@ -430,10 +421,9 @@ export default function TenantMaintenancePage() {
                   Hủy
                 </Button>
                 <Button
-                  variant="primary"
+                  variant="danger"
                   disabled={!complainReason.trim() || complainMutation.isPending}
                   onClick={() => complainMutation.mutate({ id: complainModalId, reason: complainReason })}
-                  className="bg-error hover:bg-error/90 text-white"
                 >
                   {complainMutation.isPending ? 'Đang gửi...' : 'Xác nhận khiếu nại'}
                 </Button>
@@ -503,27 +493,31 @@ export default function TenantMaintenancePage() {
                               <span className="inline-flex items-center gap-1 rounded-full bg-error/15 px-2 py-0.5 text-[11px] font-semibold text-error">
                                 <AlertTriangle size={12} /> Bạn đã báo bận
                               </span>
-                              <button
+                              <Button
+                                type="button"
+                                size="xs"
                                 onClick={() => tenantConfirmSlotMutation.mutate({ id: request.id, confirm: true })}
-                                className="rounded-lg bg-accent px-2.5 py-1 font-semibold text-accent-fg hover:bg-accent-hover"
                               >
                                 Xác nhận lịch
-                              </button>
+                              </Button>
                             </div>
                           ) : (
                             <div className="flex gap-2">
-                              <button
+                              <Button
+                                type="button"
+                                size="xs"
                                 onClick={() => tenantConfirmSlotMutation.mutate({ id: request.id, confirm: true })}
-                                className="rounded-lg bg-accent px-2.5 py-1 font-semibold text-accent-fg hover:bg-accent-hover"
                               >
                                 Xác nhận lịch
-                              </button>
-                              <button
+                              </Button>
+                              <Button
+                                type="button"
+                                size="xs"
+                                variant="outline"
                                 onClick={() => tenantConfirmSlotMutation.mutate({ id: request.id, confirm: false })}
-                                className="rounded-lg border border-border px-2.5 py-1 font-medium text-fg hover:bg-sidebar"
                               >
                                 Báo bận
-                              </button>
+                              </Button>
                             </div>
                           )}
                         </div>
@@ -608,11 +602,10 @@ export default function TenantMaintenancePage() {
                               Khiếu nại / Khắc phục lại
                             </Button>
                             <Button
-                              variant="primary"
+                              variant="success"
                               size="sm"
                               disabled={resolveMutation.isPending}
                               onClick={() => resolveMutation.mutate(request.id)}
-                              className="flex items-center gap-1.5 bg-success hover:bg-success/90 text-success-fg font-semibold shadow-sm"
                             >
                               <CheckCircle size={14} />
                               Xác nhận hoàn thành
@@ -711,14 +704,13 @@ export default function TenantMaintenancePage() {
                     variant="outline"
                     onClick={() => setReviewModalId(null)}
                     disabled={reviewMutation.isPending}
-                    className="rounded-xl"
                   >
                     Hủy bỏ
                   </Button>
                   <Button
                     onClick={() => reviewMutation.mutate({ id: reviewModalId, stars: ratingStars, comment: reviewComment })}
                     disabled={reviewMutation.isPending}
-                    className="bg-amber-600 hover:bg-amber-700 text-white rounded-xl shadow-sm"
+                    className="bg-amber-600 hover:bg-amber-700 text-white shadow-sm"
                   >
                     {reviewMutation.isPending ? 'Đang gửi...' : 'Gửi đánh giá'}
                   </Button>

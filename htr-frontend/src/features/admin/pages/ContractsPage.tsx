@@ -7,11 +7,13 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { DatePicker } from '@/components/ui/date-picker'
+import { Select } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { TableSkeleton } from '@/components/ui/feedback'
 import api from '@/lib/api'
 import { getRoomPropertyName, normalizeContract } from '@/lib/apiMappers'
 import { formatCurrency, formatCurrencyInput, formatDate, parseCurrencyInput } from '@/lib/utils'
+import { showToast } from '@/lib/toast'
 import { userApi } from '@/api'
 import type { Contract, Room, User } from '@/types'
 import { Download, Search } from 'lucide-react'
@@ -94,6 +96,9 @@ export default function ContractsPage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['admin-contracts'] })
       setTerminating(null)
+    },
+    onError: (e: unknown) => {
+      showToast({ message: getErrorMessage(e, 'Không thể chấm dứt hợp đồng'), type: 'error' })
     },
   })
 
@@ -192,47 +197,41 @@ export default function ContractsPage() {
             <Card className="mx-4 max-h-[90vh] w-full max-w-lg overflow-y-auto p-6 animate-scale-in">
               <h2 className="mb-4 text-lg font-semibold text-fg">Tạo hợp đồng mới</h2>
               <form onSubmit={handleCreate} className="space-y-4">
-                <div>
-                  <label className="mb-1 block text-sm font-medium text-fg">Phòng <span className="text-error">*</span></label>
-                  <select
-                    required
-                    className="w-full rounded-xl border border-border/80 bg-surface px-3 py-2 text-sm text-fg focus:outline-none focus:ring-2 focus:ring-accent"
-                    value={form.roomId}
-                    onChange={e => setForm(current => ({ ...current, roomId: e.target.value }))}
-                  >
-                    <option value="">
-                      {emptyRoomsLoading
-                        ? 'Đang tải phòng trống...'
-                        : emptyRoomsError
-                          ? 'Không tải được phòng trống'
-                          : emptyRooms?.length === 0
-                            ? 'Không có phòng trống'
-                            : 'Chọn phòng trống...'}
+                <Select
+                  label={<>Phòng <span className="text-error">*</span></>}
+                  required
+                  value={form.roomId}
+                  onChange={e => setForm(current => ({ ...current, roomId: e.target.value }))}
+                >
+                  <option value="">
+                    {emptyRoomsLoading
+                      ? 'Đang tải phòng trống...'
+                      : emptyRoomsError
+                        ? 'Không tải được phòng trống'
+                        : emptyRooms?.length === 0
+                          ? 'Không có phòng trống'
+                          : 'Chọn phòng trống...'}
+                  </option>
+                  {emptyRooms?.map(room => (
+                    <option key={room.id} value={room.id}>
+                      {room.roomNumber} - {getRoomPropertyName(room)}
                     </option>
-                    {emptyRooms?.map(room => (
-                      <option key={room.id} value={room.id}>
-                        {room.roomNumber} - {getRoomPropertyName(room)}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                  ))}
+                </Select>
 
-                <div>
-                  <label className="mb-1 block text-sm font-medium text-fg">Khách thuê <span className="text-error">*</span></label>
-                  <select
-                    required
-                    className="w-full rounded-xl border border-border/80 bg-surface px-3 py-2 text-sm text-fg focus:outline-none focus:ring-2 focus:ring-accent"
-                    value={form.tenantId}
-                    onChange={e => setForm(current => ({ ...current, tenantId: e.target.value }))}
-                  >
-                    <option value="">Chọn khách thuê...</option>
-                    {tenants?.map(tenant => (
-                      <option key={tenant.id} value={tenant.id}>
-                        {tenant.fullName} - {tenant.email}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                <Select
+                  label={<>Khách thuê <span className="text-error">*</span></>}
+                  required
+                  value={form.tenantId}
+                  onChange={e => setForm(current => ({ ...current, tenantId: e.target.value }))}
+                >
+                  <option value="">Chọn khách thuê...</option>
+                  {tenants?.map(tenant => (
+                    <option key={tenant.id} value={tenant.id}>
+                      {tenant.fullName} - {tenant.email}
+                    </option>
+                  ))}
+                </Select>
 
                 <div>
                   <DatePicker

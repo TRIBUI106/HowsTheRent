@@ -9,6 +9,7 @@ import Layout from '@/components/Layout'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Select } from '@/components/ui/select'
 import { ListSkeleton } from '@/components/ui/feedback'
 import { formatDate, formatCurrency, priorityColor, priorityLabel, categoryLabel, nextDayLabel } from '@/lib/utils'
 import { showToast } from '@/lib/toast'
@@ -346,7 +347,6 @@ export default function TechMaintenancePage() {
                                 onClick={() => startMutation.mutate(request.id)}
                                 disabled={startMutation.isPending || !request.confirmSlotByTenant}
                                 title={!request.confirmSlotByTenant ? 'Chưa chốt lịch với khách hàng' : undefined}
-                                className="flex items-center gap-1 bg-accent hover:bg-accent-hover text-accent-fg"
                               >
                                 <Play size={13} />
                                 Bắt đầu thi công
@@ -355,8 +355,9 @@ export default function TechMaintenancePage() {
 
                             {(request.status === 'ASSIGNED' || request.status === 'OPEN') && !request.confirmedTimeSlot && (
                               <div className="flex items-center gap-1 mt-1">
-                                <select
-                                  className="rounded-lg border border-border bg-bg px-2 py-1 text-xs text-fg"
+                                <Select
+                                  size="sm"
+                                  className="w-auto"
                                   value={slotInputs[request.id] || ''}
                                   onChange={(e) => setSlotInputs((prev) => ({ ...prev, [request.id]: e.target.value }))}
                                 >
@@ -365,17 +366,18 @@ export default function TechMaintenancePage() {
                                   <option value={`Chiều ${nextDay} (13:30 - 17:00)`}>{`Chiều ${nextDay} (13:30 - 17:00)`}</option>
                                   <option value="Tối nay (18:00 - 20:30)">Tối nay (18:00 - 20:30)</option>
                                   <option value="Thứ 7 tuần này">Thứ 7 tuần này</option>
-                                </select>
-                                <button
+                                </Select>
+                                <Button
+                                  type="button"
+                                  size="xs"
                                   onClick={() => {
                                     const slot = slotInputs[request.id]
                                     if (slot) confirmSlotMutation.mutate({ id: request.id, slot })
                                   }}
                                   disabled={!slotInputs[request.id] || confirmSlotMutation.isPending}
-                                  className="rounded-lg bg-sidebar px-2 py-1 text-xs font-medium text-fg hover:bg-border"
                                 >
                                   Chốt
-                                </button>
+                                </Button>
                               </div>
                             )}
 
@@ -384,7 +386,6 @@ export default function TechMaintenancePage() {
                                 variant="outline"
                                 size="sm"
                                 onClick={() => selectRequest(request.id)}
-                                className="flex items-center gap-1 text-xs"
                               >
                                 <Package size={13} />
                                 Chi tiết / Vật tư
@@ -489,17 +490,18 @@ export default function TechMaintenancePage() {
                               onChange={(e) => setMatQty(Number(e.target.value))}
                               className="col-span-1 sm:col-span-2 rounded-lg border border-border bg-bg px-2 py-1.5 text-xs text-fg focus:outline-none focus:ring-1 focus:ring-accent"
                             />
-                            <select
+                            <Select
+                              size="sm"
+                              wrapperClassName="col-span-1 sm:col-span-2"
                               value={matUnit}
                               onChange={(e) => setMatUnit(e.target.value)}
-                              className="col-span-1 sm:col-span-2 rounded-lg border border-border bg-bg px-2 py-1.5 text-xs text-fg focus:outline-none focus:ring-1 focus:ring-accent"
                             >
                               <option value="cái">cái</option>
                               <option value="bộ">bộ</option>
                               <option value="m">m</option>
                               <option value="cuộn">cuộn</option>
                               <option value="hộp">hộp</option>
-                            </select>
+                            </Select>
                             <input
                               type="number"
                               placeholder="Đơn giá VNĐ"
@@ -519,11 +521,10 @@ export default function TechMaintenancePage() {
                               <span>Miễn phí (do lỗi tự nhiên / bao thầu)</span>
                             </label>
                             <Button
-                              size="sm"
+                              size="xs"
                               variant="primary"
                               disabled={!matName.trim() || addMaterialMutation.isPending}
                               onClick={() => addMaterialMutation.mutate()}
-                              className="flex items-center gap-1 h-7 px-3 text-xs bg-accent hover:bg-accent-hover text-accent-fg"
                             >
                               <Plus size={13} />
                               Thêm
@@ -576,7 +577,6 @@ export default function TechMaintenancePage() {
                             variant="outline"
                             disabled={!noteText.trim() || addNoteMutation.isPending}
                             onClick={() => addNoteMutation.mutate()}
-                            className="flex items-center gap-1 text-xs"
                           >
                             <Send size={13} />
                             Gửi note
@@ -652,10 +652,10 @@ export default function TechMaintenancePage() {
                           </div>
                         )}
                         <Button
-                          variant="primary"
+                          variant="success"
                           onClick={submitReview}
                           disabled={submitReviewMutation.isPending || !canSubmitReview}
-                          className="w-full flex items-center justify-center gap-2 bg-success hover:bg-success/90 text-success-fg font-semibold py-2.5"
+                          className="w-full"
                         >
                           <CheckCircle size={16} />
                           Hoàn tất sửa chữa & Chờ nghiệm thu

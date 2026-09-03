@@ -182,20 +182,19 @@ export default function AdminInvoicesPage() {
 
             <div className="flex gap-2">
               {STATUS_OPTIONS.map((status) => (
-                <button
+                <Button
                   key={status || 'ALL'}
+                  type="button"
+                  size="sm"
+                  variant={statusFilter === status ? 'primary' : 'ghost'}
+                  className={statusFilter === status ? undefined : 'bg-sidebar'}
                   onClick={() => {
                     setStatusFilter(status)
                     setPage(0)
                   }}
-                  className={`rounded-xl px-3 py-1.5 text-sm font-medium transition-colors ${
-                    statusFilter === status
-                      ? 'bg-accent text-accent-fg'
-                      : 'bg-sidebar text-fg-muted hover:bg-surface hover:text-fg'
-                  }`}
                 >
                   {status || 'Tất cả'}
-                </button>
+                </Button>
               ))}
             </div>
           </div>

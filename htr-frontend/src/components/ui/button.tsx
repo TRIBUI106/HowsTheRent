@@ -2,8 +2,8 @@ import type { ReactNode, ButtonHTMLAttributes } from 'react'
 import { cn } from '@/lib/utils'
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'danger' | 'outline' | 'ghost'
-  size?: 'sm' | 'md' | 'lg'
+  variant?: 'primary' | 'secondary' | 'danger' | 'success' | 'outline' | 'ghost'
+  size?: 'xs' | 'sm' | 'md' | 'lg'
   children: ReactNode
   loading?: boolean
 }
@@ -21,10 +21,14 @@ export function Button({
     primary:   'bg-accent text-accent-fg hover:bg-accent-hover active:bg-accent-active shadow-[inset_0_1px_0_rgba(255,255,255,0.18)] focus-visible:ring-accent',
     secondary: 'bg-surface text-fg border border-border hover:bg-sidebar active:bg-border focus-visible:ring-accent',
     danger:    'bg-error text-white hover:bg-error-hover active:bg-error-fg focus-visible:ring-error',
+    success:   'bg-success text-success-fg hover:bg-success/90 active:bg-success/80 focus-visible:ring-success',
     outline:   'border border-border text-fg bg-transparent hover:bg-sidebar active:bg-border focus-visible:ring-accent',
     ghost:     'text-fg-muted hover:bg-sidebar hover:text-fg active:bg-border focus-visible:ring-accent',
   }
   const sizes = {
+    // Compact inline/table-row actions (e.g. "Chốt", "Hủy", "Nghiệm thu" chips) — deliberately
+    // smaller than `sm` so it fits dense table cells without ballooning row height.
+    xs: 'px-2.5 py-1 text-xs min-h-[26px] gap-1',
     sm: 'px-3 py-1.5 text-sm min-h-[34px]',
     md: 'px-4 py-2 text-sm min-h-[40px]',
     lg: 'px-6 py-2.5 text-sm min-h-[44px]',

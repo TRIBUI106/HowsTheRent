@@ -7,9 +7,12 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Dialog } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
+import { Select } from '@/components/ui/select'
 import { TableSkeleton } from '@/components/ui/feedback'
 import { Table, TableRow, TableCell } from '@/components/ui/table'
 import { userApi } from '@/api'
+import { getErrorMessage } from '@/lib/apiError'
+import { showToast } from '@/lib/toast'
 import { Search } from 'lucide-react'
 import type { User } from '@/types'
 
@@ -68,6 +71,9 @@ export default function UsersPage() {
       setShowCreate(false)
       setCreateForm(emptyCreateForm)
     },
+    onError: (err: unknown) => {
+      showToast({ message: getErrorMessage(err, 'Không thể tạo người dùng'), type: 'error' })
+    },
   })
 
   const updateUserMutation = useGuardedMutation({
@@ -82,11 +88,17 @@ export default function UsersPage() {
       setEditingUser(null)
       setEditForm(emptyEditForm)
     },
+    onError: (err: unknown) => {
+      showToast({ message: getErrorMessage(err, 'Không thể cập nhật người dùng'), type: 'error' })
+    },
   })
 
   const toggleActiveMutation = useGuardedMutation({
     mutationFn: (id: string) => userApi.toggleActive(id),
     onSuccess: () => refreshUsers(),
+    onError: (err: unknown) => {
+      showToast({ message: getErrorMessage(err, 'Không thể đổi trạng thái kích hoạt'), type: 'error' })
+    },
   })
 
   const filtered = useMemo(() => {
@@ -132,17 +144,16 @@ export default function UsersPage() {
             </div>
             <div className="flex gap-1.5">
               {FILTER_ROLES.map(r => (
-                <button
+                <Button
                   key={r}
+                  type="button"
+                  size="xs"
+                  variant={roleFilter === r ? 'primary' : 'ghost'}
+                  className={roleFilter === r ? undefined : 'bg-sidebar'}
                   onClick={() => setRoleFilter(r)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                    roleFilter === r
-                      ? 'bg-accent text-accent-fg'
-                      : 'bg-sidebar text-fg-muted hover:bg-border/40 hover:text-fg'
-                  }`}
                 >
                   {ROLE_LABELS[r]}
-                </button>
+                </Button>
               ))}
             </div>
             <Button size="sm" onClick={openCreateModal}>+ Thêm người dùng</Button>
@@ -204,16 +215,13 @@ export default function UsersPage() {
           <Input label="Email" type="email" value={createForm.email} onChange={(e) => setCreateForm((p) => ({ ...p, email: e.target.value }))} required />
           <Input label="Điện thoại" value={createForm.phone} onChange={(e) => setCreateForm((p) => ({ ...p, phone: e.target.value }))} />
           <Input label="Mật khẩu" type="password" value={createForm.password} onChange={(e) => setCreateForm((p) => ({ ...p, password: e.target.value }))} required />
-          <div className="space-y-1">
-            <label className="block text-sm font-medium text-fg">Vai trò</label>
-            <select
-              className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-fg"
-              value={createForm.role}
-              onChange={(e) => setCreateForm((p) => ({ ...p, role: e.target.value as User['role'] }))}
-            >
-              {USER_ROLES.map(role => <option key={role} value={role}>{ROLE_LABELS[role]}</option>)}
-            </select>
-          </div>
+          <Select
+            label="Vai trò"
+            value={createForm.role}
+            onChange={(e) => setCreateForm((p) => ({ ...p, role: e.target.value as User['role'] }))}
+          >
+            {USER_ROLES.map(role => <option key={role} value={role}>{ROLE_LABELS[role]}</option>)}
+          </Select>
           <div className="flex justify-end gap-2">
             <Button type="button" variant="secondary" onClick={() => setShowCreate(false)}>Huỷ</Button>
             <Button type="submit" loading={createUserMutation.isPending}>Tạo</Button>
@@ -231,16 +239,13 @@ export default function UsersPage() {
         >
           <Input label="Họ tên" value={editForm.fullName} onChange={(e) => setEditForm((p) => ({ ...p, fullName: e.target.value }))} required />
           <Input label="Điện thoại" value={editForm.phone} onChange={(e) => setEditForm((p) => ({ ...p, phone: e.target.value }))} />
-          <div className="space-y-1">
-            <label className="block text-sm font-medium text-fg">Vai trò</label>
-            <select
-              className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-fg"
-              value={editForm.role}
-              onChange={(e) => setEditForm((p) => ({ ...p, role: e.target.value as User['role'] }))}
-            >
-              {USER_ROLES.map(role => <option key={role} value={role}>{ROLE_LABELS[role]}</option>)}
-            </select>
-          </div>
+          <Select
+            label="Vai trò"
+            value={editForm.role}
+            onChange={(e) => setEditForm((p) => ({ ...p, role: e.target.value as User['role'] }))}
+          >
+            {USER_ROLES.map(role => <option key={role} value={role}>{ROLE_LABELS[role]}</option>)}
+          </Select>
           <div className="flex justify-end gap-2">
             <Button type="button" variant="secondary" onClick={() => setEditingUser(null)}>Huỷ</Button>
             <Button type="submit" loading={updateUserMutation.isPending}>Lưu thay đổi</Button>

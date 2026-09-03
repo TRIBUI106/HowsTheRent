@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import api from '@/lib/api'
 import Layout from '@/components/Layout'
 import { Card } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 import { Pagination } from '@/components/ui/pagination'
 import { ListSkeleton } from '@/components/ui/feedback'
 import { formatDate } from '@/lib/utils'
@@ -51,20 +52,26 @@ export default function AuditLogPage() {
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold text-fg">Nhật ký hoạt động</h1>
           <div className="flex gap-2 flex-wrap">
-            <button
+            <Button
+              type="button"
+              size="sm"
+              variant={!actionFilter ? 'primary' : 'ghost'}
+              className={!actionFilter ? undefined : 'bg-sidebar'}
               onClick={() => { setActionFilter(''); setPage(0) }}
-              className={`px-3 py-1.5 rounded-xl text-sm font-medium transition-colors ${!actionFilter ? 'bg-accent text-accent-fg' : 'bg-sidebar text-fg-muted hover:bg-surface hover:text-fg'}`}
             >
               Tất cả
-            </button>
+            </Button>
             {ACTIONS.map(a => (
-              <button
+              <Button
                 key={a}
+                type="button"
+                size="sm"
+                variant={actionFilter === a ? 'primary' : 'ghost'}
+                className={actionFilter === a ? undefined : 'bg-sidebar'}
                 onClick={() => { setActionFilter(a); setPage(0) }}
-                className={`px-3 py-1.5 rounded-xl text-sm font-medium transition-colors ${actionFilter === a ? 'bg-accent text-accent-fg' : 'bg-sidebar text-fg-muted hover:bg-surface hover:text-fg'}`}
               >
                 {ACTION_LABELS[a]}
-              </button>
+              </Button>
             ))}
           </div>
         </div>

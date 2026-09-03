@@ -26,7 +26,7 @@ const tiptap = vi.hoisted(() => {
       getHTML: () => '<p>Nội dung</p>',
       commands: { setContent: vi.fn() },
       chain: vi.fn(() => chain),
-      isActive: vi.fn((..._args: unknown[]) => false),
+      isActive: vi.fn(() => false),
       can: vi.fn(() => ({ undo: () => true, redo: () => true })),
     },
   }

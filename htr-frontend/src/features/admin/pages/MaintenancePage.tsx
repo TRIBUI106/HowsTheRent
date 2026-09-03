@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button'
 import { Table, TableCell, TableRow } from '@/components/ui/table'
 import { Pagination } from '@/components/ui/pagination'
 import { DatePicker } from '@/components/ui/date-picker'
+import { Select } from '@/components/ui/select'
 import { TableSkeleton, ListSkeleton } from '@/components/ui/feedback'
 import { formatDate, formatCurrency, priorityColor, priorityLabel, categoryLabel } from '@/lib/utils'
 import { showToast } from '@/lib/toast'
@@ -221,13 +222,14 @@ export default function AdminMaintenancePage() {
               />
             </div>
 
-            <select
+            <Select
+              size="sm"
+              className="w-auto"
               value={filterStatus}
               onChange={(e) => {
                 setFilterStatus(e.target.value)
                 setPage(0)
               }}
-              className="rounded-xl border border-border bg-surface px-2.5 py-1.5 text-xs text-fg focus:outline-none focus:ring-2 focus:ring-accent"
             >
               <option value="ALL">Tất cả trạng thái</option>
               <option value="OPEN">Mới (OPEN)</option>
@@ -237,31 +239,23 @@ export default function AdminMaintenancePage() {
               <option value="PENDING_REVIEW">Chờ nghiệm thu</option>
               <option value="COMPLETED">Đã hoàn thành</option>
               <option value="CANCELLED">Đã hủy</option>
-            </select>
+            </Select>
 
-            <select
-              value={filterPriority}
-              onChange={(e) => setFilterPriority(e.target.value)}
-              className="rounded-xl border border-border bg-surface px-2.5 py-1.5 text-xs text-fg focus:outline-none focus:ring-2 focus:ring-accent"
-            >
+            <Select size="sm" className="w-auto" value={filterPriority} onChange={(e) => setFilterPriority(e.target.value)}>
               <option value="ALL">Tất cả độ ưu tiên</option>
               <option value="URGENT">Khẩn cấp</option>
               <option value="HIGH">Ưu tiên cao</option>
               <option value="NORMAL">Bình thường</option>
-            </select>
+            </Select>
 
-            <select
-              value={filterCategory}
-              onChange={(e) => setFilterCategory(e.target.value)}
-              className="rounded-xl border border-border bg-surface px-2.5 py-1.5 text-xs text-fg focus:outline-none focus:ring-2 focus:ring-accent"
-            >
+            <Select size="sm" className="w-auto" value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)}>
               <option value="ALL">Tất cả danh mục</option>
               <option value="ELECTRIC">Điện</option>
               <option value="PLUMBING">Nước / Đường ống</option>
               <option value="AIR_CONDITIONER">Điều hòa</option>
               <option value="FURNITURE">Nội thất</option>
               <option value="OTHER">Khác</option>
-            </select>
+            </Select>
 
             <Button
               variant="primary"
@@ -307,13 +301,10 @@ export default function AdminMaintenancePage() {
                 className="space-y-4"
               >
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-fg">
-                    Phòng <span className="text-error">*</span>
-                  </label>
-                  <select
+                  <Select
+                    label={<>Phòng <span className="text-error">*</span></>}
                     value={createForm.roomId}
                     onChange={(event) => setCreateForm((prev) => ({ ...prev, roomId: event.target.value }))}
-                    className="w-full rounded-xl border border-border/80 bg-surface px-3 py-2 text-sm text-fg focus:outline-none focus:ring-2 focus:ring-accent"
                   >
                     <option value="">
                       {loadingRentedRooms ? 'Đang tải danh sách phòng...' : 'Chọn phòng đang có khách thuê'}
@@ -323,40 +314,34 @@ export default function AdminMaintenancePage() {
                         Phòng {room.roomNumber} - {getRoomPropertyName(room)}
                       </option>
                     ))}
-                  </select>
+                  </Select>
                   <p className="mt-1 text-xs text-fg-subtle">
                     Khách thuê sẽ được tự động xác định theo hợp đồng đang hoạt động của phòng này.
                   </p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="mb-1 block text-xs font-medium text-fg">Mức độ ưu tiên</label>
-                    <select
-                      value={createForm.priority}
-                      onChange={(event) => setCreateForm((prev) => ({ ...prev, priority: event.target.value }))}
-                      className="w-full rounded-xl border border-border/80 bg-surface px-3 py-2 text-sm text-fg focus:outline-none focus:ring-2 focus:ring-accent"
-                    >
-                      <option value="NORMAL">Bình thường</option>
-                      <option value="HIGH">Ưu tiên cao</option>
-                      <option value="URGENT">Khẩn cấp (!)</option>
-                    </select>
-                  </div>
+                  <Select
+                    label="Mức độ ưu tiên"
+                    value={createForm.priority}
+                    onChange={(event) => setCreateForm((prev) => ({ ...prev, priority: event.target.value }))}
+                  >
+                    <option value="NORMAL">Bình thường</option>
+                    <option value="HIGH">Ưu tiên cao</option>
+                    <option value="URGENT">Khẩn cấp (!)</option>
+                  </Select>
 
-                  <div>
-                    <label className="mb-1 block text-xs font-medium text-fg">Danh mục sự cố</label>
-                    <select
-                      value={createForm.category}
-                      onChange={(event) => setCreateForm((prev) => ({ ...prev, category: event.target.value }))}
-                      className="w-full rounded-xl border border-border/80 bg-surface px-3 py-2 text-sm text-fg focus:outline-none focus:ring-2 focus:ring-accent"
-                    >
-                      <option value="ELECTRIC">Điện</option>
-                      <option value="PLUMBING">Nước / Đường ống</option>
-                      <option value="AIR_CONDITIONER">Điều hòa</option>
-                      <option value="FURNITURE">Nội thất</option>
-                      <option value="OTHER">Khác</option>
-                    </select>
-                  </div>
+                  <Select
+                    label="Danh mục sự cố"
+                    value={createForm.category}
+                    onChange={(event) => setCreateForm((prev) => ({ ...prev, category: event.target.value }))}
+                  >
+                    <option value="ELECTRIC">Điện</option>
+                    <option value="PLUMBING">Nước / Đường ống</option>
+                    <option value="AIR_CONDITIONER">Điều hòa</option>
+                    <option value="FURNITURE">Nội thất</option>
+                    <option value="OTHER">Khác</option>
+                  </Select>
                 </div>
 
                 <div>
@@ -452,15 +437,16 @@ export default function AdminMaintenancePage() {
                       onChange={setSlaDateInput}
                       className="w-32 py-1 text-xs"
                     />
-                    <button
+                    <Button
+                      type="button"
+                      size="xs"
                       onClick={() => {
                         if (slaDateInput) updateSlaMutation.mutate({ id: inspectRequest.id, date: new Date(`${slaDateInput}T23:59:59`).toISOString() })
                       }}
                       disabled={!slaDateInput || updateSlaMutation.isPending}
-                      className="rounded-lg bg-accent px-2 py-1 font-semibold text-accent-fg hover:bg-accent-hover disabled:opacity-50"
                     >
                       Lưu
-                    </button>
+                    </Button>
                   </div>
                 </div>
               </div>
@@ -618,8 +604,9 @@ export default function AdminMaintenancePage() {
                       {(request.status === 'OPEN' || request.status === 'ASSIGNED') && (
                         assigningId === request.id ? (
                           <div className="flex items-center gap-1.5 rounded-xl border border-border/80 bg-surface p-1.5 shadow-sm">
-                            <select
-                              className="rounded-lg border border-border bg-bg px-2 py-1 text-xs text-fg focus:outline-none focus:ring-1 focus:ring-accent"
+                            <Select
+                              size="sm"
+                              className="w-auto"
                               value={selectedTech[request.id] ?? ''}
                               onChange={(event) => setSelectedTech((prev) => ({ ...prev, [request.id]: event.target.value }))}
                             >
@@ -630,17 +617,18 @@ export default function AdminMaintenancePage() {
                                   {!matchesCategory(technician, request) ? ' — Khác chuyên môn' : ''}
                                 </option>
                               ))}
-                            </select>
-                            <button
+                            </Select>
+                            <Button
+                              type="button"
+                              size="xs"
                               onClick={() => {
                                 const techId = selectedTech[request.id]
                                 if (techId) assignMutation.mutate({ id: request.id, techId })
                               }}
                               disabled={!selectedTech[request.id] || assignMutation.isPending}
-                              className="rounded-lg bg-accent px-2 py-1 text-xs font-medium text-accent-fg hover:bg-accent-hover disabled:opacity-50"
                             >
                               Chốt
-                            </button>
+                            </Button>
                             <button onClick={() => setAssigningId(null)} className="text-xs text-fg-muted hover:text-fg">
                               Hủy
                             </button>
@@ -665,14 +653,16 @@ export default function AdminMaintenancePage() {
                       {/* Nghiệm thu / Xong — chỉ khả dụng khi phiếu đã ở trạng thái chờ nghiệm thu,
                           khớp với MaintenanceStateTransitionValidator (backend chỉ cho phép PENDING_REVIEW -> DONE) */}
                       {request.status === 'PENDING_REVIEW' && (
-                        <button
+                        <Button
+                          type="button"
+                          size="xs"
+                          variant="success"
                           onClick={() => resolveMutation.mutate(request.id)}
                           disabled={resolveMutation.isPending}
-                          className="flex items-center gap-1 rounded-lg bg-success px-2.5 py-1 text-xs font-medium text-success-fg hover:bg-success/90 disabled:opacity-50"
                         >
                           <CheckCircle size={13} />
                           Nghiệm thu
-                        </button>
+                        </Button>
                       )}
 
                       {/* Hủy phiếu */}
@@ -690,7 +680,10 @@ export default function AdminMaintenancePage() {
                               <button onClick={() => setCancelingId(null)} className="text-xs text-fg-muted hover:text-fg">
                                 Thoát
                               </button>
-                              <button
+                              <Button
+                                type="button"
+                                size="xs"
+                                variant="danger"
                                 onClick={() => {
                                   const reason = (cancelReasons[request.id] ?? '').trim()
                                   if (reason.length < 10) {
@@ -700,10 +693,9 @@ export default function AdminMaintenancePage() {
                                   cancelMutation.mutate({ id: request.id, reason })
                                 }}
                                 disabled={cancelMutation.isPending}
-                                className="rounded-lg bg-error px-2 py-1 text-xs font-medium text-white hover:bg-error/90 disabled:opacity-50"
                               >
                                 Xác nhận hủy
-                              </button>
+                              </Button>
                             </div>
                           </div>
                         ) : (

@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Dialog } from '@/components/ui/dialog'
+import { Select } from '@/components/ui/select'
 import { directionLabel, formatCurrency, formatCurrencyInput, parseCurrencyInput } from '@/lib/utils'
 import { Table, TableCell, TableRow } from '@/components/ui/table'
 import { getErrorMessage } from '@/lib/apiError'
@@ -100,6 +101,9 @@ export default function RoomsPage() {
       qc.invalidateQueries({ queryKey: ['dashboard'] })
       resetForm()
     },
+    onError: (err: unknown) => {
+      showToast({ message: getErrorMessage(err, 'Không thể lưu phòng'), type: 'error' })
+    },
   })
 
   const remove = useGuardedMutation({
@@ -149,15 +153,15 @@ export default function RoomsPage() {
     <Layout title="Phòng">
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-2">
-          <select
-            className="rounded-lg border border-border bg-surface px-3 py-2 text-sm text-fg"
+          <Select
+            className="w-auto"
             value={effectiveSelectedProperty}
             onChange={(event) => selectProperty(event.target.value)}
           >
             {properties?.map((property) => (
               <option key={property.id} value={property.id}>{property.name}</option>
             ))}
-          </select>
+          </Select>
 
           <div className="relative">
             <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-fg-subtle" />
@@ -185,24 +189,20 @@ export default function RoomsPage() {
               <Input label="Diện tích (m²)" type="number" value={form.areaM2} onChange={(event) => setForm({ ...form, areaM2: event.target.value })} />
               <Input label="Số người tối đa" type="number" value={form.maxPeople} onChange={(event) => setForm({ ...form, maxPeople: event.target.value })} required />
               <Input label="Giá thuê (override)" type="text" inputMode="numeric" value={form.rentOverride} onChange={(event) => setForm({ ...form, rentOverride: formatCurrencyInput(event.target.value) })} />
-              <div className="space-y-1">
-                <label className="block text-sm font-medium text-fg">Hướng phòng</label>
-                <select
-                  className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-fg"
-                  value={form.direction}
-                  onChange={(event) => setForm({ ...form, direction: event.target.value })}
-                >
-                  <option value="">Không chọn</option>
-                  {directionOptions.map(({ value, label }) => (
-                    <option key={value} value={value}>{label}</option>
-                  ))}
-                </select>
-              </div>
+              <Select
+                label="Hướng phòng"
+                value={form.direction}
+                onChange={(event) => setForm({ ...form, direction: event.target.value })}
+              >
+                <option value="">Không chọn</option>
+                {directionOptions.map(({ value, label }) => (
+                  <option key={value} value={value}>{label}</option>
+                ))}
+              </Select>
               {editingId && (
                 <div className="space-y-1">
-                  <label className="block text-sm font-medium text-fg">Trạng thái</label>
-                  <select
-                    className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-fg disabled:cursor-not-allowed disabled:opacity-60"
+                  <Select
+                    label="Trạng thái"
                     value={form.status}
                     disabled={form.status === 'RENTED'}
                     onChange={(event) => setForm({ ...form, status: event.target.value })}
@@ -210,7 +210,7 @@ export default function RoomsPage() {
                     <option value="EMPTY">Trống</option>
                     <option value="RENTED">Đã thuê</option>
                     <option value="MAINTENANCE">Bảo trì</option>
-                  </select>
+                  </Select>
                   {form.status === 'RENTED' && (
                     <p className="text-xs text-fg-subtle">
                       Phòng đang có hợp đồng thuê hoạt động nên không thể đổi trạng thái thủ công — sẽ tự chuyển

@@ -6,6 +6,7 @@ import Layout from '@/components/Layout'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Select } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { TableSkeleton } from '@/components/ui/feedback'
 import { slaApi } from '@/api/reportApi'
@@ -106,33 +107,27 @@ export default function SlaConfigPage() {
             </div>
 
             <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Độ ưu tiên</label>
-                <select
-                  value={priority}
-                  onChange={(e) => setPriority(e.target.value)}
-                  className="w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                >
-                  <option value="URGENT">Khẩn cấp</option>
-                  <option value="HIGH">Cao</option>
-                  <option value="NORMAL">Bình thường</option>
-                </select>
-              </div>
+              <Select
+                label="Độ ưu tiên"
+                value={priority}
+                onChange={(e) => setPriority(e.target.value)}
+              >
+                <option value="URGENT">Khẩn cấp</option>
+                <option value="HIGH">Cao</option>
+                <option value="NORMAL">Bình thường</option>
+              </Select>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Danh mục sự cố</label>
-                <select
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
-                  className="w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                >
-                  <option value="ELECTRIC">Điện</option>
-                  <option value="PLUMBING">Nước / Đường ống</option>
-                  <option value="AIR_CONDITIONER">Điều hòa / Máy lạnh</option>
-                  <option value="FURNITURE">Nội thất</option>
-                  <option value="OTHER">Khác</option>
-                </select>
-              </div>
+              <Select
+                label="Danh mục sự cố"
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+              >
+                <option value="ELECTRIC">Điện</option>
+                <option value="PLUMBING">Nước / Đường ống</option>
+                <option value="AIR_CONDITIONER">Điều hòa / Máy lạnh</option>
+                <option value="FURNITURE">Nội thất</option>
+                <option value="OTHER">Khác</option>
+              </Select>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Thời gian cam kết (Giờ)</label>
@@ -150,7 +145,7 @@ export default function SlaConfigPage() {
               <Button
                 onClick={() => saveMutation.mutate()}
                 disabled={saveMutation.isPending || maxHours <= 0}
-                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl py-2.5 font-medium transition shadow-sm"
+                className="w-full"
               >
                 {saveMutation.isPending ? 'Đang lưu...' : 'Lưu cấu hình SLA'}
               </Button>
@@ -208,7 +203,7 @@ export default function SlaConfigPage() {
                           </td>
                           <td className="px-4 py-3 text-right">
                             <Button
-                              variant="outline"
+                              variant="danger"
                               size="sm"
                               onClick={() => {
                                 if (confirm('Bạn có chắc chắn muốn xóa quy tắc SLA này?')) {
@@ -216,7 +211,6 @@ export default function SlaConfigPage() {
                                 }
                               }}
                               disabled={deleteMutation.isPending}
-                              className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200 rounded-lg"
                             >
                               <Trash2 className="w-4 h-4" />
                             </Button>

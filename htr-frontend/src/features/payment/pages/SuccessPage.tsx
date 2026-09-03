@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuthStore } from '@/stores/authStore'
+import { Button } from '@/components/ui/button'
 import { CheckCircle2 } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils'
 
@@ -36,12 +37,14 @@ export default function PaymentSuccessPage() {
           </p>
         )}
         <p className="text-sm text-fg-subtle">Tự động chuyển hướng sau 4 giây...</p>
-        <button
+        <Button
+          type="button"
+          size="lg"
+          className="w-full mt-2"
           onClick={() => navigate(user ? '/tenant/invoices' : '/login', { replace: true })}
-          className="w-full mt-2 bg-accent text-accent-fg rounded-xl py-2.5 text-sm font-medium hover:bg-accent-hover transition-colors"
         >
           Xem hóa đơn
-        </button>
+        </Button>
       </div>
     </div>
   )

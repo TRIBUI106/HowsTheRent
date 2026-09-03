@@ -5,9 +5,12 @@ import Layout from '@/components/Layout'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Select } from '@/components/ui/select'
 import { CardsSkeleton } from '@/components/ui/feedback'
 import api from '@/lib/api'
 import { formatCurrencyInput, parseCurrencyInput } from '@/lib/utils'
+import { getErrorMessage } from '@/lib/apiError'
+import { showToast } from '@/lib/toast'
 
 interface Property {
   id: string
@@ -62,6 +65,9 @@ export default function FeeConfigPage() {
       setFeeForm({})
       setMoneyForm({})
     },
+    onError: (e: unknown) => {
+      showToast({ message: getErrorMessage(e, 'Không thể lưu cấu hình phí'), type: 'error' })
+    },
   })
 
   const handleFeeSubmit = (e: React.FormEvent) => {
@@ -83,15 +89,14 @@ export default function FeeConfigPage() {
         <h1 className="text-2xl font-bold text-fg">Cấu hình phí & xe</h1>
 
         <div className="max-w-xs">
-          <label className="block text-sm font-medium text-fg mb-1">Toà nhà</label>
-          <select
-            className="w-full border border-border/80 rounded-xl px-3 py-2 text-sm bg-surface text-fg focus:outline-none focus:ring-2 focus:ring-accent"
+          <Select
+            label="Toà nhà"
             value={selectedProp}
             onChange={e => { setSelectedProp(e.target.value); setFeeForm({}); setMoneyForm({}) }}
           >
             <option value="">Chọn toà nhà...</option>
             {properties?.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-          </select>
+          </Select>
         </div>
 
         {selectedProp && (
@@ -118,17 +123,14 @@ export default function FeeConfigPage() {
                       onChange={e => setMoneyField('elecPrice', e.target.value)}
                     />
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-fg mb-1">Chế độ nước</label>
-                    <select
-                      className="w-full border border-border/80 rounded-xl px-3 py-2 text-sm bg-surface text-fg focus:outline-none focus:ring-2 focus:ring-accent"
-                      defaultValue={feeConfig?.waterMode}
-                      onChange={e => setFeeForm(f => ({ ...f, waterMode: e.target.value as 'CUBIC' | 'PERSON' }))}
-                    >
-                      <option value="CUBIC">Theo khối (m³)</option>
-                      <option value="PERSON">Theo đầu người</option>
-                    </select>
-                  </div>
+                  <Select
+                    label="Chế độ nước"
+                    defaultValue={feeConfig?.waterMode}
+                    onChange={e => setFeeForm(f => ({ ...f, waterMode: e.target.value as 'CUBIC' | 'PERSON' }))}
+                  >
+                    <option value="CUBIC">Theo khối (m³)</option>
+                    <option value="PERSON">Theo đầu người</option>
+                  </Select>
                   <div>
                     <label className="block text-sm font-medium text-fg mb-1">Giá nước (₫)</label>
                     <Input

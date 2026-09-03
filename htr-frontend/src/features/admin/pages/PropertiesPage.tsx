@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Dialog } from '@/components/ui/dialog'
+import { Select } from '@/components/ui/select'
 import { propertyTypeApi } from '@/api'
 import { formatDate } from '@/lib/utils'
 import { showToast } from '@/lib/toast'
@@ -345,9 +346,8 @@ export default function PropertiesPage() {
               <Input label="Địa chỉ" value={form.address} onChange={(event) => setForm({ ...form, address: event.target.value })} required />
 
               <div className="space-y-1">
-                <label className="block text-sm font-medium text-fg">Loại hình tài sản</label>
-                <select
-                  className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-fg"
+                <Select
+                  label="Loại hình tài sản"
                   value={form.propertyTypeId}
                   onChange={(event) => setForm({ ...form, propertyTypeId: event.target.value })}
                   required
@@ -356,7 +356,7 @@ export default function PropertiesPage() {
                   {activePropertyTypes.map((type) => (
                     <option key={type.id} value={type.id}>{type.name}</option>
                   ))}
-                </select>
+                </Select>
                 <p className="text-xs text-fg-subtle">Chọn từ danh mục loại tài sản đã cấu hình ở phía trên.</p>
               </div>
 
