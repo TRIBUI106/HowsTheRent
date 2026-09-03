@@ -483,8 +483,8 @@ export default function MeterReadingsPage() {
 
         <div className="flex flex-wrap gap-2">
           {[
-            { id: 'MANUAL' as const, label: 'Manual', helper: 'Nhập tay, ưu tiên dùng ngay' },
-            { id: 'HUNONIC' as const, label: 'Hunonic', helper: 'Khung sẵn để nối thiết bị sau' },
+            { id: 'MANUAL' as const, label: 'Nhập tay', helper: 'Nhập tay, ưu tiên dùng ngay' },
+            { id: 'HUNONIC' as const, label: 'Tích hợp', helper: 'Khung sẵn để nối thiết bị sau' },
           ].map((item) => (
             <button
               key={item.id}
@@ -712,7 +712,7 @@ export default function MeterReadingsPage() {
                                 (form.waterReplaced && (!form.waterOldMeterFinal.trim() || !form.waterNewMeterStart.trim()))
                               }
                             >
-                              Lưu chỉ số manual
+                              Lưu chỉ số
                             </Button>
                           </div>
                         )}
@@ -735,7 +735,7 @@ export default function MeterReadingsPage() {
           <>
             <div className="rounded-2xl border border-warning/40 bg-warning-surface px-4 py-3 text-sm text-fg">
               Chế độ Hunonic đã có khung tích hợp, nhưng hiện chưa có thiết bị/cấu hình thật nên hệ thống chỉ hiển thị trạng thái kết nối.
-              Trong giai đoạn này hãy ưu tiên `Manual` để chốt chỉ số và tạo hóa đơn.
+              Trong giai đoạn này hãy ưu tiên `Nhập tay` để chốt chỉ số và tạo hóa đơn.
             </div>
 
             {isLoadingHunonic ? (
