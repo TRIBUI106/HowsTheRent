@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import api from '@/lib/api'
 import Layout from '@/components/Layout'
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -282,25 +282,27 @@ export default function PropertiesPage() {
             </Button>
           </div>
 
-          {showTypeForm && (
-            <div className="mt-4 rounded-2xl border border-border/80 bg-surface p-4">
-              <form
-                onSubmit={(event) => {
-                  event.preventDefault()
-                  saveType.mutate(typeForm)
-                }}
-                className="grid grid-cols-1 gap-3 md:grid-cols-4"
-              >
-                <Input label="Mã loại" value={typeForm.code} onChange={(event) => setTypeForm({ ...typeForm, code: event.target.value })} required />
-                <Input label="Tên loại" value={typeForm.name} onChange={(event) => setTypeForm({ ...typeForm, name: event.target.value })} required />
-                <Input label="Mô tả" value={typeForm.description} onChange={(event) => setTypeForm({ ...typeForm, description: event.target.value })} />
-                <div className="flex items-end gap-2">
-                  <Button type="submit" loading={saveType.isPending}>{editingTypeId ? 'Lưu thay đổi' : 'Tạo loại'}</Button>
-                  <Button type="button" variant="secondary" onClick={resetTypeForm}>Hủy</Button>
-                </div>
-              </form>
-            </div>
-          )}
+          <Dialog
+            open={showTypeForm}
+            onClose={resetTypeForm}
+            title={editingTypeId ? 'Cập nhật loại tài sản' : 'Thêm loại tài sản'}
+          >
+            <form
+              onSubmit={(event) => {
+                event.preventDefault()
+                saveType.mutate(typeForm)
+              }}
+              className="space-y-4"
+            >
+              <Input label="Mã loại" value={typeForm.code} onChange={(event) => setTypeForm({ ...typeForm, code: event.target.value })} required />
+              <Input label="Tên loại" value={typeForm.name} onChange={(event) => setTypeForm({ ...typeForm, name: event.target.value })} required />
+              <Input label="Mô tả" value={typeForm.description} onChange={(event) => setTypeForm({ ...typeForm, description: event.target.value })} />
+              <div className="flex justify-end gap-2">
+                <Button type="button" variant="secondary" onClick={resetTypeForm}>Hủy</Button>
+                <Button type="submit" loading={saveType.isPending}>{editingTypeId ? 'Lưu thay đổi' : 'Tạo loại'}</Button>
+              </div>
+            </form>
+          </Dialog>
 
           <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
             {propertyTypes.map((type) => (
@@ -350,49 +352,49 @@ export default function PropertiesPage() {
         </section>
       )}
 
-      {showForm && (
-        <Card className="mb-6">
-          <CardHeader>{editingId ? 'Cập nhật tài sản' : 'Tạo tài sản mới'}</CardHeader>
-          <CardContent>
-            <form
-              onSubmit={(event) => {
-                event.preventDefault()
-                save.mutate()
-              }}
-              className="grid grid-cols-1 gap-4 md:grid-cols-2"
+      <Dialog
+        open={showForm}
+        onClose={resetForm}
+        title={editingId ? 'Cập nhật tài sản' : 'Tạo tài sản mới'}
+        className="max-w-2xl"
+      >
+        <form
+          onSubmit={(event) => {
+            event.preventDefault()
+            save.mutate()
+          }}
+          className="grid grid-cols-1 gap-4 md:grid-cols-2"
+        >
+          <Input label="Tên tài sản" value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} required />
+          <Input label="Địa chỉ" value={form.address} onChange={(event) => setForm({ ...form, address: event.target.value })} required />
+
+          <div className="space-y-1">
+            <Select
+              label="Loại hình tài sản"
+              value={form.propertyTypeId}
+              onChange={(event) => setForm({ ...form, propertyTypeId: event.target.value })}
+              required
             >
-              <Input label="Tên tài sản" value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} required />
-              <Input label="Địa chỉ" value={form.address} onChange={(event) => setForm({ ...form, address: event.target.value })} required />
+              <option value="" disabled>Chọn loại hình tài sản</option>
+              {activePropertyTypes.map((type) => (
+                <option key={type.id} value={type.id}>{type.name}</option>
+              ))}
+            </Select>
+            <p className="text-xs text-fg-subtle">Chọn từ danh mục loại tài sản đã cấu hình ở phía trên.</p>
+          </div>
 
-              <div className="space-y-1">
-                <Select
-                  label="Loại hình tài sản"
-                  value={form.propertyTypeId}
-                  onChange={(event) => setForm({ ...form, propertyTypeId: event.target.value })}
-                  required
-                >
-                  <option value="" disabled>Chọn loại hình tài sản</option>
-                  {activePropertyTypes.map((type) => (
-                    <option key={type.id} value={type.id}>{type.name}</option>
-                  ))}
-                </Select>
-                <p className="text-xs text-fg-subtle">Chọn từ danh mục loại tài sản đã cấu hình ở phía trên.</p>
-              </div>
+          <Input label="Mô tả" value={form.description} onChange={(event) => setForm({ ...form, description: event.target.value })} />
+          <Input label="Số tầng dự kiến" type="number" min={0} value={form.floorCount} onChange={(event) => setForm({ ...form, floorCount: event.target.value })} />
+          <Input label="Số phòng dự kiến" type="number" min={0} value={form.roomCount} onChange={(event) => setForm({ ...form, roomCount: event.target.value })} />
 
-              <Input label="Mô tả" value={form.description} onChange={(event) => setForm({ ...form, description: event.target.value })} />
-              <Input label="Số tầng dự kiến" type="number" min={0} value={form.floorCount} onChange={(event) => setForm({ ...form, floorCount: event.target.value })} />
-              <Input label="Số phòng dự kiến" type="number" min={0} value={form.roomCount} onChange={(event) => setForm({ ...form, roomCount: event.target.value })} />
-
-              <div className="flex gap-2 md:col-span-2">
-                <Button type="submit" loading={save.isPending} disabled={!form.propertyTypeId}>
-                  {save.isPending ? 'Đang lưu...' : editingId ? 'Lưu thay đổi' : 'Tạo tài sản'}
-                </Button>
-                <Button type="button" variant="secondary" onClick={resetForm}>Hủy</Button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
-      )}
+          <div className="flex gap-2 md:col-span-2">
+            <Button type="submit" loading={save.isPending} disabled={!form.propertyTypeId}>
+              {save.isPending ? 'Đang lưu...' : editingId ? 'Lưu thay đổi' : 'Tạo tài sản'}
+            </Button>
+            <Button type="button" variant="secondary" onClick={resetForm}>Hủy</Button>
+          </div>
+        </form>
+      </Dialog>
 
       {isLoading ? (
         <div className="flex h-32 items-center justify-center">
