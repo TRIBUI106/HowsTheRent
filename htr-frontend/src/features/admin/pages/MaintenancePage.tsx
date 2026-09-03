@@ -1,5 +1,5 @@
 import { getErrorMessage } from '@/lib/apiError'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useGuardedMutation } from '@/hooks/useGuardedMutation'
 import { CheckCircle, XCircle, Search, AlertTriangle, ShieldAlert, FileText, Package, Plus, X } from 'lucide-react'
@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Table, TableCell, TableRow } from '@/components/ui/table'
 import { Pagination } from '@/components/ui/pagination'
+import { DatePicker } from '@/components/ui/date-picker'
 import { TableSkeleton, ListSkeleton } from '@/components/ui/feedback'
 import { formatDate, formatCurrency, priorityColor, priorityLabel, categoryLabel } from '@/lib/utils'
 import { showToast } from '@/lib/toast'
@@ -178,6 +179,17 @@ export default function AdminMaintenancePage() {
     }
     return true
   })
+
+  // Khoá scroll nền khi có modal (tạo yêu cầu / xem chi tiết) đang mở, tránh lỗi UX scroll xuyên nền
+  useEffect(() => {
+    const isModalOpen = showCreate || !!inspectRequestId
+    if (!isModalOpen) return
+    const original = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = original
+    }
+  }, [showCreate, inspectRequestId])
 
   const matchesCategory = (technician: User, request: MaintenanceRequest) =>
     !technician.specialties || technician.specialties.split(',').map((value) => value.trim()).includes(request.category || 'OTHER')
@@ -435,15 +447,14 @@ export default function AdminMaintenancePage() {
                 <div>
                   <p className="text-fg-subtle">Cập nhật hạn SLA mới:</p>
                   <div className="mt-1 flex items-center gap-2">
-                    <input
-                      type="datetime-local"
+                    <DatePicker
                       value={slaDateInput}
-                      onChange={(e) => setSlaDateInput(e.target.value)}
-                      className="rounded-lg border border-border bg-surface px-2 py-1 text-xs text-fg"
+                      onChange={setSlaDateInput}
+                      className="w-32 py-1 text-xs"
                     />
                     <button
                       onClick={() => {
-                        if (slaDateInput) updateSlaMutation.mutate({ id: inspectRequest.id, date: new Date(slaDateInput).toISOString() })
+                        if (slaDateInput) updateSlaMutation.mutate({ id: inspectRequest.id, date: new Date(`${slaDateInput}T23:59:59`).toISOString() })
                       }}
                       disabled={!slaDateInput || updateSlaMutation.isPending}
                       className="rounded-lg bg-accent px-2 py-1 font-semibold text-accent-fg hover:bg-accent-hover disabled:opacity-50"

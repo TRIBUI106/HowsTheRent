@@ -96,8 +96,8 @@ export function formatMonth(dateStr?: string | null): string {
 
 export function statusColor(status: string): string {
   const map: Record<string, string> = {
-    EMPTY: 'bg-badge-neutral text-badge-neutral-text',
-    RENTED: 'bg-badge-green text-badge-green-text',
+    EMPTY: 'bg-badge-green text-badge-green-text',
+    RENTED: 'bg-badge-neutral text-badge-neutral-text',
     MAINTENANCE: 'bg-badge-amber text-badge-amber-text',
     PENDING: 'bg-badge-blue text-badge-blue-text',
     PAID: 'bg-badge-green text-badge-green-text',

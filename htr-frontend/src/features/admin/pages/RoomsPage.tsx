@@ -178,14 +178,21 @@ export default function RoomsPage() {
                 <div className="space-y-1">
                   <label className="block text-sm font-medium text-fg">Trạng thái</label>
                   <select
-                    className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-fg"
+                    className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-fg disabled:cursor-not-allowed disabled:opacity-60"
                     value={form.status}
+                    disabled={form.status === 'RENTED'}
                     onChange={(event) => setForm({ ...form, status: event.target.value })}
                   >
                     <option value="EMPTY">Trống</option>
                     <option value="RENTED">Đã thuê</option>
                     <option value="MAINTENANCE">Bảo trì</option>
                   </select>
+                  {form.status === 'RENTED' && (
+                    <p className="text-xs text-fg-subtle">
+                      Phòng đang có hợp đồng thuê hoạt động nên không thể đổi trạng thái thủ công — sẽ tự chuyển
+                      sang "Trống" khi hợp đồng kết thúc.
+                    </p>
+                  )}
                 </div>
               )}
 
