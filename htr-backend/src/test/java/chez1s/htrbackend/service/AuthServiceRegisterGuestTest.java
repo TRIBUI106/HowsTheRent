@@ -2,6 +2,7 @@ package chez1s.htrbackend.service;
 
 import chez1s.htrbackend.domain.entity.User;
 import chez1s.htrbackend.domain.enums.UserRole;
+import chez1s.htrbackend.domain.repository.PasswordResetOtpRepository;
 import chez1s.htrbackend.domain.repository.UserRepository;
 import chez1s.htrbackend.dto.request.RegisterGuestRequest;
 import chez1s.htrbackend.dto.response.AuthResponse;
@@ -24,12 +25,13 @@ import static org.mockito.Mockito.when;
 class AuthServiceRegisterGuestTest {
 
     @Mock UserRepository userRepository;
+    @Mock PasswordResetOtpRepository passwordResetOtpRepository;
     @Mock PasswordEncoder passwordEncoder;
     @Mock JwtTokenProvider tokenProvider;
     @Mock EmailService emailService;
 
     private AuthService authService() {
-        return new AuthService(userRepository, passwordEncoder, tokenProvider, emailService);
+        return new AuthService(userRepository, passwordResetOtpRepository, passwordEncoder, tokenProvider, emailService);
     }
 
     @Test
