@@ -332,13 +332,22 @@ public class PostService {
         Property property = room.getProperty();
         long likeCount = postLikeRepository.countByPostId(post.getId());
         boolean liked = viewerId != null && postLikeRepository.existsByPostIdAndUserId(post.getId(), viewerId);
+        // post.getTags() is deliberately copied (not passed straight through) while this method's
+        // caller (getPublishedBySlug) still has its @Transactional(readOnly = true) session open.
+        // PostRepository.findBySlugAndPublishedTrue() can't join-fetch tags via @EntityGraph
+        // alongside room.images (Hibernate refuses to fetch two bag collections in one query — see
+        // the comment on that repository method), so tags stays an uninitialized lazy collection
+        // reference straight out of the repository call. Copying it here forces Hibernate to load
+        // it now, inside the session, instead of leaving a lazy proxy sitting in the response DTO
+        // that would throw LazyInitializationException once Jackson tries to serialize it later.
+        List<String> tags = new ArrayList<>(post.getTags());
         return new BlogPostDetailResponse(
                 post.getId(), post.getSlug(), post.getTitle(), post.getContent(), post.getEffectiveCoverImageUrl(),
                 room.getId(), room.getRoomNumber(), room.getStatus().name(),
                 room.getDirection() != null ? room.getDirection().name() : null,
                 room.getAreaM2(), room.getMaxPeople(), room.getImages(),
                 property.getId(), property.getName(), property.getAddress(),
-                post.getPublishedAt(), likeCount, liked, post.getTags()
+                post.getPublishedAt(), likeCount, liked, tags
         );
     }
 }
