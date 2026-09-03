@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.util.StringUtils;
 
 import chez1s.htrbackend.domain.entity.User;
 import chez1s.htrbackend.domain.enums.UserRole;
@@ -79,6 +80,9 @@ public class UserController {
         if (userRepository.existsByEmail(req.getEmail())) {
             throw new BusinessException("Email already exists");
         }
+        if (StringUtils.hasText(req.getPhone()) && userRepository.existsByPhone(req.getPhone())) {
+            throw new BusinessException("Số điện thoại đã được sử dụng bởi tài khoản khác");
+        }
         User user = User.builder()
                 .fullName(req.getFullName())
                 .email(req.getEmail())
@@ -96,6 +100,9 @@ public class UserController {
     public ResponseEntity<UserResponse> update(@PathVariable UUID id, @Valid @RequestBody UpdateUserRequest req) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User", id));
+        if (StringUtils.hasText(req.getPhone()) && userRepository.existsByPhoneAndIdNot(req.getPhone(), id)) {
+            throw new BusinessException("Số điện thoại đã được sử dụng bởi tài khoản khác");
+        }
         user.setFullName(req.getFullName());
         user.setPhone(req.getPhone());
         if (req.getRole() != null) {

@@ -41,7 +41,19 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<Map<String, Object>> handleDataIntegrity(DataIntegrityViolationException ex) {
+        // The client-facing message stays generic (this handler is shared across every entity in
+        // the app), but log the real root cause — previously this was silently swallowed, so a
+        // 409 gave zero diagnostic info even server-side. Check logs for the actual constraint name.
+        log.warn("Data integrity violation: {}", rootCauseMessage(ex));
         return buildResponse(HttpStatus.CONFLICT, "Không thể thực hiện vì dữ liệu đang được sử dụng ở nơi khác.");
+    }
+
+    private String rootCauseMessage(Throwable ex) {
+        Throwable cause = ex;
+        while (cause.getCause() != null && cause.getCause() != cause) {
+            cause = cause.getCause();
+        }
+        return cause.getMessage();
     }
 
     @ExceptionHandler(LazyInitializationException.class)
