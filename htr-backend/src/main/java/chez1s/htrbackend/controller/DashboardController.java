@@ -111,9 +111,15 @@ public class DashboardController {
         var properties = admin ? propertyService.listAll() : propertyService.listByOwner(ownerId);
         var propertyIds = properties.stream().map(p -> p.getId()).toList();
         List<Map<String, Object>> result = new ArrayList<>();
-        LocalDate today = LocalDate.now();
+        // Invoice.invoiceMonth represents a billing period and is persisted as the first day of
+        // that month (e.g. 2026-09-01). The SUM query below compares it by exact LocalDate, so
+        // using LocalDate.now().minusMonths(i) (e.g. 2026-09-03) silently missed every invoice
+        // and returned zero for every bar — Recharts received valid entries but rendered each at
+        // zero height, making the cash-flow chart look empty. Normalize before subtracting so every
+        // month lookup lands on its canonical invoiceMonth key.
+        LocalDate currentMonth = LocalDate.now().withDayOfMonth(1);
         for (int i = months - 1; i >= 0; i--) {
-            LocalDate month = today.minusMonths(i);
+            LocalDate month = currentMonth.minusMonths(i);
             BigDecimal amount = propertyIds.isEmpty()
                     ? BigDecimal.ZERO
                     : invoiceRepository.sumPaidAmountByMonthAndPropertyIds(month, propertyIds);
