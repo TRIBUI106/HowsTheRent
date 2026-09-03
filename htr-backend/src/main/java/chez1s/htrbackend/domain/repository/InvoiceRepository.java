@@ -49,6 +49,10 @@ public interface InvoiceRepository extends JpaRepository<Invoice, UUID> {
 
     @Override
     @EntityGraph(attributePaths = {"room", "room.property", "contract", "contract.tenant"})
+    List<Invoice> findAll();
+
+    @Override
+    @EntityGraph(attributePaths = {"room", "room.property", "contract", "contract.tenant"})
     Page<Invoice> findAll(Pageable pageable);
 
     @Query("SELECT COALESCE(SUM(i.totalAmount), 0) FROM Invoice i WHERE i.status = 'PAID' AND i.invoiceMonth = :month")

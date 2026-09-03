@@ -35,8 +35,12 @@ class InvoiceRepositoryTest {
     @org.springframework.beans.factory.annotation.Autowired
     private InvoiceRepository invoiceRepository;
 
-    @Test
-    void findAll_eagerFetchesRoomAndContractAssociations() {
+    // Persists one invoice with its full room/property/contract/tenant graph, then flushes and
+    // clears the persistence context — this is what makes the assertions in each test meaningful:
+    // without clear(), the entities persisted above would still be sitting in Hibernate's
+    // first-level cache, already initialized, and every isInitialized() check would trivially
+    // pass regardless of whether the repository query's @EntityGraph actually did anything.
+    private void persistAndDetachOneInvoice() {
         PropertyType type = PropertyType.builder()
                 .code("APARTMENT")
                 .name("Apartment")
@@ -102,6 +106,11 @@ class InvoiceRepositoryTest {
 
         entityManager.flush();
         entityManager.clear();
+    }
+
+    @Test
+    void findAllPageable_eagerFetchesRoomAndContractAssociations() {
+        persistAndDetachOneInvoice();
 
         Pageable pageable = PageRequest.of(0, 20);
         Invoice found = invoiceRepository.findAll(pageable).getContent().get(0);
@@ -110,5 +119,28 @@ class InvoiceRepositoryTest {
         assertThat(Hibernate.isInitialized(found.getRoom().getProperty())).isTrue();
         assertThat(Hibernate.isInitialized(found.getContract())).isTrue();
         assertThat(Hibernate.isInitialized(found.getContract().getTenant())).isTrue();
+    }
+
+    // Regression test: the plain, unpaged findAll() — used only by InvoiceService.listAll(), which
+    // ExportController's PLATFORM_ADMIN branch calls for the Excel export — had no @EntityGraph
+    // override at all, unlike every other query method in this repository (including the Pageable
+    // overload right above). Confirmed in production: exporting invoices as a platform admin threw
+    // LazyInitializationException ("no session") the moment ExportController touched
+    // invoice.getRoom().getRoomNumber(), because listAll() isn't @Transactional and the session
+    // backing that query had already closed by the time the export loop ran.
+    @Test
+    void findAllUnpaged_eagerFetchesRoomAndContractAssociations() {
+        persistAndDetachOneInvoice();
+
+        Invoice found = invoiceRepository.findAll().get(0);
+
+        assertThat(Hibernate.isInitialized(found.getRoom())).isTrue();
+        assertThat(Hibernate.isInitialized(found.getRoom().getProperty())).isTrue();
+        assertThat(Hibernate.isInitialized(found.getContract())).isTrue();
+        assertThat(Hibernate.isInitialized(found.getContract().getTenant())).isTrue();
+
+        // The exact access pattern ExportController uses — must not throw once detached.
+        assertThat(found.getRoom().getRoomNumber()).isEqualTo("101");
+        assertThat(found.getRoom().getProperty().getName()).isEqualTo("Property");
     }
 }
