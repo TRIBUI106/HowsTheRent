@@ -13,7 +13,7 @@ import { Badge } from '@/components/ui/badge'
 import { Dialog } from '@/components/ui/dialog'
 import { Select } from '@/components/ui/select'
 import { propertyTypeApi } from '@/api'
-import { formatDate } from '@/lib/utils'
+import { cn, formatDate } from '@/lib/utils'
 import { showToast } from '@/lib/toast'
 import type { Property, PropertyType } from '@/types'
 
@@ -23,6 +23,23 @@ function extractErrorMessage(error: unknown, fallback: string): string {
     if (typeof message === 'string' && message.trim()) return message
   }
   return fallback
+}
+
+// Description text collapsed to 1 line with an ellipsis by default; click toggles
+// it open to wrap across as many lines as it needs. Each instance owns its own
+// expanded state, so cards toggle independently of one another.
+function ExpandableText({ text, className }: { text: string; className?: string }) {
+  const [expanded, setExpanded] = useState(false)
+  return (
+    <button
+      type="button"
+      onClick={() => setExpanded((value) => !value)}
+      className={cn('block w-full cursor-pointer text-left transition-colors hover:text-fg', !expanded && 'line-clamp-1', className)}
+      title={expanded ? undefined : text}
+    >
+      {text}
+    </button>
+  )
 }
 
 const emptyForm = {
@@ -304,7 +321,9 @@ export default function PropertiesPage() {
                   </div>
                 </div>
 
-                {type.description && <p className="mt-3 text-sm leading-6 text-fg-muted">{type.description}</p>}
+                {type.description && (
+                  <ExpandableText text={type.description} className="mt-3 text-sm leading-6 text-fg-muted" />
+                )}
 
                 <div className="mt-4 flex flex-wrap gap-2">
                   <Button type="button" variant="secondary" size="sm" onClick={() => startEditType(type)}>Sửa</Button>
@@ -423,7 +442,9 @@ export default function PropertiesPage() {
                     </div>
                   </div>
 
-                  {property.description && <p className="mt-3 text-sm text-fg-muted">{property.description}</p>}
+                  {property.description && (
+                    <ExpandableText text={property.description} className="mt-3 text-sm text-fg-muted" />
+                  )}
                   <p className="mt-4 text-xs text-fg-subtle">Tạo: {formatDate(property.createdAt)}</p>
 
                   <div className="mt-5 flex flex-wrap gap-2">

@@ -21,7 +21,7 @@ interface RevenueEntry {
 }
 
 const summaryCards = [
-  { label: 'Doanh thu tháng', key: 'revenueThisMonth', icon: BadgeDollarSign, tone: 'success', format: 'currency' },
+  { label: 'Doanh thu tháng', key: 'revenueThisMonth', icon: BadgeDollarSign, tone: 'success', format: 'currency', wide: true },
   { label: 'Hóa đơn chờ thanh toán', key: 'pendingInvoices', icon: Clock, tone: 'warning' },
   { label: 'Hóa đơn quá hạn', key: 'overdueInvoices', icon: AlertCircle, tone: 'error' },
   { label: 'Tổng yêu cầu đang mở', key: 'openMaintenance', icon: Wrench, tone: 'warning' },
@@ -34,6 +34,10 @@ const summaryCards = [
   icon: typeof BadgeDollarSign
   tone: string
   format?: 'currency'
+  /** Spans 2 grid columns — reserved for the one primary KPI (revenue) so the
+   *  remaining cards (6, an even number) always divide evenly into full rows
+   *  instead of leaving a lone orphan card on the last row. */
+  wide?: boolean
 }>
 
 const inventoryCards = [
@@ -141,13 +145,13 @@ export default function AdminDashboard() {
         </div>
       </section>
 
-      <section className="mb-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+      <section className="mb-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {summaryCards.map(card => {
           const Icon = card.icon
           const rawValue = data?.[card.key] ?? 0
           const value = card.format === 'currency' ? formatCurrency(Number(rawValue)) : rawValue
           return (
-            <Card key={card.key} className="overflow-hidden">
+            <Card key={card.key} className={`overflow-hidden ${card.wide ? 'sm:col-span-2' : ''}`}>
               <CardContent className="p-5">
                 <div className="flex items-start justify-between gap-4">
                   <div>
