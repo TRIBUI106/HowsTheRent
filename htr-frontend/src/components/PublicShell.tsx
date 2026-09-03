@@ -39,8 +39,11 @@ function NavPill() {
           className="h-6 w-6 rounded-lg object-cover"
           style={{ boxShadow: '0 1px 2px oklch(0% 0 0 / 0.10)' }}
         />
+        {/* Full wordmark only from sm up — below that the pill (fixed-position, nowrap,
+            no max-width) has no room for logo + wordmark + "Blog" + CTA button without
+            overflowing narrow phone viewports. Logo alone stays as the home link. */}
         <span
-          className="text-sm font-semibold"
+          className="hidden text-sm font-semibold sm:inline"
           style={{ fontFamily: 'var(--font-body)', color: 'var(--color-fg)' }}
         >
           How&apos;s The Rent

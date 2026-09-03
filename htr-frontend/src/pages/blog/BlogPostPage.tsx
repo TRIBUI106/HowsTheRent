@@ -257,6 +257,19 @@ export default function BlogPostPage() {
             <Link to="/login" className="mt-4 inline-flex">
               <Button type="button">Đăng nhập để liên hệ</Button>
             </Link>
+
+            {!!post.tags?.length && (
+              <div className="mt-5 border-t border-border pt-4">
+                <p className="text-xs font-medium uppercase tracking-widest text-fg-subtle">Từ khóa</p>
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  {post.tags.map(tag => (
+                    <span key={tag} className="inline-flex items-center rounded-full bg-surface px-2.5 py-1 text-xs font-medium text-fg-subtle">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
           </section>
         </aside>
       </div>

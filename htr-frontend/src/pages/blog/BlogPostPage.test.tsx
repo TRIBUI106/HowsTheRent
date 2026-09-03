@@ -97,12 +97,14 @@ describe('BlogPostPage', () => {
     expect(screen.queryByText('Phòng nhà khác')).not.toBeInTheDocument()
   })
 
-  it('renders the post\'s tags below the title when present', async () => {
+  it('renders the post\'s tags below the title and again under "Quan tâm đến phòng này?"', async () => {
     vi.mocked(blogApi.getBySlug).mockResolvedValue({ ...post, tags: ['gia-re', 'trung-tam'] })
     renderAtSlug('phong-tro-dep')
 
-    expect(await screen.findByText('gia-re')).toBeInTheDocument()
-    expect(screen.getByText('trung-tam')).toBeInTheDocument()
+    // One copy below the title, one copy under the "Quan tâm đến phòng này?" sidebar CTA.
+    await screen.findByText('Từ khóa')
+    expect(screen.getAllByText('gia-re')).toHaveLength(2)
+    expect(screen.getAllByText('trung-tam')).toHaveLength(2)
   })
 
   it('shows a login prompt instead of the comment form when logged out', async () => {

@@ -100,7 +100,7 @@ function StatStrip() {
       }}
     >
       <div
-        className="mx-auto max-w-6xl"
+        className="mx-auto max-w-6xl stat-strip-grid"
         style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
@@ -885,7 +885,7 @@ function CtaStrip() {
       }}
     >
       <div
-        className="mx-auto max-w-6xl"
+        className="mx-auto max-w-6xl cta-grid"
         style={{
           display: 'grid',
           gridTemplateColumns: 'minmax(0, 1fr) auto',
@@ -983,12 +983,20 @@ const responsiveCSS = `
     .blog-teaser-grid {
       grid-template-columns: minmax(0, 1fr) !important;
     }
-  }
-
-  /* Stat strip: stack on mobile */
-  @media (max-width: 480px) {
-    .mx-auto.max-w-6xl > div[style*="repeat(3"] {
+    /* Stat strip: 3 equal columns get unreadably cramped well before 480px once the
+       "detail" copy has to wrap inside them — same breakpoint as the other grids above. */
+    .stat-strip-grid {
       grid-template-columns: minmax(0, 1fr) !important;
+    }
+    .stat-strip-grid > *:not(:first-child) {
+      border-left: none !important;
+      border-top: 1px solid var(--color-border);
+    }
+    /* CTA strip: the trailing auto-width nowrap button had no mobile handling at all,
+       squeezing the heading/copy column into whatever space was left beside it. */
+    .cta-grid {
+      grid-template-columns: minmax(0, 1fr) !important;
+      justify-items: start;
     }
   }
 `
