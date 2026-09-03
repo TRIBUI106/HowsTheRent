@@ -1,5 +1,6 @@
 package chez1s.htrbackend.exception;
 
+import lombok.extern.slf4j.Slf4j;
 import org.hibernate.LazyInitializationException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -14,6 +15,7 @@ import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -63,6 +65,24 @@ public class GlobalExceptionHandler {
         body.put("status", HttpStatus.BAD_REQUEST.value());
         body.put("errors", errors);
         return ResponseEntity.badRequest().body(body);
+    }
+
+    // Let Spring Security's own filter chain (ExceptionTranslationFilter) keep handling
+    // authorization denials as 403 — without this, the generic fallback below would
+    // swallow them and mask them as a 500 instead.
+    @ExceptionHandler(org.springframework.security.access.AccessDeniedException.class)
+    public void rethrowAccessDenied(org.springframework.security.access.AccessDeniedException ex) throws org.springframework.security.access.AccessDeniedException {
+        throw ex;
+    }
+
+    // Defensive backstop: any exception not covered by a specific handler above
+    // (e.g. a raw JDBC/Hibernate error) previously surfaced as Spring Boot's bare
+    // default error page with no usable message. Log the real exception server-side
+    // and return a friendly message client-side instead.
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<Map<String, Object>> handleUnexpected(Exception ex) {
+        log.error("Unhandled exception", ex);
+        return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Đã xảy ra lỗi hệ thống. Vui lòng thử lại hoặc liên hệ quản trị viên.");
     }
 
     private ResponseEntity<Map<String, Object>> buildResponse(HttpStatus status, String message) {

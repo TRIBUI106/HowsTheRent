@@ -3,6 +3,7 @@ package chez1s.htrbackend.service;
 import chez1s.htrbackend.domain.entity.*;
 import chez1s.htrbackend.domain.enums.MeterReadingSource;
 import chez1s.htrbackend.domain.repository.MeterReadingRepository;
+import chez1s.htrbackend.domain.repository.UserRepository;
 import chez1s.htrbackend.domain.repository.VehicleRecordRepository;
 import chez1s.htrbackend.dto.request.CreateMeterReadingRequest;
 import chez1s.htrbackend.dto.request.UpdateVehicleRecordRequest;
@@ -26,6 +27,7 @@ public class MeterReadingService {
     private final MeterReadingRepository meterReadingRepository;
     private final VehicleRecordRepository vehicleRecordRepository;
     private final RoomService roomService;
+    private final UserRepository userRepository;
 
     public List<MeterReading> listByRoom(UUID roomId) {
         return meterReadingRepository.findByRoomIdOrderByReadingMonthDesc(roomId);
@@ -84,8 +86,15 @@ public class MeterReadingService {
         reading.setWaterReplaced(req.isWaterReplaced());
         reading.setWaterOldMeterFinal(req.isWaterReplaced() ? req.getWaterOldMeterFinal() : null);
         reading.setWaterNewMeterStart(req.isWaterReplaced() ? req.getWaterNewMeterStart() : null);
+        reading.setServiceFeeOverride(req.getServiceFeeOverride());
         reading.setSource(req.getSource() != null ? req.getSource() : MeterReadingSource.MANUAL);
-        reading.setRecordedBy(User.builder().id(recordedById).build());
+        // Must be a fully-loaded entity, not a lazy getReferenceById() proxy: the
+        // response DTO reads recordedBy.getFullName() from the controller, after
+        // this @Transactional method (and its session) has already closed
+        // (open-in-view=false) — an uninitialized proxy would throw
+        // LazyInitializationException at that point.
+        reading.setRecordedBy(userRepository.findById(recordedById)
+                .orElseThrow(() -> new ResourceNotFoundException("User", recordedById)));
         return meterReadingRepository.save(reading);
     }
 
