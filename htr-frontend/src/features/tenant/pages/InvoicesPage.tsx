@@ -69,8 +69,14 @@ export default function TenantInvoicesPage() {
                 <TableCell><Badge status={inv.status} /></TableCell>
                 <TableCell>{formatDate(inv.dueDate)}</TableCell>
                 <TableCell>
-                  {inv.status === 'PENDING' && (
-                    <Button size="sm" onClick={() => setPaymentInvoice(inv)}>Thanh toán</Button>
+                  {(inv.status === 'PENDING' || inv.status === 'OVERDUE') && (
+                    <Button
+                      size="sm"
+                      variant={inv.status === 'OVERDUE' ? 'danger' : 'primary'}
+                      onClick={() => setPaymentInvoice(inv)}
+                    >
+                      {inv.status === 'OVERDUE' ? 'Thanh toán ngay' : 'Thanh toán'}
+                    </Button>
                   )}
                   {inv.status === 'PAID' && <span className="text-sm text-success">Đã thanh toán</span>}
                 </TableCell>
