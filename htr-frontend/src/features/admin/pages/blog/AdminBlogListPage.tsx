@@ -66,7 +66,7 @@ export default function AdminBlogListPage() {
             <thead className="bg-surface text-left text-fg-muted">
               <tr>
                 <th className="px-4 py-3">Phòng</th>
-                <th className="px-4 py-3">Nhà trọ</th>
+                <th className="px-4 py-3">Dự án</th>
                 <th className="px-4 py-3">Tiêu đề</th>
                 <th className="px-4 py-3">Trạng thái</th>
                 <th className="px-4 py-3">Lượt thích</th>

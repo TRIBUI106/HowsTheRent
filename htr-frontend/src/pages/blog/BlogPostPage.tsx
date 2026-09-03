@@ -117,7 +117,7 @@ export default function BlogPostPage() {
       <div className="mx-auto max-w-7xl px-6 py-24 lg:grid lg:grid-cols-[240px_minmax(0,1fr)_300px] lg:gap-8">
         <aside className="mb-8 space-y-6 lg:mb-0">
           <section className="rounded-2xl border border-border bg-surface p-5">
-            <p className="text-xs font-semibold uppercase tracking-widest text-fg-subtle">Nhà trọ</p>
+            <p className="text-xs font-semibold uppercase tracking-widest text-fg-subtle">Dự án</p>
             <h2 className="mt-2 text-base font-semibold text-fg">{post.propertyName}</h2>
             <p className="mt-1 text-sm leading-6 text-fg-muted">{post.propertyAddress}</p>
           </section>
@@ -160,7 +160,7 @@ export default function BlogPostPage() {
           {vacancy && (
             <div className="mt-6 inline-flex items-center gap-2 rounded-full bg-accent-surface px-3 py-1.5 text-sm font-medium text-accent">
               <span>{vacancy.emptyCount}/{vacancy.totalCount} phòng còn trống</span>
-              <span className="text-xs font-normal text-fg-muted">(toàn bộ nhà trọ)</span>
+              <span className="text-xs font-normal text-fg-muted">(toàn bộ dự án)</span>
             </div>
           )}
 
@@ -253,7 +253,7 @@ export default function BlogPostPage() {
 
           <section className="rounded-2xl border border-border bg-sidebar p-5">
             <h2 className="text-base font-semibold text-fg">Quan tâm đến phòng này?</h2>
-            <p className="mt-2 text-sm leading-6 text-fg-muted">Đăng nhập để theo dõi thông tin nhà trọ và trao đổi trực tiếp trên hệ thống.</p>
+            <p className="mt-2 text-sm leading-6 text-fg-muted">Đăng nhập để theo dõi thông tin và trao đổi trực tiếp trên hệ thống.</p>
             <Link to="/login" className="mt-4 inline-flex">
               <Button type="button">Đăng nhập để liên hệ</Button>
             </Link>

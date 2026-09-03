@@ -18,8 +18,8 @@ export default function BlogListPage() {
   return (
     <PublicShell>
       <section className="mx-auto max-w-5xl px-6 py-24">
-        <h1 className="text-3xl font-semibold tracking-[-0.03em] text-fg">Nhà trọ đang cho thuê</h1>
-        <p className="mt-2 text-sm text-fg-muted">Xem bài viết và thông tin chi tiết về từng phòng trong các nhà trọ.</p>
+        <h1 className="text-3xl font-semibold tracking-[-0.03em] text-fg">Dự án đang cho thuê</h1>
+        <p className="mt-2 text-sm text-fg-muted">Xem bài viết và thông tin chi tiết về từng phòng trong các dự án.</p>
 
         {isLoading && <p className="mt-10 text-sm text-fg-muted">Đang tải…</p>}
 
