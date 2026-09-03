@@ -171,6 +171,24 @@ class BillingServiceTest {
         assertThat(result).isEqualByComparingTo(new BigDecimal("150000.00"));
     }
 
+    // ---- calcService ----
+
+    @Test
+    void calcService_noOverride_returnsConfigDefault() {
+        FeeConfig config = feeConfig(BigDecimal.ZERO, BigDecimal.ZERO, WaterMode.CUBIC, BigDecimal.ZERO, new BigDecimal("50000"));
+        MeterReading reading = new MeterReading();
+        reading.setServiceFeeOverride(null);
+        assertThat(billingService.calcService(reading, config)).isEqualByComparingTo(new BigDecimal("50000"));
+    }
+
+    @Test
+    void calcService_withOverride_returnsOverrideValue() {
+        FeeConfig config = feeConfig(BigDecimal.ZERO, BigDecimal.ZERO, WaterMode.CUBIC, BigDecimal.ZERO, new BigDecimal("50000"));
+        MeterReading reading = new MeterReading();
+        reading.setServiceFeeOverride(new BigDecimal("80000"));
+        assertThat(billingService.calcService(reading, config)).isEqualByComparingTo(new BigDecimal("80000.00"));
+    }
+
     // ---- calcVehicle ----
 
     @Test

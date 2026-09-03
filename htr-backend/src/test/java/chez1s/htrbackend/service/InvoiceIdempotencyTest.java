@@ -134,7 +134,7 @@ class InvoiceIdempotencyTest {
         when(billingService.calcElec(any(), any())).thenReturn(new BigDecimal("350000"));
         when(billingService.calcWater(any(), any(), anyInt())).thenReturn(new BigDecimal("75000"));
         when(billingService.calcVehicle(any(), any())).thenReturn(BigDecimal.ZERO);
-        when(billingService.calcService(any())).thenReturn(new BigDecimal("50000"));
+        when(billingService.calcService(any(), any())).thenReturn(new BigDecimal("50000"));
         when(billingService.isProRataMonth(any(), any())).thenReturn(false);
 
         Invoice saved = Invoice.builder()

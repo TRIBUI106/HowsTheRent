@@ -65,6 +65,14 @@ public class MeterReading {
     @Column(name = "water_new_meter_start")
     private Long waterNewMeterStart;
 
+    /**
+     * Per-period override of the property's default {@code FeeConfig.serviceFee}
+     * (phí dịch vụ / phí quản lý). Null means "use the property default" for
+     * this room+month's invoice; a value overrides it for this period only.
+     */
+    @Column(name = "service_fee_override", precision = 15, scale = 2)
+    private java.math.BigDecimal serviceFeeOverride;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     @Builder.Default

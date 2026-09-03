@@ -7,10 +7,10 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { CardsSkeleton } from '@/components/ui/feedback'
 import { getRoomPropertyName } from '@/lib/apiMappers'
-import { formatMonth } from '@/lib/utils'
+import { formatMonth, formatCurrencyInput, parseCurrencyInput } from '@/lib/utils'
 import { showToast } from '@/lib/toast'
 import api from '@/lib/api'
-import type { Room } from '@/types'
+import type { Room, Property } from '@/types'
 
 type ReadingMode = 'MANUAL' | 'HUNONIC'
 
@@ -25,6 +25,7 @@ interface ReadingForm {
   waterReplaced: boolean
   waterOldMeterFinal: string
   waterNewMeterStart: string
+  serviceFeeOverride: string
 }
 
 interface MeterReadingHistory {
@@ -33,6 +34,13 @@ interface MeterReadingHistory {
   elecNew: number
   waterOld?: number | null
   waterNew?: number | null
+  elecReplaced?: boolean
+  elecOldMeterFinal?: number | null
+  elecNewMeterStart?: number | null
+  waterReplaced?: boolean
+  waterOldMeterFinal?: number | null
+  waterNewMeterStart?: number | null
+  serviceFeeOverride?: number | null
 }
 
 interface MeterReadingSeed {
@@ -74,6 +82,7 @@ const emptyForm = (): ReadingForm => ({
   elecOld: '', elecNew: '', waterOld: '', waterNew: '',
   elecReplaced: false, elecOldMeterFinal: '', elecNewMeterStart: '',
   waterReplaced: false, waterOldMeterFinal: '', waterNewMeterStart: '',
+  serviceFeeOverride: '',
 })
 const MAX_READING_DELTA = 100_000
 
@@ -104,6 +113,7 @@ export default function MeterReadingsPage() {
   const [mode, setMode] = useState<ReadingMode>('MANUAL')
   const [forms, setForms] = useState<Record<string, Record<string, ReadingForm>>>({})
   const [successRooms, setSuccessRooms] = useState<Record<string, Set<string>>>({})
+  const [editingRooms, setEditingRooms] = useState<Record<string, Set<string>>>({})
   const [generating, setGenerating] = useState(false)
   const [genResult, setGenResult] = useState<string | null>(null)
 
@@ -113,6 +123,36 @@ export default function MeterReadingsPage() {
   })
 
   const roomIds = useMemo(() => rooms.map((room) => room.id).join(','), [rooms])
+
+  const { data: properties = [] } = useQuery<Property[]>({
+    queryKey: ['properties'],
+    queryFn: () => api.get('/properties').then((r) => r.data),
+  })
+  const propertiesById = useMemo(
+    () => Object.fromEntries(properties.map((p) => [p.id, p])),
+    [properties],
+  )
+
+  const propertyIds = useMemo(
+    () => [...new Set(rooms.map((room) => room.propertyId))].sort().join(','),
+    [rooms],
+  )
+  const { data: feeConfigsByProperty = {} } = useQuery<Record<string, { serviceFee: number }>>({
+    queryKey: ['meter-reading-fee-configs', propertyIds],
+    enabled: rooms.length > 0,
+    queryFn: async () => {
+      const ids = [...new Set(rooms.map((room) => room.propertyId))]
+      const entries = await Promise.all(
+        ids.map(async (id) => [id, await api.get(`/properties/${id}/fee-config`).then((r) => r.data)] as const),
+      )
+      return Object.fromEntries(entries)
+    },
+  })
+
+  // "Chung cư" (CONDO) properties call this fee "Phí quản lý"; everything else uses "Phí dịch vụ".
+  function serviceFeeLabel(propertyId: string) {
+    return propertiesById[propertyId]?.propertyTypeCode === 'CONDO' ? 'Phí quản lý' : 'Phí dịch vụ'
+  }
 
   const { data: readingSeeds = {}, isLoading: isLoadingPrevious } = useQuery<Record<string, MeterReadingSeed>>({
     queryKey: ['meter-reading-seeds', selectedMonth, roomIds],
@@ -151,12 +191,13 @@ export default function MeterReadingsPage() {
         elecNew: current?.elecNew != null ? String(current.elecNew) : '',
         waterOld: current?.waterOld != null ? String(current.waterOld) : previous?.waterNew != null ? String(previous.waterNew) : '',
         waterNew: current?.waterNew != null ? String(current.waterNew) : '',
-        elecReplaced: false,
-        elecOldMeterFinal: '',
-        elecNewMeterStart: '',
-        waterReplaced: false,
-        waterOldMeterFinal: '',
-        waterNewMeterStart: '',
+        elecReplaced: current?.elecReplaced ?? false,
+        elecOldMeterFinal: current?.elecOldMeterFinal != null ? String(current.elecOldMeterFinal) : '',
+        elecNewMeterStart: current?.elecNewMeterStart != null ? String(current.elecNewMeterStart) : '',
+        waterReplaced: current?.waterReplaced ?? false,
+        waterOldMeterFinal: current?.waterOldMeterFinal != null ? String(current.waterOldMeterFinal) : '',
+        waterNewMeterStart: current?.waterNewMeterStart != null ? String(current.waterNewMeterStart) : '',
+        serviceFeeOverride: current?.serviceFeeOverride != null ? formatCurrencyInput(current.serviceFeeOverride) : '',
       }
     }
     return nextForms
@@ -164,6 +205,7 @@ export default function MeterReadingsPage() {
 
   const activeForms = forms[selectedMonth] ?? seededForms
   const activeSuccessRooms = successRooms[selectedMonth] ?? new Set<string>()
+  const activeEditingRooms = editingRooms[selectedMonth] ?? new Set<string>()
 
   const readingMutation = useGuardedMutation({
     mutationFn: ({ roomId, data }: { roomId: string; data: object }) =>
@@ -179,12 +221,13 @@ export default function MeterReadingsPage() {
             elecNew: String(saved.elecNew),
             waterOld: saved.waterOld != null ? String(saved.waterOld) : '',
             waterNew: saved.waterNew != null ? String(saved.waterNew) : '',
-            elecReplaced: false,
-            elecOldMeterFinal: '',
-            elecNewMeterStart: '',
-            waterReplaced: false,
-            waterOldMeterFinal: '',
-            waterNewMeterStart: '',
+            elecReplaced: saved.elecReplaced ?? false,
+            elecOldMeterFinal: saved.elecOldMeterFinal != null ? String(saved.elecOldMeterFinal) : '',
+            elecNewMeterStart: saved.elecNewMeterStart != null ? String(saved.elecNewMeterStart) : '',
+            waterReplaced: saved.waterReplaced ?? false,
+            waterOldMeterFinal: saved.waterOldMeterFinal != null ? String(saved.waterOldMeterFinal) : '',
+            waterNewMeterStart: saved.waterNewMeterStart != null ? String(saved.waterNewMeterStart) : '',
+            serviceFeeOverride: saved.serviceFeeOverride != null ? formatCurrencyInput(saved.serviceFeeOverride) : '',
           },
         },
       }))
@@ -194,6 +237,14 @@ export default function MeterReadingsPage() {
           ...previous,
           [selectedMonth]: new Set([...current, variables.roomId]),
         }
+      })
+      // Re-saving (e.g. via "Sửa lại") should drop the room back out of editing mode.
+      setEditingRooms((previous) => {
+        const current = previous[selectedMonth]
+        if (!current?.has(variables.roomId)) return previous
+        const next = new Set(current)
+        next.delete(variables.roomId)
+        return { ...previous, [selectedMonth]: next }
       })
       showToast({ message: 'Đã lưu chỉ số điện nước', type: 'success' })
       qc.invalidateQueries({ queryKey: ['meter-reading-seeds'] })
@@ -337,6 +388,7 @@ export default function MeterReadingsPage() {
         waterReplaced: form.waterReplaced,
         waterOldMeterFinal,
         waterNewMeterStart,
+        serviceFeeOverride: form.serviceFeeOverride.trim() ? parseCurrencyInput(form.serviceFeeOverride) : null,
         source: 'MANUAL',
       },
     })
@@ -386,6 +438,7 @@ export default function MeterReadingsPage() {
                   setSelectedMonth(nextMonth)
                   setForms((previous) => withMonthCleared(previous, nextMonth))
                   setSuccessRooms((previous) => withMonthCleared(previous, nextMonth))
+                  setEditingRooms((previous) => withMonthCleared(previous, nextMonth))
                   setGenResult(null)
                 }}
                 className="rounded-xl border border-border/80 bg-surface px-3 py-2 text-sm text-fg focus:outline-none focus:ring-2 focus:ring-accent"
@@ -444,7 +497,8 @@ export default function MeterReadingsPage() {
                     const form = getForm(room.id)
                     const seed = readingSeeds[room.id]
                     const previous = seed?.previous
-                    const done = activeSuccessRooms.has(room.id)
+                    const isEditing = activeEditingRooms.has(room.id)
+                    const done = activeSuccessRooms.has(room.id) && !isEditing
 
                     return (
                       <Card key={room.id} className={`p-4 ${done ? 'border-success/40 bg-success-surface' : ''}`}>
@@ -453,7 +507,21 @@ export default function MeterReadingsPage() {
                             <p className="font-semibold text-fg">{room.roomNumber}</p>
                             <p className="text-xs text-fg-muted">{getRoomPropertyName(room)}</p>
                           </div>
-                          {done && <span className="text-sm font-medium text-success">✓ Đã lưu</span>}
+                          {done && (
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-medium text-success">✓ Đã lưu</span>
+                              <button
+                                type="button"
+                                className="text-xs font-medium text-accent underline underline-offset-2 hover:text-accent/80"
+                                onClick={() => setEditingRooms((prev) => {
+                                  const current = prev[selectedMonth] ?? new Set<string>()
+                                  return { ...prev, [selectedMonth]: new Set([...current, room.id]) }
+                                })}
+                              >
+                                Sửa lại
+                              </button>
+                            </div>
+                          )}
                         </div>
 
                         {!done && (
@@ -585,6 +653,22 @@ export default function MeterReadingsPage() {
                                 )}
                               </div>
                             )}
+
+                            <div>
+                              <label className="mb-1 block text-xs text-fg-muted">
+                                {serviceFeeLabel(room.propertyId)} (₫/tháng)
+                              </label>
+                              <Input
+                                type="text"
+                                inputMode="numeric"
+                                placeholder={formatCurrencyInput(feeConfigsByProperty[room.propertyId]?.serviceFee ?? 0)}
+                                value={form.serviceFeeOverride}
+                                onChange={(event) => updateForm(room.id, 'serviceFeeOverride', formatCurrencyInput(event.target.value))}
+                              />
+                              <p className="mt-1 text-[11px] text-fg-subtle">
+                                Để trống sẽ dùng mức mặc định của toà nhà; nhập số để đổi riêng cho tháng này.
+                              </p>
+                            </div>
 
                             <Button
                               size="sm"

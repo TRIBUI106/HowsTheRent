@@ -2,6 +2,7 @@ package chez1s.htrbackend.dto.response;
 
 import chez1s.htrbackend.domain.entity.MeterReading;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -21,6 +22,7 @@ public record MeterReadingResponse(
         boolean waterReplaced,
         Long waterOldMeterFinal,
         Long waterNewMeterStart,
+        BigDecimal serviceFeeOverride,
         String source,
         UUID recordedById,
         String recordedByName,
@@ -42,6 +44,7 @@ public record MeterReadingResponse(
                 m.isWaterReplaced(),
                 m.getWaterOldMeterFinal(),
                 m.getWaterNewMeterStart(),
+                m.getServiceFeeOverride(),
                 m.getSource().name(),
                 m.getRecordedBy().getId(),
                 m.getRecordedBy().getFullName(),

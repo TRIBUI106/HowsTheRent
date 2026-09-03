@@ -117,7 +117,7 @@ public class InvoiceService {
         BigDecimal elec = billingService.calcElec(reading, feeConfig);
         BigDecimal water = billingService.calcWater(reading, feeConfig, contract.getRoom().getMaxPeople());
         BigDecimal vehicle = billingService.calcVehicle(vehicleRecord, feeConfig);
-        BigDecimal service = billingService.calcService(feeConfig);
+        BigDecimal service = billingService.calcService(reading, feeConfig);
         BigDecimal total = rent.add(elec).add(water).add(vehicle).add(service);
 
         boolean isProRata = billingService.isProRataMonth(contract, targetMonth);

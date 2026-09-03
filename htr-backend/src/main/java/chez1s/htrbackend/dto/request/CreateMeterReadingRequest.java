@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Data
@@ -33,4 +34,8 @@ public class CreateMeterReadingRequest {
     private Long waterOldMeterFinal;
     @PositiveOrZero @Max(1_000_000_000L)
     private Long waterNewMeterStart;
+
+    /** Null = inherit the property's default service fee for this period. */
+    @PositiveOrZero
+    private BigDecimal serviceFeeOverride;
 }

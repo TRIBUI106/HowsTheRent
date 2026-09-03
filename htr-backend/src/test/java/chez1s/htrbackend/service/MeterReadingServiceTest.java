@@ -2,23 +2,29 @@ package chez1s.htrbackend.service;
 
 import chez1s.htrbackend.domain.entity.MeterReading;
 import chez1s.htrbackend.domain.entity.Room;
+import chez1s.htrbackend.domain.entity.User;
 import chez1s.htrbackend.domain.enums.MeterReadingSource;
 import chez1s.htrbackend.domain.repository.MeterReadingRepository;
+import chez1s.htrbackend.domain.repository.UserRepository;
 import chez1s.htrbackend.domain.repository.VehicleRecordRepository;
 import chez1s.htrbackend.dto.request.CreateMeterReadingRequest;
 import chez1s.htrbackend.exception.BusinessException;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -28,8 +34,17 @@ class MeterReadingServiceTest {
     @Mock MeterReadingRepository meterReadingRepository;
     @Mock VehicleRecordRepository vehicleRecordRepository;
     @Mock RoomService roomService;
+    @Mock UserRepository userRepository;
 
     @InjectMocks MeterReadingService meterReadingService;
+
+    @BeforeEach
+    void stubUserReference() {
+        // create() always resolves recordedBy via userRepository.findById(...);
+        // stub it for every test regardless of whether it asserts on it.
+        lenient().when(userRepository.findById(any(UUID.class)))
+                .thenAnswer(invocation -> Optional.of(User.builder().id(invocation.getArgument(0)).build()));
+    }
 
     @Test
     void create_existingRoomMonthUpdatesReadingInsteadOfFailing() {
@@ -66,6 +81,28 @@ class MeterReadingServiceTest {
         assertThat(result.getWaterOld()).isEqualTo(20L);
         assertThat(result.getWaterNew()).isEqualTo(30L);
         verify(meterReadingRepository).save(existing);
+    }
+
+    @Test
+    void create_passesThroughServiceFeeOverride() {
+        UUID roomId = UUID.randomUUID();
+        UUID recordedById = UUID.randomUUID();
+        LocalDate month = LocalDate.of(2026, 7, 1);
+        CreateMeterReadingRequest request = new CreateMeterReadingRequest();
+        request.setReadingMonth(month);
+        request.setElecOld(100L);
+        request.setElecNew(150L);
+        request.setServiceFeeOverride(new BigDecimal("80000"));
+
+        when(meterReadingRepository.findByRoomIdAndReadingMonth(roomId, month)).thenReturn(Optional.empty());
+        when(meterReadingRepository.findFirstByRoomIdAndReadingMonthLessThanOrderByReadingMonthDesc(roomId, month)).thenReturn(Optional.empty());
+        when(roomService.getById(roomId)).thenReturn(new Room());
+        when(meterReadingRepository.save(any(MeterReading.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        MeterReading result = meterReadingService.create(roomId, recordedById, request);
+
+        assertThat(result.getServiceFeeOverride()).isEqualByComparingTo(new BigDecimal("80000"));
     }
 
     @Test

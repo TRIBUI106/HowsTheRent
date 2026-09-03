@@ -56,8 +56,10 @@ public class BillingService {
         return moto.add(car).add(bicycle).setScale(2, RoundingMode.HALF_UP);
     }
 
-    public BigDecimal calcService(FeeConfig config) {
-        return config.getServiceFee();
+    public BigDecimal calcService(MeterReading reading, FeeConfig config) {
+        return reading.getServiceFeeOverride() != null
+                ? reading.getServiceFeeOverride().setScale(2, RoundingMode.HALF_UP)
+                : config.getServiceFee();
     }
 
     public BigDecimal calcProRata(BigDecimal fullRent, LocalDate moveInDate) {
